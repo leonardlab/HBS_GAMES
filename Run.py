@@ -23,6 +23,7 @@ from openpyxl import load_workbook
 import matplotlib.pyplot as plt 
 import seaborn as sns
 import cycler
+from math import sqrt
 
 #Import GAMES functions
 from Solvers import solveSingle, calcRsq, calcChi2
@@ -1558,7 +1559,7 @@ def calcThresholdPL(calibrated_params, exp_data):
         #Generate noise array
         #Define mean and standard error for error distribution
         mu = 0
-        sigma =  .05 / 3
+        sigma =  .05 / sqrt(3)
         
         #Generate noise values
         np.random.seed(6754)
@@ -1764,7 +1765,7 @@ def addNoise(raw_vals, count):
     
     #Define mean and std for error distribution
     mu = 0
-    sigma =  .05 / 3
+    sigma =  .05 / sqrt(3)
     
     #Generate noise values
     seeds = [3457, 1234, 2456, 7984, 7306, 3869, 5760, 9057, 2859]
