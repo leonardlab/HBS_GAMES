@@ -33,14 +33,18 @@ def init():
     # 2. Define free parameters and bounds
     # =============================================================================
     #Set list of all potentially free parameters
+    #model A/B
     #p_ref = [15, 0.05, 0.05, 36, 100, 2] #all potentially free parameters - for models A and B 
+    #p_all = p_ref
 
+    #model C
     #p_ref = [15, 1, .05, 720, 100, 2] #for model C (m = m*)
+    #p_all = p_ref
   
-    p_ref = [15, 1, 1, 720, 100, 2] #for model D (m = m*)
+    #model D
+    p_ref = [15, 1, 0.05, 720, 100, 2] #for model D (m = m*)
+    p_all = [15, 1, 1, 720, 100, 2] #for model D (m = m*)
     
-    p_all = p_ref
-
     #Define parameter labels (real and general)
     real_param_labels_all = ['e', 'b', 'k_bind', 'm', 'km', 'n'] #real labels for p_ref and p_all
     p_labels_all = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'] #general param labels
