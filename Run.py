@@ -859,10 +859,6 @@ def calcPL(calibrated_vals, calibrated_chi2, threshold_val):
     #number of evaluations (full PEM runs)
     num_evals = 0
     
-    #Set variables associated with calculating PL
-    #maximum number of steps for EACH direction
-    max_steps = 50
-    
     #Set the minimum and maximum acceptable step choices (x2_PL(current step) - x2_PL(last step))
     #set the min step to 1% of starting value
     min_step_list = [.01 * i for i in calibrated_vals] 
@@ -879,6 +875,9 @@ def calcPL(calibrated_vals, calibrated_chi2, threshold_val):
    
     #for each parameter, evaluate the PPL
     for fixed_index in indicies:   
+        #Set variables associated with calculating PL
+        #maximum number of steps for EACH direction
+        max_steps = 50
         
         #Record the start time
         startTime = datetime.datetime.now()
@@ -917,6 +916,9 @@ def calcPL(calibrated_vals, calibrated_chi2, threshold_val):
                 min_step = .01 * min_step #kbind
             if fixed_index == 3 and direction == -1:
                 min_step = .01 * min_step #m
+            if fixed_index == 3 and direction == 1:
+                max_step = 3 * max_step #m
+                max_steps = 100
     
             print('min step: ' + str(min_step))
             print('max step: ' + str(max_step))
