@@ -10,7 +10,35 @@ import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 
+from config import Settings, ExperimentalData, Context
+from plots import Plots
+
 plt.style.use("./paper.mplstyle.py")
+
+class Modules:
+    def test_single_parameter_set():
+        if Settings.modelID == 'synTF_chem':
+            if Settings.dataID == 'ligand dose response':
+                x = ExperimentalData.x
+                solutions = model.solve_ligand_sweep(x)
+                solutions_norm = [i/max(solutions) for i in solutions]
+                Plots.plot_x_y(x, solutions_norm, ExperimentalData.exp_data, ExperimentalData.exp_error, 'Ligand (nM)', 'Rep. protein (au)', 'ligand sweep', y_scale = 'log')
+       
+        elif Settings.modelID == 'synTF':
+            if Settings.dataID == 'synTF dose response':
+                x = ExperimentalData.x
+                solutions = model.solve_synTF_sweep(x)
+                solutions_norm = [i/max(solutions) for i in solutions]
+                Plots.plot_x_y(x, solutions_norm, ExperimentalData.exp_data, ExperimentalData.exp_error, 'synTF', 'Rep. protein (au)', 'synTF sweep')
+       
+                
+    def estimate_parameters():
+        pass
+    def evaluate_parameter_estimation_method():
+        pass
+    def calculate_profile_likelihood():
+        pass
+        
 
 class GeneralModel:
     """
@@ -18,27 +46,6 @@ class GeneralModel:
 
     """
     
-    def normalize_by_maximum_value(y):
-        """Normalizes a list of data by the maximum value of that list.
-  
-        Parameters
-        ----------
-        y
-            A list of floats defining the data to be normalized
-            
-        y
-            A list of floats defining the normalized data
-        
-        Returns
-        -------
-        None
-        
-        """
-        
-        y_norm = [i/max(y) for i in y]
-        
-        return y_norm
-
     def set_general_parameters(self):
         """Defines general parameters that may be used in any model.
   
@@ -60,39 +67,15 @@ class GeneralModel:
         self.general_parameters = np.array(
             [k_txn, k_trans, kdeg_rna, kdeg_protein, kdeg_reporter, k_deg_ligand]
         )
-        
-    def plot_x_y(x, y, x_label, y_label, filename, y_scale = 'linear'):
-        """Plots a 2-dimensional figure.
-  
-        Parameters
-        ----------
-        x
-            List of floats defining the independent variable
-            
-        y
-            List of floats defining the dependent variable
-        
-        Returns
-        -------
-        None
-        
-        """
-        fig = plt.figure(figsize = (3,3))
-        plt.plot(x, y, linestyle="dotted", marker="None")
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.yscale(y_scale)
-        plt.savefig(filename + '.svg', dpi = 600)
-           
-    
+     
 
-class synTF_chem(GeneralModel):
+class synTF_chem(GeneralModel, Modules):
     """
     Representation of synTF_Chem model - synTFChem
 
     """
 
-    def __init__(self, free_parameters, inputs, input_ligand):
+    def __init__(self, free_parameters = [1, 1, 1, 1, 1, 1], inputs = [50, 50], input_ligand = 1000):
         """Initializes synTF_Chem model.
         
         Parameters
@@ -112,10 +95,13 @@ class synTF_chem(GeneralModel):
         
         """
         self.number_of_states = 8
+        
         self.free_parameters = np.array(free_parameters)
         self.inputs = np.array(inputs)
         self.input_ligand = input_ligand
+        
         GeneralModel.set_general_parameters(self)
+        
         y_init = np.zeros(self.number_of_states)
         self.initial_conditions = y_init
 
@@ -220,40 +206,39 @@ class synTF_chem(GeneralModel):
 
         return dydt
     
-    def solve_ligand_sweep(self):
+    def solve_ligand_sweep(self, x_ligand):
         """Solve synTF_Chem model for a list of ligand values.
         
         Parameters
         ----------
-        None
+        x_ligand
+            A list of integers containing the ligand amounts to sweep over
+        
             
         Returns
         -------
-        ligand_amounts
-            A list of integers containing the ligand amounts to sweep over
-        
         solutions
             A list of floats containing the value of the reporter protein 
             at the final timepoint for each ligand amount
         
         """
-        ligand_amounts = list(np.linspace(0, 1000, 5))
+        
         solutions = []
-        for ligand_amount in ligand_amounts:
-            self.input_ligand = ligand_amount
+        for ligand in x_ligand:
+            self.input_ligand = ligand
             sol, t = model.solve_single()
             solutions.append(sol[-1, -1])
             
-        return ligand_amounts, solutions    
+        return solutions    
 
 
-class synTF(GeneralModel):
+class synTF(GeneralModel, Modules):
     """
     Representation of synTF model - synTF only
 
     """
 
-    def __init__(self, free_parameters, inputs):
+    def __init__(self, free_parameters = [1], inputs = [50]):
         """Initializes synTF model.
         
         Parameters
@@ -336,6 +321,7 @@ class synTF(GeneralModel):
         y_1, y_2, y_3, y_4 = y
         [g] = free_parameters
         [dose_a] = inputs
+
         k_txn, k_trans, kdeg_rna, kdeg_protein, kdeg_reporter, k_deg_ligand = general_parameters
         
         u_1 = k_txn * dose_a - kdeg_rna * y_1  # y1 synTF mRNA
@@ -346,7 +332,7 @@ class synTF(GeneralModel):
 
         return dydt
     
-    def solve_synTF_sweep(self):
+    def solve_synTF_sweep(self, x):
         """Solve synTF model for a list of synTF values.
         
         Parameters
@@ -363,33 +349,23 @@ class synTF(GeneralModel):
             at the final timepoint for each synTF amount
         
         """
-        synTF_amounts = list(np.linspace(0, 200, 5))
         solutions = []
-        for synTF_amount in synTF_amounts:
+        for synTF_amount in x:
             self.inputs = [synTF_amount]
             sol, t = model.solve_single()
             solutions.append(sol[-1, -1])
             
-        return synTF_amounts, solutions
-
-model = 'synTF_chem'
-if model == 'synTF_chem':
-    free_parameters = [1] * 6
-    inputs = [50] * 2
-    input_ligand = 1000
-    model = synTF_chem(free_parameters, inputs, input_ligand)
-    ligand_amounts, solutions = model.solve_ligand_sweep()
-    solutions = GeneralModel.normalize_by_maximum_value(solutions)
-    GeneralModel.plot_x_y(ligand_amounts, solutions , 'Ligand (nM)', 'Rep. protein (au)', 'ligand sweep', y_scale = 'log')
+        return solutions
    
-elif model == 'synTF':
-    free_parameters = [1] * 1
-    inputs = [50] * 1
-    model = synTF(free_parameters, inputs)
-    synTF_amounts, solutions = model.solve_synTF_sweep()
-    GeneralModel.plot_x_y(synTF_amounts, solutions , 'synTF', 'Rep. protein (au)', 'synTF sweep')
+def Set_Model():
+    if Settings.modelID == 'synTF_chem':
+        model = synTF_chem(free_parameters = Settings.free_parameters)
+       
+    elif Settings.modelID == 'synTF':
+        model = synTF(free_parameters = Settings.free_parameters)
+        
+    return model
 
-    
-#sol, t = model.solve_single()
-#GeneralModel.plot_x_y(t, sol[:, -1], 'Time (hr)', 'Rep. protein (au)', 'reporter protein timecourse')
+model = Set_Model()
+
 
