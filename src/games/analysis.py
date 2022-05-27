@@ -39,7 +39,7 @@ class Plots:
         plt.ylabel(y_label)
         plt.yscale(y_scale)
         plt.legend()
-        plt.savefig(Context.folder_path + '/' + filename + '.svg', dpi = 600)
+        plt.savefig('./' + filename + '.svg', dpi = 600)
         
 class CalculateMetrics:
     def calc_r_sq(data_x, data_y):
