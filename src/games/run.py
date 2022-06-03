@@ -6,7 +6,7 @@ Created on Thu May 26 09:38:59 2022
 @author: kate
 """
 
-from models import GeneralModel, Modules
+from modules import Modules
 
 # =============================================================================
 # Solve model for single set of parameters
