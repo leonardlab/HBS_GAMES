@@ -8,21 +8,36 @@ Created on Thu May 26 09:48:43 2022
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 import numpy as np
-from config import Context
+from config import Context, Settings
 
 plt.style.use("./paper.mplstyle.py")
 
 class Plots:
-    def plot_x_y(x, y_sim, y_exp, y_exp_error, x_label, y_label, filename, y_scale = 'linear'):
+    def plot_x_y(x, y_sim, y_exp, y_exp_error, x_label, y_label, filename, x_scale = 'linear', color = 'black'):
         """Plots a 2-dimensional figure.
   
         Parameters
         ----------
         x
-            List of floats defining the independent variable
+            list of floats defining the independent variable
             
-        y
-            List of floats defining the dependent variable
+        y_sim
+            list of floats defining the simulated dependent variable
+            
+        y_exp
+            list of floats defining the experimental dependent variable
+            
+        y_exp_error
+            list of floats defining the experimental error for the dependent variable
+            
+        x_label
+           string defining the label for the independent variable
+            
+        y_label
+           string defining the label for the dependent variable
+           
+        x_scale
+           string defining the scale for the independent variable
         
         Returns
         -------
@@ -31,13 +46,15 @@ class Plots:
         """
          
         fig = plt.figure(figsize = (3,3))
-        plt.plot(x, y_sim, linestyle="dotted", marker="None", label = 'sim')
-        plt.errorbar(x, y_exp, color = 'black', marker = 'o', 
-                     yerr = y_exp_error, markersize = 6, fillstyle = 'none', 
-                     linestyle = 'none', capsize = 2, label = 'exp')
+        plt.plot(x, y_sim, linestyle="dotted", marker="None", label = 'sim', color = color)
+        if y_exp != 'None':
+            plt.errorbar(x, y_exp, marker = 'o', 
+                         yerr = y_exp_error, color = color, ecolor = color, 
+                         markersize = 6, fillstyle = 'none', 
+                         linestyle = 'none', capsize = 2, label = 'exp')
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-        plt.yscale(y_scale)
+        plt.xscale(x_scale)
         plt.legend()
         plt.savefig('./' + filename + '.svg', dpi = 600)
         
@@ -47,10 +64,10 @@ class CalculateMetrics:
         
         Parameters
         ----------
-        dataX 
+        dataX_x
             list of floats - first set of data for comparison
             
-        dataY 
+        data_y
             list of floats - second set of data for comparison
                 
         Returns
@@ -94,6 +111,8 @@ class CalculateMetrics:
             chi2 value (float) 
         
         '"""
+        if Settings.weight_by_error == 'no':
+            std = [1] * len(exp)
     
         #Initialize chi2
         chi_sq = 0

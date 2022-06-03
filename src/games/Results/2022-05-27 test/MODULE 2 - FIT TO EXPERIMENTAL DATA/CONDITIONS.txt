@@ -1,6 +1,0 @@
-dataID: synTF dose response
-
-modelID: synTF
-
-parameter_estimation_problem_definition:{'num_vars': 1, 'names': ['g'], 'bounds': [[-3.0, 3.0]]}
-

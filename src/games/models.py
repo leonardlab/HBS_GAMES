@@ -38,10 +38,12 @@ class Modules:
         path = Save.createFolder(sub_folder_name)
         os.chdir(path)
         Save.saveConditions()
+        model.parameters = Settings.parameters
         solutions_norm, chi_sq, r_sq = GeneralModel.solve_single_parameter_set()
         filename = 'FIT TO TRAINING DATA'
         Plots.plot_x_y(ExperimentalData.x, solutions_norm, ExperimentalData.exp_data, ExperimentalData.exp_error, ExperimentalData.x_label, ExperimentalData.y_label, filename, ExperimentalData.x_scale)
-   
+        return solutions_norm, chi_sq, r_sq
+    
     def estimate_parameters():
         """Runs parameter estimation method (multi-start optimization)
         
@@ -67,10 +69,12 @@ class Modules:
         print('Starting optimization...')
         Optimization.optimize_all(df_global_search_results)
         
-        
- 
+    def generate_parameter_estimation_method_evaluation_data():
+        pass
+    
     def evaluate_parameter_estimation_method():
         pass
+    
     def calculate_profile_likelihood():
         pass
 
@@ -121,15 +125,21 @@ class Optimization(Modules):
         filename = 'BEST FIT TO TRAINING DATA'
         Plots.plot_x_y(ExperimentalData.x, solutions_norm, ExperimentalData.exp_data, ExperimentalData.exp_error, ExperimentalData.x_label, ExperimentalData.y_label, filename, ExperimentalData.x_scale)
    
+        filename = 'COST FUNCTION TRAJECTORY'
+        y = list(df['chi_sq_list'].iloc[0])
+        Plots.plot_x_y(range(0, len(y)), y, 'None', 'None', 'function evaluation', 'chi_sq', filename)
+   
         print('*************************')
         print('Calibrated parameters: ')
         for i, label in enumerate(Settings.parameter_labels):
             print(label + ' = ' + str(best_case_parameters[i]))
         print('')
+        
         r_sq_opt = round(df['r_sq'].iloc[0], 3)
-        print('R_sq = ' + str(r_sq_opt))
-        print('')
         chi_sq_opt_min = round(df['chi_sq'].iloc[0], 3)
+        
+        print('Metrics:')
+        print('R_sq = ' + str(r_sq_opt))
         print('chi_sq = ' + str(chi_sq_opt_min))
         print('*************************')
    
@@ -267,7 +277,7 @@ class Optimization(Modules):
         #calculated in this code if the same cost function as LMFit is used
         items = [results.redchi, results.success, model, 
                   chi_sq_list, solutions_norm]
-        item_labels = ['redchi2',  'success', 'model', 'chi2_list', 
+        item_labels = ['redchi2',  'success', 'model', 'chi_sq_list', 
                         'Simulation results']
       
         for i in range(0, len(items)):
@@ -296,22 +306,26 @@ class Optimization(Modules):
             a list of strings defining the labels for each item in results_row """
             
         count = i + 1
-        chi2_list = []
+        chi_sq_list = []
         
         def solve_for_opt(x, p1 = 0, p2 = 0, p3 = 0, p4 = 0, p5 = 0, p6 = 0, p7 = 0, p8 = 0, p9 = 0, p10 = 0):
             p = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]
             model.parameters = p[:len(Settings.parameters)]
             solutions_norm, chi_sq, r_sq = GeneralModel.solve_single_parameter_set()
-            chi2_list.append(chi_sq)
+            chi_sq_list.append(chi_sq)
             return np.array(solutions_norm)
             
         params_for_opt = Optimization.define_parameters_for_opt(initial_parameters)
         model_ = Model_lmfit(solve_for_opt, nan_policy='propagate')
-        weights_ = [1/i for i in ExperimentalData.exp_error] 
+        
+        if Settings.weight_by_error == 'no':
+            weights_ = [1] * len(ExperimentalData.exp_error)
+        else:
+            weights_ = [1/i for i in ExperimentalData.exp_error] 
         results = model_.fit(ExperimentalData.exp_data, params_for_opt, method = 'leastsq', x = ExperimentalData.x, weights = weights_)
         print('Optimization round ' + str(count) + ' complete.')
         
-        results_row, results_row_labels = Optimization.define_results_row(initial_parameters, results, chi2_list)
+        results_row, results_row_labels = Optimization.define_results_row(initial_parameters, results, chi_sq_list)
      
         return results_row, results_row_labels
     
@@ -476,7 +490,7 @@ class synTF_chem(GeneralModel, Modules):
         Parameters
         ----------
         parameters
-            List of floats defining the parameters
+            List of floats defining the parame ters
         
         inputs
             List of floats defining the inputs 
@@ -535,6 +549,10 @@ class synTF_chem(GeneralModel, Modules):
         )
 
         # solve after ligand addition
+        for i, label in enumerate(Settings.parameter_labels):
+            if label == 'e':
+                input_ligand_transformed = self.input_ligand * model.parameters[i]
+                
         end_time = 24
         tspace_after_ligand_addition = np.linspace(0, end_time, timesteps)
         self.t = tspace_after_ligand_addition
@@ -578,8 +596,8 @@ class synTF_chem(GeneralModel, Modules):
         
         """
         y_1, y_2, y_3, y_4, y_5, y_6, y_7, y_8 = y
-        e, b, k_bind, m, km, n = parameters
-        dose_a, dose_b = inputs
+        [e, b, k_bind, m, km, n] = parameters
+        [dose_a, dose_b] = inputs
         k_txn, k_trans, kdeg_rna, kdeg_protein, kdeg_reporter, k_deg_ligand = general_parameters
 
         f_num = b + m * (y_6 / km) ** n
@@ -620,7 +638,7 @@ class synTF_chem(GeneralModel, Modules):
         
         solutions = []
         for ligand in x_ligand:
-            self.input_ligand = ligand
+            self.input_ligand = ligand * model.parameters[0]
             sol, t = model.solve_single()
             solutions.append(sol[-1, -1])
             

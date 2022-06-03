@@ -16,16 +16,18 @@ class Settings:
     
     """
     #Define settings for this run
-    folder_name = 'test'
-    modelID = 'synTF'
-    dataID = 'synTF dose response'
+    folder_name = 'synTF_chem test'
+    modelID = 'synTF_chem'
+    dataID = 'ligand dose response'
         
-    parameters = [1, 2]
-    parameter_labels = ['g', 'a'] 
-    free_parameter_labels = ['g'] 
+    parameters = [15, .01, 1, 500, 2, 2]
+    parameter_labels = ['e', 'b', 'k_bind', 'm', 'km', 'n']
+    free_parameter_labels = ['e', 'b', 'k_bind', 'm', 'km', 'n']
     num_parameter_sets_global_search = 10
     num_parameter_sets_optimization = 2
     bounds_orders_of_magnitude = 3
+    
+    weight_by_error = 'no'
     
     #Define the parameter estimation problem 
     free_parameters = []
@@ -42,12 +44,13 @@ class Settings:
         min_bound = log10(free_parameters[i]) - bounds_orders_of_magnitude
         max_bound = log10(free_parameters[i]) + bounds_orders_of_magnitude
         bounds_log.append([min_bound, max_bound])
+        
+    if free_parameter_labels[-1] == 'n':
+        bounds_log[-1] = [0, .602] #n
 
     parameter_estimation_problem_definition = {'num_vars': num_free_params,  #set free parameters and bounds
                                                'names': free_parameter_labels, 
                                                'bounds': bounds_log} #bounds are in log scale
- 
-
 class ExperimentalData(Settings):
     """
     Define experimental data.
@@ -55,9 +58,17 @@ class ExperimentalData(Settings):
     """
     if Settings.modelID == 'synTF_chem':
         if Settings.dataID == 'ligand dose response':
-            x = np.logspace(0, 3, 5)
-            exp_data = [1] * 5
-            exp_error = [0.1] * 5
+            x = np.logspace(0, 3, 6)
+            exp_data_raw = [0, .1, 2, 3.5, 4.7, 5]
+            exp_error_raw  = [0.1] * 6
+            
+            max_val = max(exp_data_raw)
+            exp_data = []
+            exp_error = []
+            for i, val in enumerate(exp_data_raw):
+                exp_data.append(val/max_val)
+                exp_error.append(exp_error_raw[i]/max_val)
+         
             x_label = 'Ligand (nM)'
             x_scale = 'log'
             y_label = 'Rep. protein (au)'
@@ -65,11 +76,20 @@ class ExperimentalData(Settings):
     elif Settings.modelID == 'synTF':
         if Settings.dataID == 'synTF dose response':
             x = np.logspace(0, 2, 5)
-            exp_data = [.5] * 5
-            exp_error = [0.1] * 5
+            exp_data_raw = [.5] * 5
+            exp_error_raw = [0.1] * 5
+            
+            max_val = max(exp_data_raw)
+            exp_data = []
+            exp_error = []
+            for i, val in enumerate(exp_data_raw):
+                exp_data.append(val/max_val)
+                exp_error.append(exp_error_raw[i]/max_val)
+            
             x_label = 'synTF (ng)'
             x_scale = 'linear'
             y_label = 'Rep. protein (au)'
+       
 
 class Context(Settings):
     """
