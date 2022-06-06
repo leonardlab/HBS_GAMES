@@ -11,9 +11,9 @@ from modules import Modules
 # =============================================================================
 # Solve model for single set of parameters
 # =============================================================================
-#solutions_norm, chi_sq, r_sq = Modules.test_single_parameter_set()   
+# solutions_norm, chi_sq, r_sq = Modules.test_single_parameter_set()
 
 # =============================================================================
 # Module 2 - estimate parameters
 # =============================================================================
-Modules.estimate_parameters()
+# Modules.estimate_parameters()

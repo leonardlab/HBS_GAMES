@@ -8,46 +8,19 @@ Created on Wed May 25 15:26:19 2022
 
 import unittest
 
-from games.models import ModelA
+from games.modules import Modules
+from games.set_model import model
 
 
-def test_num_params(self):
-    tests = [(100, 100)]
-
-    for given, expected in tests:
-        with self.subTest(given=given):
-
-            free_parameters = [15] * 6
-            inputs = [50] * 2
-            input_ligand = 1000
-            model = ModelA(free_parameters, inputs, input_ligand)
-
-            # solve model and plot results
-            solution, t = model.solve_single()
-
-            found = len(t)
-            self.assertEqual(found, expected)
-
-
-test_num_params()
-
-
-class TestGAMES(unittest.TestCase):
-    # Test definition of number of parameters for each model
-
-    def test_num_params(self):
-        tests = [(100, 100)]
+class TestGames(unittest.TestCase):
+    def test_chi_sq(self):
+        parameters1 = [2] * 6
+        parameters2 = [1] * 6
+        tests = [(parameters1, 1), (parameters2, 1)]
 
         for given, expected in tests:
             with self.subTest(given=given):
-
-                free_parameters = [15] * 6
-                inputs = [50] * 2
-                input_ligand = 1000
-                model = ModelA(free_parameters, inputs, input_ligand)
-
-                # solve model and plot results
-                solution, t = model.solve_single()
-
-                found = len(t)
+                model.parameters = given
+                solutions, chi_sq, r_sq = Modules.test_single_parameter_set()
+                found = len(chi_sq)
                 self.assertEqual(found, expected)

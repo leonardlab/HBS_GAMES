@@ -18,21 +18,21 @@ plt.style.use("./paper.mplstyle.py")
 class GeneralModel:
     """
     General methods for any ODE model
-    
+
 
     """
 
     def set_general_parameters(self):
         """Defines general parameters that may be used in any model.
-  
+
         Parameters
         ----------
-        None 
-        
+        None
+
         Returns
         -------
         None
-        
+
         """
         k_txn = 1
         k_trans = 1
@@ -43,7 +43,7 @@ class GeneralModel:
         self.general_parameters = np.array(
             [k_txn, k_trans, kdeg_rna, kdeg_protein, kdeg_reporter, k_deg_ligand]
         )
-     
+
 
 class synTF_chem(GeneralModel):
     """
@@ -51,33 +51,33 @@ class synTF_chem(GeneralModel):
 
     """
 
-    def __init__(self, parameters = [1, 1, 1, 1, 1, 1], inputs = [50, 50], input_ligand = 1000):
+    def __init__(self, parameters=[1, 1, 1, 1, 1, 1], inputs=[50, 50], input_ligand=1000):
         """Initializes synTF_Chem model.
-        
+
         Parameters
         ----------
         parameters
             List of floats defining the parame ters
-        
+
         inputs
-            List of floats defining the inputs 
-        
+            List of floats defining the inputs
+
         input_ligand
             Float defining the input ligand concentration
-            
+
         Returns
         -------
-        None 
-        
+        None
+
         """
         self.number_of_states = 8
-        
+
         self.free_parameters = np.array(parameters)
         self.inputs = np.array(inputs)
         self.input_ligand = input_ligand
-        
+
         GeneralModel.set_general_parameters(self)
-        
+
         y_init = np.zeros(self.number_of_states)
         self.initial_conditions = y_init
 
@@ -85,19 +85,19 @@ class synTF_chem(GeneralModel):
         """Solves synTF_Chem model for a single set of parameters and inputs, including 2 steps
            1) Time from transfection to ligand addition
            2) Time from ligand addition to measurement via flow cytometry
-        
+
         Parameters
         ----------
         None
-            
+
         Returns
         -------
         solution
             An array of ODE solutions (rows are timepoints and columns are model states)
-            
+
         t
             A 1D array of time values corresponding to the rows in solution
-        
+
         """
         # solve before ligand addition
         timesteps = 100
@@ -117,9 +117,9 @@ class synTF_chem(GeneralModel):
 
         # solve after ligand addition
         for i, label in enumerate(Settings.parameter_labels):
-            if label == 'e':
+            if label == "e":
                 input_ligand_transformed = self.input_ligand * self.parameters[i]
-                
+
         end_time = 24
         tspace_after_ligand_addition = np.linspace(0, end_time, timesteps)
         self.t = tspace_after_ligand_addition
@@ -142,25 +142,25 @@ class synTF_chem(GeneralModel):
 
     def gradient(self, y, t, parameters, inputs, general_parameters):
         """Defines the gradient for synTF_Chem model.
-        
+
         Parameters
         ----------
         parameters
             List of floats defining the parameters
-        
+
         inputs
-            List of floats defining the inputs 
-            
+            List of floats defining the inputs
+
         general_parameters
             List of floats defining the general parameters that may be used
                 k_txn, k_trans, kdeg_rna, kdeg_protein, kdeg_reporter, k_deg_ligand
-        
-            
+
+
         Returns
         -------
         dydt
             An list of floats corresponding to the gradient of each model state at time t
-        
+
         """
         y_1, y_2, y_3, y_4, y_5, y_6, y_7, y_8 = y
         [e, b, k_bind, m, km, n] = parameters
@@ -185,31 +185,31 @@ class synTF_chem(GeneralModel):
         dydt = np.array([u_1, u_2, u_3, u_4, u_5, u_6, u_7, u_8])
 
         return dydt
-    
+
     def solve_ligand_sweep(self, x_ligand):
         """Solve synTF_Chem model for a list of ligand values.
-        
+
         Parameters
         ----------
         x_ligand
             A list of integers containing the ligand amounts to sweep over
-        
-            
+
+
         Returns
         -------
         solutions
-            A list of floats containing the value of the reporter protein 
+            A list of floats containing the value of the reporter protein
             at the final timepoint for each ligand amount
-        
+
         """
-        
+
         solutions = []
         for ligand in x_ligand:
             self.input_ligand = ligand * self.parameters[0]
             sol, t = self.solve_single()
             solutions.append(sol[-1, -1])
-            
-        return solutions    
+
+        return solutions
 
 
 class synTF(GeneralModel):
@@ -218,47 +218,47 @@ class synTF(GeneralModel):
 
     """
 
-    def __init__(self, parameters = [1, 1], inputs = [50]):
+    def __init__(self, parameters=[1, 1], inputs=[50]):
         """Initializes synTF model.
-        
+
         Parameters
         ----------
         free_parameters
             List of floats defining the free parameters
-        
+
         inputs
-            List of floats defining the inputs 
-            
+            List of floats defining the inputs
+
         Returns
         -------
-        None 
-        
+        None
+
         """
-     
+
         self.number_of_states = 4
         self.parameters = np.array(parameters)
         self.inputs = np.array(inputs)
         GeneralModel.set_general_parameters(self)
         y_init = np.zeros(self.number_of_states)
         self.initial_conditions = y_init
-  
+
     def solve_single(self):
         """Solves synTF model for a single set of parameters and inputs
-        
+
         Parameters
         ----------
         None
-            
+
         Returns
         -------
         solution
             An array of ODE solutions (rows are timepoints and columns are model states)
-            
+
         t
             A 1D array of time values corresponding to the rows in solution
-            
+
         """
-        
+
         timesteps = 100
         end_time = 42
         tspace = np.linspace(0, end_time, timesteps)
@@ -278,32 +278,32 @@ class synTF(GeneralModel):
 
     def gradient(self, y, t, parameters, inputs, general_parameters):
         """Defines the gradient for synTF model.
-        
+
         Parameters
         ----------
         parameters
             List of floats defining the parameters
-        
+
         inputs
-            List of floats defining the inputs 
-            
+            List of floats defining the inputs
+
         general_parameters
             List of floats defining the general parameters that may be used
                 k_txn, k_trans, kdeg_rna, kdeg_protein, kdeg_reporter, k_deg_ligand
-        
-            
+
+
         Returns
         -------
         dydt
             An list of floats corresponding to the gradient of each model state at time t
-        
+
         """
         y_1, y_2, y_3, y_4 = y
         [g, a] = parameters
         [dose_a] = inputs
 
         k_txn, k_trans, kdeg_rna, kdeg_protein, kdeg_reporter, k_deg_ligand = general_parameters
-        
+
         u_1 = k_txn * dose_a - kdeg_rna * y_1  # y1 synTF mRNA
         u_2 = k_trans * y_1 - kdeg_protein * y_2  # y2 synTF protein
         u_3 = k_txn * g * y_2 - kdeg_rna * y_3  # y3 Reporter mRNA
@@ -311,30 +311,28 @@ class synTF(GeneralModel):
         dydt = np.array([u_1, u_2, u_3, u_4])
 
         return dydt
-    
+
     def solve_synTF_sweep(self, x):
         """Solve synTF model for a list of synTF values.
-        
+
         Parameters
         ----------
         None
-            
+
         Returns
         -------
         synTF_amounts
             A list of integers containing the synTF amounts to sweep over
-        
+
         solutions
-            A list of floats containing the value of the reporter protein 
+            A list of floats containing the value of the reporter protein
             at the final timepoint for each synTF amount
-        
+
         """
         solutions = []
         for synTF_amount in x:
             self.inputs = [synTF_amount]
             sol, t = self.solve_single()
             solutions.append(sol[-1, -1])
-            
+
         return solutions
-
-

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "sandbox"
+name = "games"
 version = "0.0.0"
 description = ""
 authors = ["author <author@email.com>"]
