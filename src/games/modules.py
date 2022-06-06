@@ -6,7 +6,8 @@ Created on Thu May 26 09:41:51 2022
 @author: kate
 """
 import os
-from config import Settings, ExperimentalData, saveConditions, createFolder
+from typing import Tuple
+from config import Settings, ExperimentalData, save_conditions, create_folder
 from analysis import plot_x_y
 from set_model import model
 from global_search import generate_parameter_sets, solve_global_search
@@ -18,7 +19,7 @@ class Modules:
     """Class with methods to run each module from the GAMES workflow"""
 
     @staticmethod
-    def test_single_parameter_set():
+    def test_single_parameter_set() -> Tuple[list, float, float]:
         """Solves model for a single parameter set using dataID defined in Settings.
 
         Parameters
@@ -31,9 +32,9 @@ class Modules:
 
         """
         sub_folder_name = "TEST SINGLE PARAMETER SET"
-        path = createFolder(sub_folder_name)
+        path = create_folder(sub_folder_name)
         os.chdir(path)
-        saveConditions()
+        save_conditions()
         model.parameters = Settings.parameters
         solutions_norm, chi_sq, r_sq = solve_single_parameter_set()
         filename = "FIT TO TRAINING DATA"
@@ -52,7 +53,7 @@ class Modules:
         return solutions_norm, chi_sq, r_sq
 
     @staticmethod
-    def estimate_parameters():
+    def estimate_parameters() -> None:
         """Runs parameter estimation method (multi-start optimization)
 
         Parameters
@@ -65,9 +66,9 @@ class Modules:
 
         """
         sub_folder_name = "MODULE 2 - FIT TO EXPERIMENTAL DATA"
-        path = createFolder(sub_folder_name)
+        path = create_folder(sub_folder_name)
         os.chdir(path)
-        saveConditions()
+        save_conditions()
 
         print("Starting global search...")
         df_parameters = generate_parameter_sets(Settings.parameter_estimation_problem_definition)
@@ -78,16 +79,13 @@ class Modules:
         Optimization.optimize_all(df_global_search_results)
 
     @staticmethod
-    def generate_parameter_estimation_method_evaluation_data():
+    def generate_parameter_estimation_method_evaluation_data() -> None:
         """xxx"""
-        pass
 
     @staticmethod
-    def evaluate_parameter_estimation_method():
+    def evaluate_parameter_estimation_method() -> None:
         """xxx"""
-        pass
 
     @staticmethod
-    def calculate_profile_likelihood():
+    def calculate_profile_likelihood() -> None:
         """xxx"""
-        pass

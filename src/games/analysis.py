@@ -13,7 +13,7 @@ from config import Settings
 plt.style.use("./paper.mplstyle.py")
 
 
-def plot_x_y(data, labels, filename, x_scale, color):
+def plot_x_y(data=list, labels=list, filename=str, x_scale=str, color=str) -> None:
     """Plots a 2-dimensional figure.
 
     Parameters
@@ -84,7 +84,7 @@ def plot_x_y(data, labels, filename, x_scale, color):
     plt.savefig("./" + filename + ".svg", dpi=600)
 
 
-def calc_r_sq(data_x, data_y):
+def calc_r_sq(data_x=list, data_y=list) -> float:
 
     """Calculate correlation coefficient, Rsq, between 2 datasets
 
@@ -118,7 +118,7 @@ def calc_r_sq(data_x, data_y):
     return r_sq
 
 
-def calc_chi_sq(exp_, sim, std):
+def calc_chi_sq(exp_=list, sim=list, std=list) -> float:
 
     """Calculate chi2 between 2 datasets with measurement error described by std
 

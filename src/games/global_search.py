@@ -10,11 +10,11 @@ import numpy as np
 import pandas as pd
 from SALib.sample import latin
 from set_model import model
-from test_single import TestSolveSingle
+from test_single import solve_single_parameter_set
 from config import Settings
 
 
-def generate_parameter_sets(problem_global_search):
+def generate_parameter_sets(problem_global_search=dict) -> pd.DataFrame:
     """
     Generate parameter sets for global search
 
@@ -42,9 +42,9 @@ def generate_parameter_sets(problem_global_search):
     df_parameters = pd.DataFrame()
 
     # Fill each column of the dataframe with the intial values set in Settings.
-    for _, item in enumerate(all_params):
-        param = all_params[item]
-        param_array = np.full((1, n_search), Settings.parameters[item])
+    for i, _ in enumerate(all_params):
+        param = all_params[i]
+        param_array = np.full((1, n_search), Settings.parameters[i])
         param_array = param_array.tolist()
         df_parameters[param] = param_array[0]
 
@@ -69,7 +69,7 @@ def generate_parameter_sets(problem_global_search):
     return df_parameters
 
 
-def solve_global_search(df_parameters):
+def solve_global_search(df_parameters=pd.DataFrame) -> pd.DataFrame:
     """
     Generate parameter sets for global search
 
@@ -92,7 +92,7 @@ def solve_global_search(df_parameters):
     chi_sq_list = []
     for row in df_parameters.itertuples(name=None):
         model.parameters = list(row[1:])
-        _, chi_sq, _ = TestSolveSingle.solve_single_parameter_set()
+        _, chi_sq, _ = solve_single_parameter_set()
         chi_sq_list.append(chi_sq)
 
     df_global_search_results = df_parameters

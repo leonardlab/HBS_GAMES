@@ -111,7 +111,7 @@ class Context(Settings):
         os.makedirs(folder_path)
 
 
-def createFolder(sub_folder_name):
+def create_folder(sub_folder_name) -> str:
     """Create a new folder.
 
     Parameters
@@ -131,7 +131,7 @@ def createFolder(sub_folder_name):
     return path
 
 
-def saveConditions():
+def save_conditions() -> None:
     """Save conditions for the given run
 
     Parameters

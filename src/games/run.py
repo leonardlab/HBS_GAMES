@@ -16,4 +16,4 @@ from modules import Modules
 # =============================================================================
 # Module 2 - estimate parameters
 # =============================================================================
-# Modules.estimate_parameters()
+Modules.estimate_parameters()

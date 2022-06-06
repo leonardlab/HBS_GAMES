@@ -5,12 +5,13 @@ Created on Fri Jun  3 15:25:47 2022
 
 @author: kate
 """
+from typing import Tuple
 from set_model import model
 from config import ExperimentalData, Settings
 from analysis import calc_chi_sq, calc_r_sq
 
 
-def solve_single_parameter_set():
+def solve_single_parameter_set() -> Tuple[list, float, float]:
     """
     Solves model for a single parameter set
 

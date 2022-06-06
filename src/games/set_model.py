@@ -10,7 +10,7 @@ from config import Settings
 from models import synTF, synTF_chem
 
 
-def Set_Model():
+def set_model():
     """
     Defines the model class to use depending on the modelID defined in Settings
 
@@ -32,4 +32,4 @@ def Set_Model():
     return given_model
 
 
-model = Set_Model()
+model = set_model()
