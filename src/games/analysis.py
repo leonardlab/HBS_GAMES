@@ -8,12 +8,12 @@ Created on Thu May 26 09:48:43 2022
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 import numpy as np
-from config import Settings
+from config import Settings, ExperimentalData
 
 plt.style.use("./paper.mplstyle.py")
 
 
-def plot_x_y(data=list, labels=list, filename=str, x_scale=str, color=str) -> None:
+def plot_x_y(data=list, labels=list, filename=str, x_scale=str) -> None:
     """Plots a 2-dimensional figure.
 
     Parameters
@@ -22,7 +22,7 @@ def plot_x_y(data=list, labels=list, filename=str, x_scale=str, color=str) -> No
         list of lists containing the data (both experimental and simulated)
         data = [x, y_sim, y_exp, y_exp_error]
 
-        x_doses
+        x_values
             list of floats defining the independent variable
 
         y_sim
@@ -49,28 +49,32 @@ def plot_x_y(data=list, labels=list, filename=str, x_scale=str, color=str) -> No
     x_scale
        string defining the scale for the independent variable
 
-    color
-       string defining the plot color
-
     Returns
     -------
     None
 
     """
 
-    [x_doses, y_sim, y_exp, y_exp_error] = data
+    [x_values, y_sim, y_exp, y_exp_error] = data
     [x_label, y_label] = labels
+        
+    if ExperimentalData.data_type == 'PEM evaluation':
+        color_ = "dimgrey"
+        marker_ = '^'
+    else:
+        color_ = "black"
+        marker_ = 'o'
 
     plt.figure(figsize=(3, 3))
-    plt.plot(x_doses, y_sim, linestyle="dotted", marker="None", label="sim", color=color)
+    plt.plot(x_values, y_sim, linestyle="dotted", marker="None", label="sim", color=color_)
     if y_exp != "None":
         plt.errorbar(
-            x_doses,
+            x_values,
             y_exp,
-            marker="o",
+            marker=marker_,
             yerr=y_exp_error,
-            color=color,
-            ecolor=color,
+            color=color_,
+            ecolor=color_,
             markersize=6,
             fillstyle="none",
             linestyle="none",

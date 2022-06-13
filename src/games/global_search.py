@@ -8,13 +8,13 @@ Created on Fri Jun  3 15:25:19 2022
 
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
 from SALib.sample import latin
 from set_model import model
-from test_single import solve_single_parameter_set
-from config import Settings
+from solve_single import solve_single_parameter_set
+from config import Settings, ExperimentalData
 
-
-def generate_parameter_sets(problem_global_search=dict) -> pd.DataFrame:
+def generate_parameter_sets(problem_global_search: dict) -> pd.DataFrame:
     """
     Generate parameter sets for global search
 
@@ -68,8 +68,12 @@ def generate_parameter_sets(problem_global_search=dict) -> pd.DataFrame:
 
     return df_parameters
 
+def solve_for_global_search(row):
+    model.parameters = list(row[1:])
+    solutions, chi_sq, _ = solve_single_parameter_set()
+    return solutions, chi_sq
 
-def solve_global_search(df_parameters=pd.DataFrame) -> pd.DataFrame:
+def solve_global_search(df_parameters: pd.DataFrame) -> pd.DataFrame:
     """
     Generate parameter sets for global search
 
@@ -88,15 +92,31 @@ def solve_global_search(df_parameters=pd.DataFrame) -> pd.DataFrame:
         for each parameter set
 
     """
-
+    
     chi_sq_list = []
-    for row in df_parameters.itertuples(name=None):
-        model.parameters = list(row[1:])
-        _, chi_sq, _ = solve_single_parameter_set()
-        chi_sq_list.append(chi_sq)
+    solutions_list = []
 
+    if Settings.parallelization == 'no':
+        for row in df_parameters.itertuples(name=None):
+            solutions, chi_sq = solve_for_global_search(row)
+            solutions_list.append(solutions)
+            chi_sq_list.append(chi_sq)
+            
+    elif Settings.parallelization == 'yes':
+        with mp.Pool(Settings.num_cores) as pool:
+              result = pool.imap(solve_for_global_search, df_parameters.itertuples(name = None))
+              pool.close()
+              pool.join()
+              output = [[list(x[0]), round(x[1],4)] for x in result]
+                                             
+        for item in range(0, len(output)):
+            solutions_list.append(output[item][0])
+            chi_sq_list.append(output[item][1])
+ 
     df_global_search_results = df_parameters
     df_global_search_results["chi_sq"] = chi_sq_list
+    df_global_search_results["normalized solutions"] = solutions_list
+    df_global_search_results['data'] = [ExperimentalData.exp_data] * len(chi_sq_list)
 
     with pd.ExcelWriter("GLOBAL SEARCH RESULTS.xlsx") as writer:
         df_global_search_results.to_excel(writer, sheet_name="GS results")

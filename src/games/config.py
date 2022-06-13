@@ -9,16 +9,15 @@ from math import log10
 import os
 from datetime import date
 import numpy as np
+import pandas as pd
 
 
 class Settings:
     """
-    Define settings.
-
+    Defines settings.
     """
 
-    # Define settings for this run
-    folder_name = "synTF_chem test"
+    folder_name = "synTF_chem testy test"
     modelID = "synTF_chem"
     dataID = "ligand dose response"
 
@@ -28,8 +27,12 @@ class Settings:
     num_parameter_sets_global_search = 10
     num_parameter_sets_optimization = 2
     bounds_orders_of_magnitude = 3
+    confidence_interval = 0.99
 
     weight_by_error = "no"
+    parallelization = "yes"
+    num_cores = 6
+    num_pem_evaluation_datasets = 3
 
     # Define the parameter estimation problem
     free_parameters = []
@@ -53,8 +56,8 @@ class Settings:
     parameter_estimation_problem_definition = {
         "num_vars": num_free_params,  # set free parameters and bounds
         "names": free_parameter_labels,
-        "bounds": bounds_log,
-    }  # bounds are in log scale
+        "bounds": bounds_log, # bounds are in log scale
+    }  
 
 
 class ExperimentalData(Settings):
@@ -62,12 +65,14 @@ class ExperimentalData(Settings):
     Define experimental data.
 
     """
+    data_type = 'training'
 
     if Settings.modelID == "synTF_chem":
         if Settings.dataID == "ligand dose response":
-            x = np.logspace(0, 3, 6)
-            exp_data_raw = [0, 0.1, 2, 3.5, 4.7, 5]
-            exp_error_raw = [0.1] * 6
+            df_ref = pd.read_excel('./REFERENCE TRAINING DATA.xlsx')   
+            x = [0] + list(np.logspace(0, 2, 10))
+            exp_data_raw = df_ref["L"]
+            exp_error_raw = [0.05] * len(exp_data_raw)
 
             max_val = max(exp_data_raw)
             exp_data = []
@@ -77,7 +82,7 @@ class ExperimentalData(Settings):
                 exp_error.append(exp_error_raw[i] / max_val)
 
             x_label = "Ligand (nM)"
-            x_scale = "log"
+            x_scale = "symlog"
             y_label = "Rep. protein (au)"
 
     elif Settings.modelID == "synTF":
@@ -103,8 +108,7 @@ class Context(Settings):
     Define context
 
     """
-
-    results_folder_path = "./Results/"
+    results_folder_path = "/Users/kate/Documents/GitHub/GAMES/src/games/Results/"
     date = date.today()
     folder_path = results_folder_path + str(date) + " " + Settings.folder_name
     if not os.path.exists(folder_path):

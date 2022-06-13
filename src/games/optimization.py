@@ -8,13 +8,13 @@ Created on Fri Jun  3 15:25:37 2022
 
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
 import lmfit
 from lmfit import Model as Model_lmfit
 from lmfit import Parameters as Parameters_lmfit
 from typing import Tuple
-
 from set_model import model
-from test_single import solve_single_parameter_set
+from solve_single import solve_single_parameter_set
 from config import Settings, ExperimentalData
 from analysis import plot_x_y
 
@@ -46,7 +46,7 @@ class Optimization:
         return general_parameter_labels, general_parameter_labels_free
 
     @staticmethod
-    def define_best_optimization_results(df_optimization_results = pd.DataFrame) -> None:
+    def define_best_optimization_results(df_optimization_results: pd.DataFrame) -> Tuple[float, float, list]:
         """Prints best parameter set from optimization to
         console and plots the best fit to training data
 
@@ -57,7 +57,14 @@ class Optimization:
 
         Returns
         -------
-        None
+        r_sq_opt
+            a float defining the best case r_sq value
+    
+        chi_sq_opt_min
+            a float defining the best case chi2_sq value
+            
+        best_case_parameters
+            a list of floats defining the best case parameters
 
         """
 
@@ -69,6 +76,7 @@ class Optimization:
         best_case_parameters = [np.round(parameter, 5) for parameter in best_case_parameters]
         solutions_norm = df_optimization_results["Simulation results"].iloc[0]
         filename = "BEST FIT TO TRAINING DATA"
+   
         plot_x_y(
             [
                 ExperimentalData.x,
@@ -79,7 +87,6 @@ class Optimization:
             [ExperimentalData.x_label, ExperimentalData.y_label],
             filename,
             ExperimentalData.x_scale,
-            "rebeccapurple",
         )
 
         filename = "COST FUNCTION TRAJECTORY"
@@ -89,7 +96,6 @@ class Optimization:
             ["function evaluation", "chi_sq"],
             filename,
             "linear",
-            "lightseagreen",
         )
 
         print("*************************")
@@ -105,42 +111,75 @@ class Optimization:
         print("R_sq = " + str(r_sq_opt))
         print("chi_sq = " + str(chi_sq_opt_min))
         print("*************************")
+        
+        return r_sq_opt, chi_sq_opt_min, best_case_parameters
 
     @staticmethod
-    def optimize_all(df_global_search_results = pd.DataFrame) -> None:
+    def optimize_all(df_global_search_results: pd.DataFrame, run_type: str = 'default') -> Tuple[float, float, pd.DataFrame]:
         """Runs optimization for each intitial guess and saves results
 
         Parameters
         ----------
         df_global_search_results
             df containing the results of the global search
+            
+        run_type
+            a string defining the run_type ('default' or 'PPL')
 
         Returns
         -------
-        None
+        r_sq_opt
+            a float defining the best case r_sq value
+    
+        chi_sq_opt_min
+            a float defining the  best case chi2_sq value
+            
+        df_optimization_results
+            a dataframe containing the optimization results
+            
+        best_case_parameters
+            a list of floats defining the best case parameters
 
         """
-        df_global_search_results = df_global_search_results.sort_values(by=["chi_sq"])
-
-        results_row_list = []
-        for i, row in enumerate(df_global_search_results.itertuples(name=None)):
-            if i < Settings.num_parameter_sets_optimization:
-                initial_parameters = list(row[1 : len(Settings.parameters) + 1])
-                results_row, results_row_labels = Optimization.optimize_single_initial_guess(
-                    initial_parameters, i
-                )
-                results_row_list.append(results_row)
-
+        if run_type == 'default':
+            df_global_search_results = df_global_search_results.sort_values(by=["chi_sq"])
+            df_global_search_results = df_global_search_results.reset_index(drop = True)
+            df_global_search_results = df_global_search_results.drop(df_global_search_results.index[Settings.num_parameter_sets_optimization:])
+           
+        all_opt_results = []
+        if Settings.parallelization == 'no':
+            for i, row in enumerate(df_global_search_results.itertuples(name=None)):
+                results_row, results_row_labels = Optimization.optimize_single_initial_guess(row)
+                all_opt_results.append(results_row)
+                
+        elif Settings.parallelization == 'yes':
+            with mp.Pool(Settings.num_cores) as pool:
+                result = pool.imap(Optimization.optimize_single_initial_guess, df_global_search_results.itertuples(name = None))
+                pool.close()
+                pool.join()
+                output = [[list(x[0]), list(x[1])] for x in result]
+            for ig in range(0, len(output)):
+                all_opt_results.append(output[ig][0])
+            results_row_labels = output[0][1]
+     
         print("Optimization complete.")
-        df_optimization_results = pd.DataFrame(results_row_list, columns=results_row_labels)
+        df_optimization_results = pd.DataFrame(all_opt_results, columns=results_row_labels)
         df_optimization_results = df_optimization_results.sort_values(by=["chi_sq"], ascending=True)
-        Optimization.define_best_optimization_results(df_optimization_results)
-
+        
+        if run_type == 'default':
+            r_sq_opt, chi_sq_opt_min, best_case_parameters = Optimization.define_best_optimization_results(df_optimization_results)
+        else: 
+            r_sq_opt = 0
+            chi_sq_opt_min = 0
+            best_case_parameters  = []
+     
         with pd.ExcelWriter("./OPTIMIZATION RESULTS.xlsx") as writer:
             df_optimization_results.to_excel(writer, sheet_name="opt")
+            
+        return r_sq_opt, chi_sq_opt_min, df_optimization_results, best_case_parameters
 
     @staticmethod
-    def define_parameters_for_opt(initial_parameters = list) -> list:
+    def define_parameters_for_opt(initial_parameters: list) -> list:
         """Defines parameters for optimization with structure necessary for LMFit optimization code
 
         Parameters
@@ -195,10 +234,8 @@ class Optimization:
         return params_for_opt
 
     @staticmethod
-    
     def define_results_row(
-        results = lmfit.model.ModelResult, initial_parameters = list, chi_sq_list
-        =float
+        results: lmfit.model.ModelResult, initial_parameters: list, chi_sq_list: float
     ) -> Tuple[list, list]:
         """Defines results for each optimization run
 
@@ -261,16 +298,14 @@ class Optimization:
         return results_row, results_row_labels
 
     @staticmethod
-    def optimize_single_initial_guess(initial_parameters=list, i=int) -> Tuple[list, list]:
+    def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
         """Runs optimization for a single initial guess
 
         Parameters
         ----------
-        initial_parameters
-            a list of floats containing the initial guesses for each parameter
-
-        i
-            an integer defining the optimization run number
+        row
+            a tuple of floats containing the initial guesses for each parameter 
+            (represents a row of the global search results)
 
         Returns
         -------
@@ -280,7 +315,9 @@ class Optimization:
         results_row_labels
             a list of strings defining the labels for each item in results_row"""
 
-        count = i + 1
+        initial_parameters = list(row[1 : len(Settings.parameters) + 1])
+        count = row[0] + 1
+        ExperimentalData.exp_data = row[-1]
         chi_sq_list = []
 
         def solve_for_opt(x, p_1=0, p_2=0, p_3=0, p_4=0, p_5=0, p_6=0, p_7=0, p_8=0, p_9=0, p_10=0):
@@ -304,7 +341,7 @@ class Optimization:
             x=ExperimentalData.x,
             weights=weights_,
         )
-        print(type(results))
+        
         print("Optimization round " + str(count) + " complete.")
 
         results_row, results_row_labels = Optimization.define_results_row(
