@@ -23,14 +23,14 @@ class Settings:
 
     parameters = [15, 0.01, 1, 500, 2, 2]
     parameter_labels = ["e", "b", "k_bind", "m", "km", "n"]
-    free_parameter_labels = ["e", "b", "k_bind", "m", "km", "n"]
+    free_parameter_labels = ["e"]
     num_parameter_sets_global_search = 10
     num_parameter_sets_optimization = 2
     bounds_orders_of_magnitude = 3
     confidence_interval = 0.99
 
     weight_by_error = "no"
-    parallelization = "yes"
+    parallelization = "no"
     num_cores = 6
     num_pem_evaluation_datasets = 3
 
@@ -56,8 +56,8 @@ class Settings:
     parameter_estimation_problem_definition = {
         "num_vars": num_free_params,  # set free parameters and bounds
         "names": free_parameter_labels,
-        "bounds": bounds_log, # bounds are in log scale
-    }  
+        "bounds": bounds_log,  # bounds are in log scale
+    }
 
 
 class ExperimentalData(Settings):
@@ -65,11 +65,12 @@ class ExperimentalData(Settings):
     Define experimental data.
 
     """
-    data_type = 'training'
+
+    data_type = "training"
 
     if Settings.modelID == "synTF_chem":
         if Settings.dataID == "ligand dose response":
-            df_ref = pd.read_excel('./REFERENCE TRAINING DATA.xlsx')   
+            df_ref = pd.read_excel("./REFERENCE TRAINING DATA.xlsx")
             x = [0] + list(np.logspace(0, 2, 10))
             exp_data_raw = df_ref["L"]
             exp_error_raw = [0.05] * len(exp_data_raw)
@@ -108,54 +109,10 @@ class Context(Settings):
     Define context
 
     """
+
     results_folder_path = "/Users/kate/Documents/GitHub/GAMES/src/games/Results/"
     date = date.today()
     folder_path = results_folder_path + str(date) + " " + Settings.folder_name
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
-
-def create_folder(sub_folder_name) -> str:
-    """Create a new folder.
-
-    Parameters
-    ----------
-    sub_folder_name
-        string defining the name of the folder to make
-
-    Returns
-    -------
-    path
-        path leading to new folder
-    """
-
-    path = Context.folder_path + "/" + sub_folder_name
-    os.makedirs(path)
-
-    return path
-
-
-def save_conditions() -> None:
-    """Save conditions for the given run
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    None
-
-    """
-
-    with open("CONDITIONS" + ".txt", "w", encoding="utf-8") as file:
-        file.write("dataID: " + str(Settings.dataID) + "\n")
-        file.write("\n")
-        file.write("modelID: " + str(Settings.modelID) + "\n")
-        file.write("\n")
-        file.write(
-            "parameter_estimation_problem_definition:"
-            + str(Settings.parameter_estimation_problem_definition)
-            + "\n"
-        )
-        file.write("\n")
