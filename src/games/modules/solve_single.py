@@ -92,7 +92,12 @@ class Solve_single:
             filename,
             ExperimentalData.x_scale,
         )
-
+  
+        print('Parameters')
+        for i, label in enumerate(Settings.parameter_labels):
+            print(label + '= ' + str(model.parameters[i]))
+        print('')
+        print('Metrics')
         print("R_sq = " + str(np.round(r_sq, 4)))
         print("chi_sq = " + str(np.round(chi_sq, 4)))
         print("*************************")

@@ -5,7 +5,8 @@ Created on Mon Jun 13 14:24:39 2022
 
 @author: kate
 """
-from math import sqrt
+import os
+from math import sqrt, log10
 from typing import Tuple 
 import datetime
 import pandas as pd
@@ -14,9 +15,10 @@ import matplotlib.pyplot as plt
 from models.set_model import model
 from modules.optimization import Optimization
 from config import Settings, ExperimentalData
-from modules.solve_single import Solve_single Solve_single.solve_single_parameter_set
+from modules.solve_single import Solve_single
 from analysis.metrics import calc_chi_sq
 from modules.global_search import generate_parameter_sets, solve_global_search
+from utilities.saving import create_folder, save_conditions
 
 def calculate_parameter_profile_likelihood(
         calibrated_chi_sq: float, calibrated_parameters: list
@@ -517,7 +519,7 @@ def calculate_profile_likelihood(
             
          
             #Restructure parameter set to feed into calculate_chi_2_PPL_single_datapoint
-            params_for_opt = p_all
+            params_for_opt = Settings.parameters
             for i in range(0, len(Settings.parameter_labels)): #for each parameter in p_all
                 for j in range(0, len(Settings.free_parameter_labels)): #for each free parameter
                 
@@ -839,7 +841,7 @@ def calculate_profile_likelihood(
     df = pd.DataFrame()
     df['fixed ' + parameter_label] = fixed_parameter_values_both_directions
     df['fixed ' + parameter_label + ' PPL'] = chi_sq_PPL_list_both_directions
-    df['fixed ' + parameter_label + ' all parameters'] = param_vals_
+    df['fixed ' + parameter_label + ' all parameters'] = all_parameter_values_both_directions
 
     filename = './PROFILE LIKELIHOOD RESULTS ' + parameter_label + '.xlsx'
     with pd.ExcelWriter(filename) as writer:  # doctest: +SKIP

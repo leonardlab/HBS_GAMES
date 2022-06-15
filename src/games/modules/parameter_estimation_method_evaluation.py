@@ -17,7 +17,7 @@ from config import Settings, Context, ExperimentalData
 from utilities.saving import save_conditions, create_folder
 from models.set_model import model
 from modules.solve_single import Solve_single 
-from analysis.analysis import calc_chi_sq, calc_r_sq
+from analysis.metrics import calc_chi_sq, calc_r_sq
 from modules.optimization import Optimization
 from modules.global_search import generate_parameter_sets, solve_global_search
 

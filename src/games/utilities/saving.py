@@ -7,7 +7,7 @@ Created on Tue Jun 14 13:47:26 2022
 """
 
 import os
-from config import Settings
+from config import Settings, Context
 
 def create_folder(sub_folder_name) -> str:
     """Create a new folder.
