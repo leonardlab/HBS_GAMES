@@ -5,10 +5,9 @@ Created on Fri Jun  3 14:57:05 2022
 
 @author: kate
 """
-
-from config import Settings
-from models.models import synTF, synTF_chem
-
+from config.settings import settings
+from models.synTF import synTF
+from models.synTF_chem import synTF_chem
 
 def set_model():
     """
@@ -22,14 +21,15 @@ def set_model():
     -------
     model
         object defining the model
+        
     """
-    if Settings.modelID == "synTF_chem":
-        given_model = synTF_chem(parameters=Settings.parameters)
+    
+    if settings["modelID"] == "synTF_chem":
+        given_model = synTF_chem(parameters=settings["parameters"])
 
-    elif Settings.modelID == "synTF":
-        given_model = synTF(parameters=Settings.parameters)
+    elif settings["modelID"] == "synTF":
+        given_model = synTF(parameters=settings["parameters"])
 
     return given_model
-
 
 model = set_model()

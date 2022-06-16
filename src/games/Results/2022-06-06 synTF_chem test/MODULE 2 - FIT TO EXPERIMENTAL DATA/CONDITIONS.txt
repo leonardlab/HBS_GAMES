@@ -1,6 +1,0 @@
-dataID: ligand dose response
-
-modelID: synTF_chem
-
-parameter_estimation_problem_definition:{'num_vars': 6, 'names': ['e', 'b', 'k_bind', 'm', 'km', 'n'], 'bounds': [[-1.8239087409443187, 4.176091259055681], [-5.0, 1.0], [-3.0, 3.0], [-0.30102999566398125, 5.698970004336019], [-2.6989700043360187, 3.3010299956639813], [0, 0.602]]}
-
