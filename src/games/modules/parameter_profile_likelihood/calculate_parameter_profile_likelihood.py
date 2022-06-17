@@ -12,9 +12,9 @@ import pandas as pd
 from modules.parameter_estimation.optimization import optimize_all
 from config.settings import settings, parameter_estimation_problem_definition
 from modules.parameter_estimation.global_search import generate_parameter_sets, solve_global_search
-from plots.plots_parameter_profile_likelihood import plot_parameter_profile_likelihood
+from plots.plots_parameter_profile_likelihood import plot_parameter_profile_likelihood, plot_parameter_relationships, plot_internal_states_along_PPL
 
-def calculate_chi_2_PPL_single_datapoint(param_vals: list, fixed_index: int, fixed_val: float, fixed_index_in_free_parameter_list: int) -> Tuple[float, float, list]:
+def calculate_chi_sq_PPL_single_datapoint(param_vals: list, fixed_index: int, fixed_val: float, fixed_index_in_free_parameter_list: int) -> Tuple[float, float, list]:
     '''
     Calculates chi_sq_PPL for a single datapoint on the profile likelihood
     
@@ -42,7 +42,7 @@ def calculate_chi_2_PPL_single_datapoint(param_vals: list, fixed_index: int, fix
         (x-axis value of the datapoint for PPL plots)
         
     calibrated_chi_sq
-        a float defining the minimum chi2 attainable for the parameter 
+        a float defining the minimum chi_sq attainable for the parameter 
         estimation problem (x-axis value of the datapoint for PPL plots)
         
     calibrated_parameters
@@ -60,11 +60,11 @@ def calculate_chi_2_PPL_single_datapoint(param_vals: list, fixed_index: int, fix
     problem_PPL['num_vars'] = len(settings["free_parameters"]) - 1
     problem_PPL['names'] = [x for i,x in enumerate(parameter_estimation_problem_definition['names']) if i != fixed_index_in_free_parameter_list]
     problem_PPL['bounds'] = [x for i,x in enumerate(parameter_estimation_problem_definition['bounds']) if i != fixed_index_in_free_parameter_list]
-    
+
     #Run PEM
     df_parameters = generate_parameter_sets(problem_PPL)
     df_global_search_results = solve_global_search(df_parameters)
-    _, calibrated_chi_sq, _, calibrated_parameters = optimize_all(df_global_search_results)
+    _, calibrated_chi_sq, _, calibrated_parameters = optimize_all(df_global_search_results, run_type = 'PPL', problem = problem_PPL)
 
     return fixed_val, calibrated_chi_sq, calibrated_parameters
 
@@ -97,7 +97,6 @@ def calculate_profile_likelihood_single_parameter(
 
     """
   
-   
     start_time = datetime.datetime.now() #Record the start time
     
     #Determine index for PPL based on parameter_label
@@ -111,14 +110,14 @@ def calculate_profile_likelihood_single_parameter(
         if label == parameter_label:
             fixed_index_in_free_parameter_list = j #The index of the fixed parameter (for this PL run) in the list of free parameters
  
-    #Set the minimum and maximum acceptable step choices (chi2_PL(current step) - chi2_PL(last step)) 
+    #Set the minimum and maximum acceptable step choices (chi_sq_PL(current step) - chi_sq_PL(last step)) 
     #set the min step to 1% of starting value
     min_step_list = [.01 * i for i in calibrated_parameter_values] 
     
     #set the max step to 20% of starting value
     max_step_list = [.2 * i for i in calibrated_parameter_values] 
     
-    #Set the target value for PL difference between steps (chi2_PL(current step) - chi2_PL(last step)) 
+    #Set the target value for PL difference between steps (chi_sq_PL(current step) - chi_sq_PL(last step)) 
     #and acceptable range
     q = .1 
     target_val = threshold_chi_sq * q
@@ -191,8 +190,8 @@ def calculate_profile_likelihood_single_parameter(
                 min_ = 0
                 max_ = max_step
                 
-                print('min_: ' + str(min_))
-                print('max_: ' + str(max_))
+                print('min_binary_step: ' + str(min_))
+                print('max_binary_step: ' + str(max_))
                 
                 #Set the min and max flags to false
                 min_flag = False
@@ -260,27 +259,27 @@ def calculate_profile_likelihood_single_parameter(
                 if fixed_val <= 0.0:
                     print('negative or zero fixed value reached - break')
                     break #out of top level while loop and start next direction/parameter
-          
+    
                 print('new val: ' + str(round(fixed_val, 4))) #linear
             
-         
-            #Restructure parameter set to feed into calculate_chi_2_PPL_single_datapoint
-            params_for_opt = settings["parameters"]
-            for i in range(0, len(settings["parameter_labels"])): #for each parameter in p_all
-                for j in range(0, len(settings["free_parameter_labels"])): #for each free parameter
-                
-                    #if parameter is a free parameter, replace with calibrated 
-                    if settings["parameter_labels"][i] == settings["free_parameter_labels"][j]: 
-                        if i == fixed_index:
-                            params_for_opt[i] = fixed_val #replace with fixed val
-                        else:   
-                            params_for_opt[i] = calibrated_parameter_values[i] #Replace with cal val
-           
-            param_val, chi_sq_PPL_val, param_vals = calculate_chi_2_PPL_single_datapoint(params_for_opt, 
-                                                               fixed_index, fixed_val, fixed_index_in_free_parameter_list)
-            print('chi2_PL: ' + str(round(chi_sq_PPL_val, 3)))
-            num_evals += 1
-            print('calibrated parameters: ' + str(param_vals))
+                #Restructure parameter set to feed into calculate_chi_2_PPL_single_datapoint
+                params_for_opt = settings["parameters"]
+                for i in range(0, len(settings["parameter_labels"])): #for each parameter in p_all
+                    for j in range(0, len(settings["free_parameter_labels"])): #for each free parameter
+                    
+                        #if parameter is a free parameter, replace with calibrated 
+                        if settings["parameter_labels"][i] == settings["free_parameter_labels"][j]: 
+                            if i == fixed_index:
+                                params_for_opt[i] = fixed_val #replace with fixed val
+                            else:   
+                                params_for_opt[i] = calibrated_parameter_values[i] #Replace with cal val
+               
+                param_val, chi_sq_PPL_val, param_vals = calculate_chi_sq_PPL_single_datapoint(params_for_opt, 
+                                                                   fixed_index, fixed_val, fixed_index_in_free_parameter_list)
+                print('')
+                print('chi_sq_PPL: ' + str(round(chi_sq_PPL_val, 3)))
+                num_evals += 1
+                print('calibrated parameters: ' + str(param_vals))
             
             #Determine whether to accept step or try again with new step size
 
@@ -289,7 +288,7 @@ def calculate_profile_likelihood_single_parameter(
                 
                 #Calculate difference in PL between current value and previous value
                 PPL_difference = abs(chi_sq_PPL_val - chi_sq_PPL_list [step_number -1])
-                print('PPL_differenceerence: ' + str(round(PPL_difference, 3)))
+                print('PPL_difference: ' + str(round(PPL_difference, 3)))
                 print('')
                
                 #if PPL_difference is in between the min and max limits for PL difference
@@ -303,7 +302,7 @@ def calculate_profile_likelihood_single_parameter(
                         chi_sq_PPL_list .append(chi_sq_PPL_val)
                         fixed_parameter_values.append(param_val)
                         all_parameter_values.append(param_vals)
-                        print('break - Threshold chi2 reached')
+                        print('break - Threshold chi_sq reached')
                         break
                     
                     #otherwise, if the PL value is greater than 1.1 * the threshold value, 
@@ -317,7 +316,7 @@ def calculate_profile_likelihood_single_parameter(
                             chi_sq_PPL_list .append(chi_sq_PPL_val)
                             fixed_parameter_values.append(param_val)
                             all_parameter_values.append(param_vals)
-                            print('break - Threshold chi2 reached')
+                            print('break - Threshold chi_sq reached')
                             break
                           
                         #If this is not the minimum step, then a smaller step should be used
@@ -332,11 +331,11 @@ def calculate_profile_likelihood_single_parameter(
                             #increase the attempt number
                             attempt_number += 1
                             
-                            print('step rejected - too large')  
+                            print('*step rejected - too large')  
                             print('')
-                            print('new bounds')
-                            print('min_: ' + str(min_))
-                            print('max_: ' + str(max_))
+                            print('new step')
+                            print('min_binary_step: ' + str(min_))
+                            print('max_binary_step: ' + str(max_))
                             print('new step val: ' + str(step_val))
                     
                     #Otherwise, if the fixed parameter hits the min or max bound
@@ -353,7 +352,7 @@ def calculate_profile_likelihood_single_parameter(
                     #(the parameter is not above the threshold and does not 
                     #reach the parameter bound)
                     else: 
-                        print('step accepted')
+                        print('*step accepted')
                         
                         #Record results
                         chi_sq_PPL_list .append(chi_sq_PPL_val)
@@ -390,7 +389,7 @@ def calculate_profile_likelihood_single_parameter(
                         chi_sq_PPL_list .append(chi_sq_PPL_val)
                         fixed_parameter_values.append(param_val)
                         all_parameter_values.append(param_vals)
-                        print('break - Threshold chi2 reached')
+                        print('break - Threshold chi_sq reached')
                         break
                     
                     #otherwise, if the step size is the maximum step AND the PL difference 
@@ -408,7 +407,7 @@ def calculate_profile_likelihood_single_parameter(
                         #Reset the attempt counter
                         attempt_number = 0
         
-                        print('step accepted by default - max step value reached')
+                        print('*step accepted by default - max step value reached')
                         
                         #Set min_ bound for step size calculations equal 0 (no step)
                         min_ = 0
@@ -427,7 +426,7 @@ def calculate_profile_likelihood_single_parameter(
                         chi_sq_PPL_list .append(chi_sq_PPL_val)
                         fixed_parameter_values.append(param_val)
                         all_parameter_values.append(param_vals)
-                        print('break - Threshold chi2 reached')
+                        print('break - Threshold chi_sq reached')
                         print('min_step used - cannot take a smaller step')
                         break
         
@@ -455,7 +454,7 @@ def calculate_profile_likelihood_single_parameter(
                         
                         #Reset the attempt counter
                         attempt_number = 0
-                        print('step accepted by default - min step value reached')
+                        print('*step accepted by default - min step value reached')
                         
                         #Set min_ bound for step size calculations equal to the current step val
                         min_ = 0
@@ -481,11 +480,11 @@ def calculate_profile_likelihood_single_parameter(
                     #add 1 to the attempt number
                     attempt_number += 1
                     
-                    print('step rejected - too large')  
+                    print('*step rejected - too large')  
                     print('')
-                    print('new bounds')
-                    print('min_: ' + str(min_))
-                    print('max_: ' + str(max_))
+                    print('new step')
+                    print('min_binary_step: ' + str(min_))
+                    print('max_binary_step: ' + str(max_))
                     print('new step val: ' + str(step_val))
                    
                 #if conditions are not met because PL difference is too small, try again with a 
@@ -506,11 +505,11 @@ def calculate_profile_likelihood_single_parameter(
                     #Increase the attempt number
                     attempt_number += 1
                     
-                    print('step rejected - too small')  
+                    print('*step rejected - too small')  
                     print('')
-                    print('new bounds')
-                    print('min_: ' + str(min_))
-                    print('max_: ' + str(max_))
+                    print('new step')
+                    print('min_binary_step: ' + str(min_))
+                    print('max_binary_step: ' + str(max_))
                     print('new step val: ' + str(step_val))
 
                 else:
@@ -524,26 +523,14 @@ def calculate_profile_likelihood_single_parameter(
                 step_val  = max_step
                 
                 #Record results
-                if direction == -1:
-                    chi_sq_PPL_list .append(chi_sq_PPL_val)
-                    fixed_parameter_values.append(param_val)  
-                    all_parameter_values.append(param_vals)
-                    
-                    calibrated_chi_sq = chi_sq_PPL_val
-                    param_vals_calibrated = param_vals
-                    
-                    step_number += 1
-                    attempt_number = 0
-                    
-                elif direction == 1:
-                    chi_sq_PPL_list.append(calibrated_chi_sq)
-                    print('step accepted - calibrated parameter (Step 0)')
-                    print(calibrated_chi_sq)
-                    fixed_parameter_values.append(param_val)     
-                    all_parameter_values.append(param_vals_calibrated)
-                    
-                    step_number += 1
-                    attempt_number = 0
+                print('*step accepted - calibrated parameter (Step 0)')
+                print(calibrated_chi_sq)
+                chi_sq_PPL_list.append(calibrated_chi_sq)
+                fixed_parameter_values.append(calibrated_parameter_values[fixed_index])  
+                all_parameter_values.append(calibrated_parameter_values)
+                
+                step_number += 1
+                attempt_number = 0
 
         #Prepare lists for plotting (reverse the negative direction (left), then append the 
         #positive direction (right))
@@ -565,34 +552,34 @@ def calculate_profile_likelihood_single_parameter(
     fixed_parameter_values_both_directions = params_left + params_right
     all_parameter_values_both_directions = param_vals_left + param_vals_right
     
-    print('fixed parameter values:')
-    print(fixed_parameter_values_both_directions)
-    print('profile likelood values:')
-    print(chi_sq_PPL_list_both_directions)
-    
     print('***')
-    print('number of PEM evaluations: ' + str(num_evals))
+    print('PPL for ' + parameter_label + ' complete')
+    print('Number of PEM evaluations: ' + str(num_evals))
 
     #Record stop time
     stop_time = datetime.datetime.now()
     elapsed_time = stop_time - start_time
     elapsed_time_total = round(elapsed_time.total_seconds(), 1)
-    print('Time for this parameter (minutes): ' + str(round(elapsed_time_total/60, 4)))
+    elapsed_time_total  = round(elapsed_time_total/60, 4)
+    print('Time (minutes): ' + str(elapsed_time_total))
     print('***')
    
-    #Plot results
+    #Structure and save results
+    df = pd.DataFrame()
+    df['fixed ' + parameter_label] = fixed_parameter_values_both_directions
+    df['fixed ' + parameter_label + ' PPL'] = chi_sq_PPL_list_both_directions
+    df['fixed ' + parameter_label + ' all parameters'] = all_parameter_values_both_directions
+    df.to_csv('./PROFILE LIKELIHOOD RESULTS ' + parameter_label + '.csv')
+    
+    #Plots
     plot_parameter_profile_likelihood(parameter_label, calibrated_parameter_values[fixed_index], 
                                       fixed_parameter_values_both_directions, 
                                       chi_sq_PPL_list_both_directions,
                                       calibrated_chi_sq,
                                       threshold_chi_sq)
     
-    #Structure and save results
-    df = pd.DataFrame()
-    df['fixed ' + parameter_label] = fixed_parameter_values_both_directions
-    df['fixed ' + parameter_label + ' PPL'] = chi_sq_PPL_list_both_directions
-    df['fixed ' + parameter_label + ' all parameters'] = all_parameter_values_both_directions
-    df.to_csv('./PROFILE LIKELIHOOD RESULTS ' + parameter_label + '.xlsx')
+    plot_parameter_relationships(df, parameter_label)
+    plot_internal_states_along_PPL(df, parameter_label)
 
     return df, elapsed_time_total
     

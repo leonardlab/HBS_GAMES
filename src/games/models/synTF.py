@@ -33,7 +33,7 @@ class synTF:
         None
 
         """
-
+        self.state_labels = state_labels = ['ZFa mRNA', 'ZFa protein', 'Rep RNA', 'Rep protein']
         self.parameters = np.array(parameters)
         self.inputs = np.array(inputs)
         number_of_states = 4

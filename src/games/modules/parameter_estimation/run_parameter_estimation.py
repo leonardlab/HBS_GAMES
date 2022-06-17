@@ -29,7 +29,7 @@ def run_parameter_estimation() -> None:
 
    """
    sub_folder_name = "MODULE 2 - FIT TO EXPERIMENTAL DATA"
-   path = create_folder(sub_folder_name, folder_path)
+   path = create_folder(folder_path, sub_folder_name)
    os.chdir(path)
 
    print("Starting global search...")

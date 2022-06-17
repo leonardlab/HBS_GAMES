@@ -29,7 +29,7 @@ def run_parameter_estimation_method_evaluation() -> None:
 
     """
     sub_folder_name = "MODULE 1 - EVALUATE PARAMETER ESTIMATION METHOD"
-    path = create_folder(sub_folder_name, folder_path)
+    path = create_folder(folder_path, sub_folder_name)
     os.chdir(path)
 
     print("Generating PEM evaluation data...")

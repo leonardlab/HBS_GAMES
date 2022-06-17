@@ -12,6 +12,7 @@ from models.set_model import model
 from utilities.saving import create_folder
 from utilities.metrics import calc_chi_sq, calc_r_sq
 from plots.plots_training_data import plot_training_data
+from plots.plots_timecourses import plot_timecourses
 from config.settings import settings, folder_path
 from config.experimental_data import ExperimentalData
 
@@ -34,7 +35,7 @@ def solve_single_parameter_set() -> Tuple[list, float, float]:
     r_sq
         a float defining the value of the correlation coefficient (r_sq)
     """
-
+    
     if settings["modelID"] == "synTF_chem":
         if settings["dataID"] == "ligand dose response":
             solutions = model.solve_ligand_sweep(ExperimentalData.x)
@@ -74,6 +75,7 @@ def run_single_parameter_set() -> Tuple[list, float, float]:
     model.parameters = settings["parameters"]
     solutions_norm, chi_sq, r_sq = solve_single_parameter_set()
     filename = "FIT TO TRAINING DATA"
+    plot_timecourses()
     plot_training_data(ExperimentalData.x,
             solutions_norm,
             ExperimentalData.exp_data,

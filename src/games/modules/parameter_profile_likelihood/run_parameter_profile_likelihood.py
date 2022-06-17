@@ -30,21 +30,22 @@ def run_parameter_profile_likelihood(
         None
         """
         sub_folder_name = "MODULE 3 - PARAMETER IDENTIFIABILITY ANALYSIS"
-        path = create_folder(sub_folder_name, folder_path)
+        path = create_folder(folder_path, sub_folder_name)
         os.chdir(path)
       
         threshold_chi_sq = calculate_threshold_chi_sq(calibrated_parameters, calibrated_chi_sq)
+       
         time_list = []
         for parameter_label in settings["parameter_labels_for_PPL"]:
             df, time = calculate_profile_likelihood_single_parameter(parameter_label, 
                                               calibrated_parameters, 
                                               calibrated_chi_sq, 
                                               threshold_chi_sq)
-            
             time_list.append(time)
-            
-        print(time_list)
+        
+        print('')
         print('Total time (minutes): ' + str(round(sum(time_list), 4)))
+        print('All PPL times (minutes): ' + str(time_list))
         print('Average time per parameter (minutes): ' + str(round(np.mean(time_list), 4)))
         print('SD (minutes): ' + str(round(np.std(time_list), 4)))
         

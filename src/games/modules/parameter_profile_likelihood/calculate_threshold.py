@@ -91,7 +91,7 @@ def calculate_chi_sq_fit(calibrated_parameters: list, exp_data_noise_list: list)
     for i, parameter_label in enumerate(settings["parameter_labels"]):
         df_noise[parameter_label] = [calibrated_parameters[i]] * settings["num_noise_realizations"]
     df_noise["data"] = exp_data_noise_list
-    _, _, df_optimization_results, _ = Optimization.optimize_all(df_noise, "PPL")
+    _, _, df_optimization_results, _ = optimize_all(df_noise, "PPL threshold")
     chi_sq_fit_list = list(df_optimization_results["chi_sq"])
 
     return chi_sq_fit_list
@@ -114,13 +114,11 @@ def calculate_threshold_chi_sq(calibrated_parameters: list, calibrated_chi_sq: f
 
     """
 
-    p_ref = [15, 1, 0.05, 720, 100, 2]
-    print("REFERENCE PARAMETERS - ORIGINAL EXPERIMENTAL DATA")
+    p_ref = [15, 0.05, 0.05, 36, 100, 2]
     model.parameters = p_ref
     norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set()
-    print("chi_sq REFERENCE: " + str(round(chi_sq_ref, 4)))
-    print("******************")
-    
+    print("chi_sq reference with training data: " + str(round(chi_sq_ref, 4)))
+  
     print("Generating noise realizations and calculating chi_sq_ref...")
     exp_data_noise_list, chi_sq_ref_list = generate_noise_realizations_and_calc_chi_sq_ref(norm_solutions_ref)
     
@@ -134,14 +132,14 @@ def calculate_threshold_chi_sq(calibrated_parameters: list, calibrated_chi_sq: f
     confidence_interval = 99
     threshold_chi_sq = np.percentile(chi_sq_distribution, confidence_interval)
      
-    plot_chi_sq_distribution() 
-    save_chi_sq_distribution() 
+    plot_chi_sq_distribution(chi_sq_distribution, threshold_chi_sq) 
+    save_chi_sq_distribution(threshold_chi_sq, calibrated_parameters, calibrated_chi_sq) 
     
     print("******************")
     threshold_chi_sq_rounded = np.round(threshold_chi_sq, 1)
     print(
         "chi_sq threshold for "
-        + str(len(settings["parameters"]))
+        + str(len(settings["free_parameters"]))
         + " parameters with "
         + str(confidence_interval)
         + "% confidence"

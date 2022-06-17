@@ -5,12 +5,70 @@ Created on Thu May 26 09:48:43 2022
 
 @author: kate
 """
-
+import cycler
+import pandas as pd 
+import numpy as np
 from math import log10
+import seaborn as sns
 import matplotlib.pyplot as plt
 from config.settings import settings
+from models.set_model import model
 plt.style.use(settings["context"] + "paper.mplstyle.py")
 
+def plot_parameter_relationships(df: pd.DataFrame, parameter_label: str) -> None:
+    """Plot parameter relationships for along PPL for a given parameter
+        
+    Parameters
+    ----------
+    df
+        a dataframe containing the PPL results for the given parameter
+
+    parameter_label
+        a string defining the given parameter
+
+    Returns
+    -------
+    None
+
+    Figures
+    -------
+        'parameter relationships along ' +  parameter_label + '.svg' 
+            
+    """
+    #Define indices of free parameters
+    indicies = []  
+    for i, label in enumerate(settings["parameter_labels"]):
+        if label in settings["free_parameter_labels"]:
+            indicies.append(i)
+    
+    #Grab data from df and take log of x values
+    x = list(df['fixed ' +  parameter_label])
+    x = [log10(val) for val in x]
+    y = list(df['fixed ' +  parameter_label + ' all parameters'])
+    
+    #Structure data for plotting (only want to plot free parameters)
+    plot_lists = []
+    plot_labels = []
+    for i in range(0, len(settings["parameter_labels"])):
+        for j in range(0, len(settings["free_parameter_labels"])):
+            if settings["parameter_labels"][i] == settings["free_parameter_labels"][j]:
+                if settings["parameter_labels"][i] != parameter_label:
+                    plot_lists.append([log10(y_[i]) for y_ in y])
+                    plot_labels.append(settings["parameter_labels"][i])
+    
+    #Make plot
+    fig = plt.figure(figsize = (3.5,4))
+    sns.set_palette('mako')
+    for j, plot_label in enumerate(plot_labels):
+        plt.plot(x, plot_lists[j], linestyle = 'dotted', marker = 'o', markersize = 4, 
+                 label = plot_label)
+    plt.xlabel(parameter_label)
+    plt.ylabel('other parameters')
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.25),
+               fancybox=True, shadow=False, ncol=3)
+   
+    plt.savefig('paramter relationships along ' +  parameter_label + '.svg', dpi = 600)
+    
 def plot_chi_sq_distribution(chi_sq_distribution: list, threshold_chi_sq: float) -> None:
     """Plots threshold chi_sq value for PPL calculations
 
@@ -35,7 +93,6 @@ def plot_chi_sq_distribution(chi_sq_distribution: list, threshold_chi_sq: float)
     plt.plot(
         [threshold_chi_sq, threshold_chi_sq],
         [0, max(y)],
-        "-",
         lw=3,
         alpha=0.6,
         color="dodgerblue",
@@ -97,7 +154,7 @@ def plot_parameter_profile_likelihood(parameter_label: str, calibrated_parameter
     
     #Plot PPL data
     fig = plt.figure(figsize = (3,3))
-    plt.plot(x_log, y_plot, 'o-', color = 'black', markerSize = 4, fillstyle='none', zorder = 1)
+    plt.plot(x_log, y_plot, 'o-', color = 'black', markersize = 4, fillstyle='none', zorder = 1)
     plt.xlabel(parameter_label)
     plt.ylabel('chi_sq')
     
@@ -114,6 +171,53 @@ def plot_parameter_profile_likelihood(parameter_label: str, calibrated_parameter
         
     plt.savefig('profile likelihood plot ' + parameter_label + '.svg')
 
-def plot_parameter_profile_likelihood_consequences(df_profile_likelihood_results):
-    pass
+def plot_internal_states_along_PPL(df: pd.DataFrame, parameter_label: str):
+    """Plot parameter relationships for along PPL for a given parameter
+        
+    Parameters
+    ----------
+    df
+        a dataframe containing the PPL results for the given parameter
+
+    parameter_label
+        a string defining the given parameter
+
+    Returns
+    -------
+    None
+
+    Figures
+    -------
+        'internal states along ' +  parameter_label + '.svg' 
+            
+    """
+    y = list(df['fixed ' + parameter_label + ' all parameters'])
+    n = len(y)
+
+    fig, axs = plt.subplots(nrows=2, ncols=4, sharex=True, sharey=False, figsize = (8, 4))
+    fig.subplots_adjust(hspace=.25)
+    fig.subplots_adjust(wspace=0.2)
+    color = plt.cm.Blues(np.linspace(.2, 1,n))
+    plt.rcParams['axes.prop_cycle'] = cycler.cycler('color', color)
+    
+    for parameters in y:
+        model.inputs = [50, 50]
+        model.input_ligand = 1000
+        model.parameters = parameters
+        tspace_before_ligand_addition, tspace_after_ligand_addition, solution_before_ligand_addition, solution_after_ligand_addition = model.solve_single()
+        tspace_after_ligand_addition = [i + max(tspace_before_ligand_addition) for i in list(tspace_after_ligand_addition)]
+        
+        axs = axs.ravel()
+        for i in range(0, len(model.state_labels)):
+            axs[i].plot(tspace_before_ligand_addition, solution_before_ligand_addition[:,i], linestyle = 'dotted', marker = 'None')
+            axs[i].plot(tspace_after_ligand_addition, solution_after_ligand_addition[:,i], linestyle = 'solid', marker = 'None')
+    
+            if i in [0, 4]:
+                axs[i].set_ylabel('Simulation value (a.u.)', fontsize = 8)
+            if i in [4,5,6,7]:
+                axs[i].set_xlabel('Time (hours)', fontsize = 8)
+            
+            axs[i].set_title(model.state_labels[i], fontweight = 'bold', fontsize = 8)
+            
+    plt.savefig('internal states along ' + parameter_label + '.svg', dpi = 600)
    

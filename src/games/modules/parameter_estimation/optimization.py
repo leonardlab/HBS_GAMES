@@ -19,12 +19,13 @@ from config.experimental_data import ExperimentalData
 from plots.plots_training_data import plot_training_data
 from plots.plots_parameter_estimation import plot_parameter_distributions_after_optimization, plot_chi_sq_trajectory
 
-def generalize_parameter_labels() -> Tuple[list, list]:
+def generalize_parameter_labels(free_parameter_labels) -> Tuple[list, list]:
     """Generates generalized parameter labels (p_1, p_2, etc.) for use in optimization functions
 
     Parameters
     ----------
-    None
+    free_parameter_labels
+        a lists of strings containing the bounds for the free parameters
 
     Returns
     -------
@@ -35,15 +36,22 @@ def generalize_parameter_labels() -> Tuple[list, list]:
         list of floats defining which of the generalized parameter labels are free
 
     """
+    free_parameter_indicies = []
+    for i, value in enumerate(settings["parameters"]):
+        label = settings["parameter_labels"][i]
+        if label in free_parameter_labels:
+            free_parameter_indicies.append(i)
+    
     general_parameter_labels = ["p_" + str(i + 1) for i in range(0, len(settings["parameters"]))]
     general_parameter_labels_free = [
-        "p_" + str(i + 1) for i in settings["free_parameter_indicies"]
+        "p_" + str(i + 1) for i in free_parameter_indicies
     ]
+    
     return general_parameter_labels, general_parameter_labels_free
 
 def define_best_optimization_results(
     df_optimization_results: pd.DataFrame,
-) -> Tuple[float, float, list]:
+run_type: str) -> Tuple[float, float, list]:
     """Prints best parameter set from optimization to
     console and plots the best fit to training data
 
@@ -51,6 +59,9 @@ def define_best_optimization_results(
     ----------
     df_optimization_results
         df containing the results of all optimization runs
+        
+    run_type
+        a string defining the run_type ('default' or 'PPL')
 
     Returns
     -------
@@ -74,33 +85,34 @@ def define_best_optimization_results(
     solutions_norm = df_optimization_results["Simulation results"].iloc[0]
     filename = "BEST FIT TO TRAINING DATA"
 
-    plot_training_data(
-            ExperimentalData.x,
-            solutions_norm,
-            ExperimentalData.exp_data,
-            ExperimentalData.exp_error,
-            filename
-    )
-    plot_chi_sq_trajectory(list(df_optimization_results["chi_sq_list"].iloc[0]))
-
-    print("*************************")
-    print("Calibrated parameters: ")
-    for i, label in enumerate(settings["parameter_labels"]):
-        print(label + " = " + str(best_case_parameters[i]))
-    print("")
-
     r_sq_opt = round(df_optimization_results["r_sq"].iloc[0], 3)
     chi_sq_opt_min = round(df_optimization_results["chi_sq"].iloc[0], 3)
-
-    print("Metrics:")
-    print("R_sq = " + str(r_sq_opt))
-    print("chi_sq = " + str(chi_sq_opt_min))
-    print("*************************")
+    
+    if run_type == "default":
+        plot_training_data(
+                ExperimentalData.x,
+                solutions_norm,
+                ExperimentalData.exp_data,
+                ExperimentalData.exp_error,
+                filename
+        )
+        plot_chi_sq_trajectory(list(df_optimization_results["chi_sq_list"].iloc[0]))
+    
+        print("*************************")
+        print("Calibrated parameters: ")
+        for i, label in enumerate(settings["parameter_labels"]):
+            print(label + " = " + str(best_case_parameters[i]))
+        print("")
+        
+        print("Metrics:")
+        print("R_sq = " + str(r_sq_opt))
+        print("chi_sq = " + str(chi_sq_opt_min))
+        print("*************************")
 
     return r_sq_opt, chi_sq_opt_min, best_case_parameters
 
 def optimize_all(
-    df_global_search_results: pd.DataFrame, run_type: str = "default"
+    df_global_search_results: pd.DataFrame, run_type: str = "default", problem: dict = parameter_estimation_problem_definition
 ) -> Tuple[float, float, pd.DataFrame]:
     """Runs optimization for each intitial guess and saves results
 
@@ -110,7 +122,12 @@ def optimize_all(
         df containing the results of the global search
 
     run_type
-        a string defining the run_type ('default' or 'PPL')
+        a string defining the run_type ('default' or 'PPL' or 'PPL threshold')
+        
+    problem
+        a dictionary containing the parameter estimation problem - 
+        must be provided for PPL simulations only, in which the free parameters 
+        change depending on which parameter's PPL is being calculated
 
     Returns
     -------
@@ -127,7 +144,9 @@ def optimize_all(
         a list of floats defining the best case parameters
 
     """
-    if run_type == "default":
+   
+    df_global_search_results['problem'] = [problem] * len(df_global_search_results.index)
+    if run_type != "PPL threshold":
         df_global_search_results = df_global_search_results.sort_values(by=["chi_sq"])
         df_global_search_results = df_global_search_results.reset_index(drop=True)
         df_global_search_results = df_global_search_results.drop(
@@ -158,19 +177,27 @@ def optimize_all(
     df_optimization_results = df_optimization_results.sort_values(by=["chi_sq"], ascending=True)
     df_optimization_results = df_optimization_results.reset_index(drop=True)
 
-    r_sq_opt, chi_sq_opt_min,best_case_parameters = define_best_optimization_results(df_optimization_results)
-    plot_parameter_distributions_after_optimization(df_optimization_results)
+    r_sq_opt, chi_sq_opt_min, best_case_parameters = define_best_optimization_results(df_optimization_results, run_type)
+    if run_type == "default":
+        plot_parameter_distributions_after_optimization(df_optimization_results)
     df_optimization_results.to_csv("optimization results.csv")
     
     return r_sq_opt, chi_sq_opt_min, df_optimization_results, best_case_parameters
 
-def define_parameters_for_opt(initial_parameters: list) -> list:
+def define_parameters_for_opt(initial_parameters: list, free_parameter_labels: list, free_parameter_bounds: list) -> list:
     """Defines parameters for optimization with structure necessary for LMFit optimization code
 
     Parameters
     ----------
     initial_parameters
         a list of floats containing the initial guesses for each parameter
+        
+    free_parameter_labels
+        a lists of strings containing the bounds for the free parameters
+    
+    free_parameter_bounds
+        a lists of lists containing the bounds for the free parameters
+    
 
     Returns
     -------
@@ -182,10 +209,9 @@ def define_parameters_for_opt(initial_parameters: list) -> list:
     (
         general_parameter_labels,
         general_parameter_labels_free,
-    ) = generalize_parameter_labels()
+    ) = generalize_parameter_labels(free_parameter_labels)
 
     # Set default values
-    bounds = parameter_estimation_problem_definition["bounds"]
     num_parameters = len(settings["parameters"])
     bound_min_list = [0] * num_parameters
     bound_max_list = [np.inf] * num_parameters
@@ -199,8 +225,8 @@ def define_parameters_for_opt(initial_parameters: list) -> list:
             # if param is free param, change vary to True and update bounds
             if param_label == free_param_label:
                 vary_list[param_index] = True
-                bound_min_list[param_index] = 10 ** bounds[free_param_index][0]
-                bound_max_list[param_index] = 10 ** bounds[free_param_index][1]
+                bound_min_list[param_index] = 10 ** free_parameter_bounds[free_param_index][0]
+                bound_max_list[param_index] = 10 ** free_parameter_bounds[free_param_index][1]
 
     # Add parameters to the parameters class
     params_for_opt = Parameters_lmfit()
@@ -301,9 +327,12 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
 
     initial_parameters = list(row[1 : len(settings["parameters"]) + 1])
     count = row[0] + 1
-    ExperimentalData.exp_data = row[-1]
+    ExperimentalData.exp_data = row[-2]
+    problem = row[-1]
+    free_parameter_bounds = problem['bounds']
+    free_parameter_labels = problem['names']
+    
     chi_sq_list = []
-
     def solve_for_opt(x, p_1=0, p_2=0, p_3=0, p_4=0, p_5=0, p_6=0, p_7=0, p_8=0, p_9=0, p_10=0):
         p_opt = [p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10]
         model.parameters = p_opt[: len(settings["parameters"])]
@@ -311,7 +340,7 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
         chi_sq_list.append(chi_sq)
         return np.array(solutions_norm)
 
-    params_for_opt = define_parameters_for_opt(initial_parameters)
+    params_for_opt = define_parameters_for_opt(initial_parameters, free_parameter_labels, free_parameter_bounds)
     model_lmfit = Model_lmfit(solve_for_opt, nan_policy="propagate")
 
     if settings["weight_by_error"] == "no":

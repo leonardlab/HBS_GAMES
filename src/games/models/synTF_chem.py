@@ -43,7 +43,7 @@ class synTF_chem:
         None
 
         """
-
+        self.state_labels = state_labels = ['ZF mRNA', 'ZF protein', 'AD mRNA', 'AD protein', 'Ligand', 'Rep RNA', 'Rep protein']
         self.parameters = np.array(parameters)
         self.inputs = np.array(inputs)
         self.input_ligand = input_ligand
@@ -71,8 +71,8 @@ class synTF_chem:
         """
         # solve before ligand addition
         timesteps = 100
-        end_time = 18
-        tspace_before_ligand_addition = np.linspace(0, end_time, timesteps)
+        end_time1 = 18
+        tspace_before_ligand_addition = np.linspace(0, end_time1, timesteps)
         t = tspace_before_ligand_addition
         solution_before_ligand_addition = odeint(
             self.gradient,
@@ -89,8 +89,8 @@ class synTF_chem:
             if label == "e":
                 input_ligand_transformed = self.input_ligand * self.parameters[i]
 
-        end_time = 24
-        tspace_after_ligand_addition = np.linspace(0, end_time, timesteps)
+        end_time2 = 24
+        tspace_after_ligand_addition = np.linspace(0, end_time2, timesteps)
         t = tspace_after_ligand_addition
         initial_conditions_after_ligand_addition = np.array(solution_before_ligand_addition[-1, :])
         initial_conditions_after_ligand_addition[4] = input_ligand_transformed
@@ -103,9 +103,8 @@ class synTF_chem:
                 self.inputs,
             ),
         )
-        solution = solution_after_ligand_addition
-
-        return solution, t
+        
+        return tspace_before_ligand_addition, tspace_after_ligand_addition, solution_before_ligand_addition, solution_after_ligand_addition
 
     @staticmethod
     def gradient(y=np.ndarray, t=np.ndarray, parameters=list, inputs=list) -> np.ndarray:
@@ -142,7 +141,7 @@ class synTF_chem:
         KDEG_PROTEIN = 0.35
         KDEG_REPORTER = 0.029
         KDEG_LIGAND = 0.01
-
+        
         dydt = np.array(
             [
                 K_TXN * dose_a - KDEG_RNA * y[0],  # y0 A mRNA
@@ -178,8 +177,8 @@ class synTF_chem:
         solutions = []
         self.inputs = [50, 50]
         for ligand in x_ligand:
-            self.input_ligand = ligand * self.parameters[0]
-            sol, _ = self.solve_single()
+            self.input_ligand = ligand 
+            _, _, _, sol = self.solve_single()
             solutions.append(sol[-1, -1])
 
         return solutions
