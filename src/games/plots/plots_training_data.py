@@ -17,7 +17,7 @@ def define_training_data_plot_settings() -> Tuple[str, str, str]:
     Parameters
     ----------
     None
-    
+
     Returns
     -------
     x_label
@@ -28,35 +28,35 @@ def define_training_data_plot_settings() -> Tuple[str, str, str]:
 
     x_scale
         string defining the scale for the independent variable
-        
+
     plot_color
         string defining the color for the plot
-        
+
     marker_type
         string defining the marker type
 
     """
-
     y_label = "Rep. protein (au)"
     if settings["dataID"] == "ligand dose response":
         x_label = "Ligand (nM)"
         x_scale = "symlog"
-        
+
     elif settings["dataID"] == "synTF dose response":
         x_label = "synTF (ng)"
         x_scale = "linear"
-        
+
     if  ExperimentalData.data_type == "PEM evaluation":
         plot_color = "dimgrey"
         marker_type = "^"
-        
+
     else:
         plot_color = "black"
         marker_type = "o"
-        
+
     return x_label, y_label, x_scale, plot_color, marker_type
 
-def plot_training_data(x_values: list, y_sim: list, y_exp: list, y_exp_error: list, filename: str) -> None:
+def plot_training_data(x_values: list, y_sim: list, y_exp: list,
+                       y_exp_error: list, filename: str) -> None:
     """Plots a 2-dimensional figure.
 
     Parameters
@@ -72,17 +72,15 @@ def plot_training_data(x_values: list, y_sim: list, y_exp: list, y_exp_error: li
 
     y_exp_error
         list of floats defining the experimental error for the dependent variable
-        
+
     filename
        string defining the filename used to save the plot
 
     Returns
     -------
     None
-
     """
     x_label, y_label, x_scale, plot_color, marker_type = define_training_data_plot_settings()
-
     plt.figure(figsize=(3, 3))
     plt.plot(x_values, y_sim, linestyle="dotted", marker="None", label="sim", color=plot_color)
     plt.errorbar(

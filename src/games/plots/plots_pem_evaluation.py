@@ -42,9 +42,9 @@ def plot_pem_evaluation(df_list: list, chi_sq_pem_evaluation_criterion: float) -
     min_cf_list = []
     min_cf_list = []
 
-    for i, df in enumerate(df_list):
-        chi_sq = list(df["chi_sq"])
-        r_sq = list(df["r_sq"])
+    for i, df_opt in enumerate(df_list):
+        chi_sq = list(df_opt["chi_sq"])
+        r_sq = list(df_opt["r_sq"])
         chi_sq_list = chi_sq_list + chi_sq
         r_sq_list = r_sq_list + r_sq
         run_ = [i + 1] * len(r_sq)
@@ -80,4 +80,3 @@ def plot_pem_evaluation(df_list: list, chi_sq_pem_evaluation_criterion: float) -
     )
     plt.xticks([1, 2, 3])
     plt.savefig("PEM evaluation criterion best fits only.svg", dpi=600)
-
