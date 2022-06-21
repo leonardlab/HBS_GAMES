@@ -9,6 +9,7 @@ import json
 from datetime import date
 import pandas as pd
 
+
 def make_main_directory(settings: dict) -> str:
     """Makes main results folder
 
@@ -22,17 +23,23 @@ def make_main_directory(settings: dict) -> str:
     folder_path
         path leading to main results folder
     """
-    #make results folder and change directories
+    # make results folder and change directories
     results_folder_path = settings["context"] + "results/"
     date_today = date.today()
     folder_path = results_folder_path + str(date_today) + " " + settings["folder_name"]
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+    try:
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+    except FileExistsError:
+        print("Directory already exists")
+
     os.chdir(folder_path)
-    #save settings
-    with open('./settings.json', 'w', encoding="utf-8") as outfile:
+    # save settings
+    with open("./settings.json", "w", encoding="utf-8") as outfile:
         json.dump(settings, outfile)
     return folder_path
+
 
 def create_folder(folder_path, sub_folder_name) -> str:
     """Creates a new folder.
@@ -54,8 +61,10 @@ def create_folder(folder_path, sub_folder_name) -> str:
     os.makedirs(path)
     return path
 
-def save_chi_sq_distribution(threshold_chi_sq: float, calibrated_parameters: list,
-                             calibrated_chi_sq: float) -> None:
+
+def save_chi_sq_distribution(
+    threshold_chi_sq: float, calibrated_parameters: list, calibrated_chi_sq: float
+) -> None:
     """Saves threshold chi_sq value for PPL calculations
 
     Parameters
@@ -82,6 +91,7 @@ def save_chi_sq_distribution(threshold_chi_sq: float, calibrated_parameters: lis
         file.write("calibrated_chi_sq: " + str(calibrated_chi_sq) + "\n")
     print("Conditions saved.")
 
+
 def save_pem_evaluation_data(solutions_norm_noise: list) -> None:
     """
     Saves PEM evaluation data
@@ -98,6 +108,6 @@ def save_pem_evaluation_data(solutions_norm_noise: list) -> None:
     """
     df_pem_evaluation_data = pd.DataFrame()
     for i, dataset in enumerate(solutions_norm_noise):
-        label = 'pem evaluation data' + str(i+1)
+        label = "pem evaluation data" + str(i + 1)
         df_pem_evaluation_data[label] = dataset
     df_pem_evaluation_data.to_csv("PEM evaluation data.csv")

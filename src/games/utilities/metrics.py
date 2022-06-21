@@ -7,7 +7,8 @@ Created on Tue Jun 14 13:37:00 2022
 """
 from sklearn.linear_model import LinearRegression
 import numpy as np
-from config.settings import settings
+from games.config.settings import settings
+
 
 def calc_r_sq(data_x=list, data_y=list) -> float:
 

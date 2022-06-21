@@ -10,7 +10,8 @@ import math
 from typing import Tuple
 import numpy as np
 from scipy.integrate import odeint
-from config.settings import settings
+from games.config.settings import settings
+
 
 class synTF_chem:
     """
@@ -24,7 +25,7 @@ class synTF_chem:
         inputs=None,
         input_ligand=1000,
     ) -> None:
-        
+
         """Initializes synTF_Chem model.
 
         Parameters
@@ -43,7 +44,16 @@ class synTF_chem:
         None
 
         """
-        self.state_labels = state_labels = ['ZF mRNA', 'ZF protein', 'AD mRNA', 'AD protein', 'Ligand', 'Rep RNA', 'Rep protein']
+        self.state_labels = state_labels = [
+            "ZF mRNA",
+            "ZF protein",
+            "AD mRNA",
+            "AD protein",
+            "Ligand",
+            "Activator",
+            "Rep RNA",
+            "Rep protein",
+        ]
         self.parameters = np.array(parameters)
         self.inputs = np.array(inputs)
         self.input_ligand = input_ligand
@@ -103,8 +113,13 @@ class synTF_chem:
                 self.inputs,
             ),
         )
-        
-        return tspace_before_ligand_addition, tspace_after_ligand_addition, solution_before_ligand_addition, solution_after_ligand_addition
+
+        return (
+            tspace_before_ligand_addition,
+            tspace_after_ligand_addition,
+            solution_before_ligand_addition,
+            solution_after_ligand_addition,
+        )
 
     @staticmethod
     def gradient(y=np.ndarray, t=np.ndarray, parameters=list, inputs=list) -> np.ndarray:
@@ -131,17 +146,17 @@ class synTF_chem:
         fractional_activation_promoter = (b + m * (y[5] / km) ** n) / (
             1 + (y[5] / km) ** n + (y[1] / km) ** n
         )
-    
+
         if math.isnan(fractional_activation_promoter):
             fractional_activation_promoter = 0
-            
+
         K_TXN = 1
         K_TRANS = 1
         KDEG_RNA = 2.7
         KDEG_PROTEIN = 0.35
         KDEG_REPORTER = 0.029
         KDEG_LIGAND = 0.01
-        
+
         dydt = np.array(
             [
                 K_TXN * dose_a - KDEG_RNA * y[0],  # y0 A mRNA
@@ -177,7 +192,7 @@ class synTF_chem:
         solutions = []
         self.inputs = [50, 50]
         for ligand in x_ligand:
-            self.input_ligand = ligand 
+            self.input_ligand = ligand
             _, _, _, sol = self.solve_single()
             solutions.append(sol[-1, -1])
 

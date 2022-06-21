@@ -8,17 +8,18 @@ Created on Wed Jun 15 16:13:15 2022
 import os
 import pandas as pd
 import numpy as np
-from utilities.saving import create_folder
-from utilities.metrics import calc_chi_sq
-from modules.parameter_estimation.optimization import optimize_all
-from config.settings import settings, folder_path
-from config.experimental_data import ExperimentalData
+from games.utilities.saving import create_folder
+from games.utilities.metrics import calc_chi_sq
+from games.modules.parameter_estimation.optimization import optimize_all
+from games.config.settings import settings, folder_path
+from games.config.experimental_data import ExperimentalData
+
 
 def define_initial_guesses_for_pem_eval(
     df_global_search_results: pd.DataFrame, pem_evaluation_data_list: list
 ) -> list:
-    """Defines initial guesses for each pem evaluation optimization run 
-    based on results of global search PEM evaluation data and then running 
+    """Defines initial guesses for each pem evaluation optimization run
+    based on results of global search PEM evaluation data and then running
     multi-start optimziation with each set of PEM evaluation data
 
     Parameters
@@ -85,16 +86,20 @@ def optimize_pem_evaluation_data(
     chi_sq_pem_evaluation = []
     df_list = []
 
-    for i, df in enumerate(df_initial_guesses_list):
+    for i, df_pem_evaluation in enumerate(df_initial_guesses_list):
         sub_folder_name = "PEM evaluation data " + str(i + 1)
-        path = create_folder("./MODULE 1 - EVALUATE PARAMETER ESTIMATION METHOD/" + sub_folder_name, folder_path)
+        path = create_folder(
+            "./MODULE 1 - EVALUATE PARAMETER ESTIMATION METHOD/" + sub_folder_name, folder_path
+        )
         os.chdir(path)
-        df.to_csv("initial guesses.csv")
+        df_pem_evaluation.to_csv("initial guesses.csv")
 
         ExperimentalData.exp_data = pem_evaluation_data_list[i]
-        print('')
-        print('PEM evaluation dataset ' + str(i+1))
-        r_sq_mean, chi_sq_mean, df_optimization_results, _ = optimize_all(df, run_type = 'PEM evaluation')
+        print("")
+        print("PEM evaluation dataset " + str(i + 1))
+        r_sq_mean, chi_sq_mean, df_optimization_results, _ = optimize_all(
+            df, run_type="PEM evaluation"
+        )
         df_list.append(df_optimization_results)
         r_sq_pem_evaluation.append(r_sq_mean)
         chi_sq_pem_evaluation.append(chi_sq_mean)

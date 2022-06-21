@@ -15,5 +15,5 @@
   "num_noise_realizations" : 10,
   "parallelization" : "no",
   "num_cores" : 6,
-  "context" : "/Users/kate/Documents/GitHub/GAMES/src/games/"
+  "context" : "/home/kate/Documents/Code/GitHub/GAMES/src/games/"
 }

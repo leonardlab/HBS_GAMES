@@ -9,14 +9,15 @@ Created on Wed Jun 15 16:02:58 2022
 from math import sqrt
 import pandas as pd
 import numpy as np
-from models.set_model import model
-from modules.parameter_estimation.optimization import optimize_all
-from modules.solve_single import solve_single_parameter_set
-from config.settings import settings
-from config.experimental_data import ExperimentalData
-from utilities.metrics import calc_chi_sq
-from utilities.saving import save_chi_sq_distribution
-from plots.plots_parameter_profile_likelihood import plot_chi_sq_distribution
+from games.models.set_model import model
+from games.modules.parameter_estimation.optimization import optimize_all
+from games.modules.solve_single import solve_single_parameter_set
+from games.config.settings import settings
+from games.config.experimental_data import ExperimentalData
+from games.utilities.metrics import calc_chi_sq
+from games.utilities.saving import save_chi_sq_distribution
+from games.plots.plots_parameter_profile_likelihood import plot_chi_sq_distribution
+
 
 def generate_noise_realizations_and_calc_chi_sq_ref(norm_solutions_ref: list):
     """Generates noise realizations and calculates chi_sq_ref
@@ -48,8 +49,9 @@ def generate_noise_realizations_and_calc_chi_sq_ref(norm_solutions_ref: list):
 
     # Generate noise array
     np.random.seed(6754)
-    noise_array = np.random.normal(mu, sigma, (settings["num_noise_realizations"],
-                                               len(exp_data_original)))
+    noise_array = np.random.normal(
+        mu, sigma, (settings["num_noise_realizations"], len(exp_data_original))
+    )
 
     for i in range(0, settings["num_noise_realizations"]):
         # add noise and append to experimental data to list for saving
@@ -59,7 +61,7 @@ def generate_noise_realizations_and_calc_chi_sq_ref(norm_solutions_ref: list):
             new_val = max(new_val, 0.0)
             exp_data_noise.append(new_val)
 
-        #re-normalize data
+        # re-normalize data
         exp_data_noise_norm = [i / max(exp_data_noise) for i in exp_data_noise]
         exp_data_noise_list.append(exp_data_noise_norm)
 
@@ -68,6 +70,7 @@ def generate_noise_realizations_and_calc_chi_sq_ref(norm_solutions_ref: list):
         chi_sq_ref_list.append(chi_sq)
 
     return exp_data_noise_list, chi_sq_ref_list
+
 
 def calculate_chi_sq_fit(calibrated_parameters: list, exp_data_noise_list: list) -> list:
     """Runs optimization on each noise realization with
@@ -98,6 +101,7 @@ def calculate_chi_sq_fit(calibrated_parameters: list, exp_data_noise_list: list)
 
     return chi_sq_fit_list
 
+
 def calculate_threshold_chi_sq(calibrated_parameters: list, calibrated_chi_sq: float) -> float:
     """Calculates threshold chi_sq value for ppl calculations
 
@@ -123,7 +127,8 @@ def calculate_threshold_chi_sq(calibrated_parameters: list, calibrated_chi_sq: f
 
     print("Generating noise realizations and calculating chi_sq_ref...")
     exp_data_noise_list, chi_sq_ref_list = generate_noise_realizations_and_calc_chi_sq_ref(
-        norm_solutions_ref)
+        norm_solutions_ref
+    )
 
     print("Calculating chi_sq_fit...")
     chi_sq_fit_list = calculate_chi_sq_fit(calibrated_parameters, exp_data_noise_list)

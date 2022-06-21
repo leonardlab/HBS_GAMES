@@ -9,8 +9,10 @@ Created on Thu May 26 09:48:43 2022
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from config.settings import settings
+from games.config.settings import settings
+
 plt.style.use(settings["context"] + "paper.mplstyle.py")
+
 
 def plot_pem_evaluation(df_list: list, chi_sq_pem_evaluation_criterion: float) -> None:
     """Plots results of PEM evaluation runs

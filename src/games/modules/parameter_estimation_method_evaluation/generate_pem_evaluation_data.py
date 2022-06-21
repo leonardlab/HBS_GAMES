@@ -9,11 +9,12 @@ import json
 from math import sqrt
 import pandas as pd
 import numpy as np
-from models.set_model import model
-from modules.solve_single import solve_single_parameter_set
-from utilities.metrics import calc_chi_sq, calc_r_sq
-from config.settings import settings
-from utilities.saving import save_pem_evaluation_data
+from games.models.set_model import model
+from games.modules.solve_single import solve_single_parameter_set
+from games.utilities.metrics import calc_chi_sq, calc_r_sq
+from games.config.settings import settings
+from games.utilities.saving import save_pem_evaluation_data
+
 
 def add_noise(solutions_norm_raw: list, count: int) -> list:
     """Adds noise to a set of simulated data
@@ -50,6 +51,7 @@ def add_noise(solutions_norm_raw: list, count: int) -> list:
     solutions_norm_noise = [i / max(solutions_noise) for i in solutions_noise]
 
     return solutions_norm_noise
+
 
 def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> list:
     """Generates PEM evaluation data based on results of a global search
@@ -94,8 +96,8 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> list
         # Add noise
         solutions_norm_noise = add_noise(solutions_norm_raw, count)
 
-        # Calculate cost function metrics between PEM evaluation 
-        #training data with and without noise
+        # Calculate cost function metrics between PEM evaluation
+        # training data with and without noise
         r_sq = calc_r_sq(solutions_norm_raw, solutions_norm_noise)
         r_sq_list.append(r_sq)
         chi_sq = calc_chi_sq(solutions_norm_raw, solutions_norm_noise)
@@ -103,7 +105,7 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> list
 
         pem_evaluation_data_list.append(solutions_norm_noise)
         count += 1
-            
+
     save_pem_evaluation_data(pem_evaluation_data_list)
 
     # Define PEM evaluation criterion
@@ -118,8 +120,8 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> list
     print("Max chi_sq between PEM evaluation data with and without noise: " + str(max_chi_sq))
 
     # Save PEM evaluation criterion
-    with open("PEM evaluation criterion.json", "w") as file:
+    with open("PEM evaluation criterion.json", "w", encoding="utf-8") as file:
         json.dump(r_sq_list, file, indent=2)
         json.dump(chi_sq_list, file, indent=2)
-  
+
     return pem_evaluation_data_list, max_chi_sq

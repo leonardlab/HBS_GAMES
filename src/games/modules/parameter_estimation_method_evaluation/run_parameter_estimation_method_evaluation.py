@@ -6,17 +6,26 @@ Created on Mon Jun 13 10:49:45 2022
 @author: kate
 """
 import os
-from utilities.saving import create_folder
-from modules.parameter_estimation.global_search import generate_parameter_sets, solve_global_search
-from config.settings import settings, parameter_estimation_problem_definition, folder_path
-from config.experimental_data import ExperimentalData
-from plots.plots_pem_evaluation import plot_pem_evaluation
-from modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data import generate_pem_evaluation_data
-from modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method import define_initial_guesses_for_pem_eval, optimize_pem_evaluation_data
- 
+from games.utilities.saving import create_folder
+from games.modules.parameter_estimation.global_search import (
+    generate_parameter_sets,
+    solve_global_search,
+)
+from games.config.settings import parameter_estimation_problem_definition, folder_path
+from games.config.experimental_data import ExperimentalData
+from games.plots.plots_pem_evaluation import plot_pem_evaluation
+from games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data import (
+    generate_pem_evaluation_data,
+)
+from games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method import (
+    define_initial_guesses_for_pem_eval,
+    optimize_pem_evaluation_data,
+)
+
+
 def run_parameter_estimation_method_evaluation() -> None:
     """Runs parameter estimation method evaluation by first generating
-    PEM evaluation data and then running multi-start optimziation 
+    PEM evaluation data and then running multi-start optimziation
     with each set of PEM evaluation data
 
     Parameters
@@ -34,7 +43,7 @@ def run_parameter_estimation_method_evaluation() -> None:
 
     print("Generating PEM evaluation data...")
     df_parameters = generate_parameter_sets(parameter_estimation_problem_definition)
-    df_global_search_results = solve_global_search(df_parameters, run_type = 'PEM evaluation')
+    df_global_search_results = solve_global_search(df_parameters, run_type="PEM evaluation")
     pem_evaluation_data_list, chi_sq_pem_evaluation_criterion = generate_pem_evaluation_data(
         df_global_search_results
     )
@@ -50,7 +59,3 @@ def run_parameter_estimation_method_evaluation() -> None:
     )
     plot_pem_evaluation(df_list, chi_sq_pem_evaluation_criterion)
     print("PEM evaluation complete")
-    
-
-
-

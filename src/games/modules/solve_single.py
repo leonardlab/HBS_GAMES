@@ -8,13 +8,14 @@ Created on Fri Jun  3 15:25:47 2022
 import os
 from typing import Tuple
 import numpy as np
-from models.set_model import model
-from utilities.saving import create_folder
-from utilities.metrics import calc_chi_sq, calc_r_sq
-from plots.plots_training_data import plot_training_data
-from plots.plots_timecourses import plot_timecourses
-from config.settings import settings, folder_path
-from config.experimental_data import ExperimentalData
+from games.models.set_model import model
+from games.utilities.saving import create_folder
+from games.utilities.metrics import calc_chi_sq, calc_r_sq
+from games.plots.plots_training_data import plot_training_data
+from games.plots.plots_timecourses import plot_timecourses
+from games.config.settings import settings, folder_path
+from games.config.experimental_data import ExperimentalData
+
 
 def solve_single_parameter_set() -> Tuple[list, float, float]:
     """
@@ -35,7 +36,7 @@ def solve_single_parameter_set() -> Tuple[list, float, float]:
     r_sq
         a float defining the value of the correlation coefficient (r_sq)
     """
-    
+
     if settings["modelID"] == "synTF_chem":
         if settings["dataID"] == "ligand dose response":
             solutions = model.solve_ligand_sweep(ExperimentalData.x)
@@ -49,6 +50,7 @@ def solve_single_parameter_set() -> Tuple[list, float, float]:
     r_sq = calc_r_sq(ExperimentalData.exp_data, solutions_norm)
 
     return solutions_norm, chi_sq, r_sq
+
 
 def run_single_parameter_set() -> Tuple[list, float, float]:
     """Solves model for a single parameter set using dataID defined in settings["
@@ -76,23 +78,24 @@ def run_single_parameter_set() -> Tuple[list, float, float]:
     solutions_norm, chi_sq, r_sq = solve_single_parameter_set()
     filename = "FIT TO TRAINING DATA"
     plot_timecourses()
-    plot_training_data(ExperimentalData.x,
-            solutions_norm,
-            ExperimentalData.exp_data,
-            ExperimentalData.exp_error,
-            filename)
-    
-    print('')
+    plot_training_data(
+        ExperimentalData.x,
+        solutions_norm,
+        ExperimentalData.exp_data,
+        ExperimentalData.exp_error,
+        filename,
+    )
+
+    print("")
     print("*************************")
-    print('Parameters')
+    print("Parameters")
     for i, label in enumerate(settings["parameter_labels"]):
-        print(label + ' = ' + str(model.parameters[i]))
-    print('')
-    print('Metrics')
+        print(label + " = " + str(model.parameters[i]))
+    print("")
+    print("Metrics")
     print("R_sq = " + str(np.round(r_sq, 4)))
     print("chi_sq = " + str(np.round(chi_sq, 4)))
     print("*************************")
-    print('')
+    print("")
 
     return solutions_norm, chi_sq, r_sq
-

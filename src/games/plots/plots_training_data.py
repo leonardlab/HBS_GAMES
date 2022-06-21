@@ -7,9 +7,11 @@ Created on Wed Jun 15 15:17:53 2022
 """
 from typing import Tuple
 import matplotlib.pyplot as plt
-from config.settings import settings
-from config.experimental_data import ExperimentalData
+from games.config.settings import settings
+from games.config.experimental_data import ExperimentalData
+
 plt.style.use(settings["context"] + "paper.mplstyle.py")
+
 
 def define_training_data_plot_settings() -> Tuple[str, str, str]:
     """Defines plot settings based on the dataID and data_type
@@ -45,7 +47,7 @@ def define_training_data_plot_settings() -> Tuple[str, str, str]:
         x_label = "synTF (ng)"
         x_scale = "linear"
 
-    if  ExperimentalData.data_type == "PEM evaluation":
+    if ExperimentalData.data_type == "PEM evaluation":
         plot_color = "dimgrey"
         marker_type = "^"
 
@@ -55,8 +57,10 @@ def define_training_data_plot_settings() -> Tuple[str, str, str]:
 
     return x_label, y_label, x_scale, plot_color, marker_type
 
-def plot_training_data(x_values: list, y_sim: list, y_exp: list,
-                       y_exp_error: list, filename: str) -> None:
+
+def plot_training_data(
+    x_values: list, y_sim: list, y_exp: list, y_exp_error: list, filename: str
+) -> None:
     """Plots a 2-dimensional figure.
 
     Parameters
@@ -84,17 +88,18 @@ def plot_training_data(x_values: list, y_sim: list, y_exp: list,
     plt.figure(figsize=(3, 3))
     plt.plot(x_values, y_sim, linestyle="dotted", marker="None", label="sim", color=plot_color)
     plt.errorbar(
-            x_values,
-            y_exp,
-            marker=marker_type,
-            yerr=y_exp_error,
-            color=plot_color,
-            ecolor=plot_color,
-            markersize=6,
-            fillstyle="none",
-            linestyle="none",
-            capsize=2,
-            label="exp")
+        x_values,
+        y_exp,
+        marker=marker_type,
+        yerr=y_exp_error,
+        color=plot_color,
+        ecolor=plot_color,
+        markersize=6,
+        fillstyle="none",
+        linestyle="none",
+        capsize=2,
+        label="exp",
+    )
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.xscale(x_scale)

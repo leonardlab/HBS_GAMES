@@ -5,11 +5,10 @@ Created on Thu Jun 16 09:11:29 2022
 
 @author: kate
 """
-import math
 from typing import Tuple
 import numpy as np
 from scipy.integrate import odeint
-from config.settings import settings
+
 
 class synTF:
     """
@@ -33,7 +32,7 @@ class synTF:
         None
 
         """
-        self.state_labels = state_labels = ['ZFa mRNA', 'ZFa protein', 'Rep RNA', 'Rep protein']
+        self.state_labels = state_labels = ["ZFa mRNA", "ZFa protein", "Rep RNA", "Rep protein"]
         self.parameters = np.array(parameters)
         self.inputs = np.array(inputs)
         number_of_states = 4
@@ -91,7 +90,7 @@ class synTF:
             An list of floats corresponding to the gradient of each model state at time t
 
         """
-        
+
         K_TXN = 1
         K_TRANS = 1
         KDEG_RNA = 2.7

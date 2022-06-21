@@ -10,10 +10,11 @@ import multiprocessing as mp
 import numpy as np
 import pandas as pd
 from SALib.sample import latin
-from models.set_model import model
-from modules.solve_single import solve_single_parameter_set
-from config.settings import settings
-from config.experimental_data import ExperimentalData
+from games.models.set_model import model
+from games.modules.solve_single import solve_single_parameter_set
+from games.config.settings import settings
+from games.config.experimental_data import ExperimentalData
+
 
 def generate_parameter_sets(problem_global_search: dict) -> pd.DataFrame:
     """
@@ -73,19 +74,19 @@ def solve_single_for_global_search(row: tuple) -> Tuple[list, float]:
     """
     Solves equation for a single parameter set - structure is
     necessary for upstream multiprocessing code
-    
+
     Parameters
     ----------
     row
-        tuple defining the parameters 
+        tuple defining the parameters
 
     Returns
     -------
     solutions
         a list of floats defining the simulation solutions
-        
+
     chi_sq
-        a float defining the chi_sq value 
+        a float defining the chi_sq value
 
     """
     model.parameters = list(row[1:])
@@ -93,7 +94,7 @@ def solve_single_for_global_search(row: tuple) -> Tuple[list, float]:
     return solutions, chi_sq
 
 
-def solve_global_search(df_parameters: pd.DataFrame, run_type: str = 'default') -> pd.DataFrame:
+def solve_global_search(df_parameters: pd.DataFrame, run_type: str = "default") -> pd.DataFrame:
     """
     Generates parameter sets for global search
 
@@ -102,7 +103,7 @@ def solve_global_search(df_parameters: pd.DataFrame, run_type: str = 'default') 
     df_parameters
         df with columns defining to parameter identities
         and rows defining the paramter values for each set in the sweep
-        
+
     run_type
         a string defining the run_type ('default' or 'PEM evaluation')
 
@@ -132,17 +133,17 @@ def solve_global_search(df_parameters: pd.DataFrame, run_type: str = 'default') 
             pool.join()
             output = [[list(x[0]), round(x[1], 4)] for x in result]
 
-        for item in range(0, len(output)):
-            solutions_list.append(output[item][0])
-            chi_sq_list.append(output[item][1])
+        for i, item in enumerate(output):
+            solutions_list.append(item[0])
+            chi_sq_list.append(item[1])
 
     df_global_search_results = df_parameters
     df_global_search_results["chi_sq"] = chi_sq_list
     df_global_search_results["normalized solutions"] = solutions_list
-    
-    if run_type == 'default':
+
+    if run_type == "default":
         df_global_search_results["data"] = [ExperimentalData.exp_data] * len(chi_sq_list)
-    
+
     df_global_search_results.to_csv("global search results.csv")
 
     return df_global_search_results
