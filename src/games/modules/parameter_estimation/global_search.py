@@ -13,17 +13,20 @@ from SALib.sample import latin
 from games.models.set_model import model
 from games.modules.solve_single import solve_single_parameter_set
 from games.config.settings import settings
-from games.config.experimental_data import ExperimentalData
 
 
-def generate_parameter_sets(problem_global_search: dict) -> pd.DataFrame:
+def generate_parameter_sets(problem_global_search: dict, all_parameters: list = settings["parameters"]) -> pd.DataFrame:
     """
     Generate parameter sets for global search
 
     Parameters
     ----------
-    problem
+    problem_global_search
         a dictionary including the number, labels, and bounds for the free parameters
+
+    fixed_parameters
+        a list of floats containing all initial parameter values,
+        including fixed and free parameters
 
 
     Returns
@@ -46,7 +49,7 @@ def generate_parameter_sets(problem_global_search: dict) -> pd.DataFrame:
     # Fill each column of the dataframe with the intial values set in settings["
     for i, _ in enumerate(all_params):
         param = all_params[i]
-        param_array = np.full((1, n_search), settings["parameters"][i])
+        param_array = np.full((1, n_search), all_parameters[i])
         param_array = param_array.tolist()
         df_parameters[param] = param_array[0]
 
@@ -78,7 +81,7 @@ def solve_single_for_global_search(row: tuple) -> Tuple[list, float]:
     Parameters
     ----------
     row
-        tuple defining the parameters
+        tuple defining the parameters and experimental data
 
     Returns
     -------
@@ -89,12 +92,18 @@ def solve_single_for_global_search(row: tuple) -> Tuple[list, float]:
         a float defining the chi_sq value
 
     """
-    model.parameters = list(row[1:])
-    solutions, chi_sq, _ = solve_single_parameter_set()
+    #Unpack row
+    model.parameters = list(row[1:-3])
+    x = row[-3]
+    exp_data = row[-2]
+    exp_error = row[-1]
+
+    #Solve equations
+    solutions, chi_sq, _ = solve_single_parameter_set(x, exp_data, exp_error)
     return solutions, chi_sq
 
 
-def solve_global_search(df_parameters: pd.DataFrame, run_type: str = "default") -> pd.DataFrame:
+def solve_global_search(df_parameters: pd.DataFrame, x: list, exp_data: list, exp_error: list, run_type: str = "default") -> pd.DataFrame:
     """
     Generates parameter sets for global search
 
@@ -102,11 +111,19 @@ def solve_global_search(df_parameters: pd.DataFrame, run_type: str = "default") 
     ----------
     df_parameters
         df with columns defining to parameter identities
-        and rows defining the paramter values for each set in the sweep
+        and rows defining the parameter values for each set in the sweep
+    x
+        a list of floats containing the values of the independent variable
+
+    exp_data
+        a list of floats containing the values of the dependent variable
+
+    exp_error
+        a list of floats containing the values of the measurement error
+        for the dependent variable
 
     run_type
         a string defining the run_type ('default' or 'PEM evaluation')
-
 
     Returns
     -------
@@ -116,10 +133,14 @@ def solve_global_search(df_parameters: pd.DataFrame, run_type: str = "default") 
         for each parameter set
 
     """
+    #Add experimental data items to df
+    df_parameters['x'] = [x] * len(df_parameters.index)
+    df_parameters['exp_data'] = [exp_data] * len(df_parameters.index)
+    df_parameters['exp_error'] = [exp_error] * len(df_parameters.index)
 
+    #Solve for each parameter set in global search
     chi_sq_list = []
     solutions_list = []
-
     if settings["parallelization"] == "no":
         for row in df_parameters.itertuples(name=None):
             solutions, chi_sq = solve_single_for_global_search(row)
@@ -137,13 +158,10 @@ def solve_global_search(df_parameters: pd.DataFrame, run_type: str = "default") 
             solutions_list.append(item[0])
             chi_sq_list.append(item[1])
 
+    #structure results
     df_global_search_results = df_parameters
     df_global_search_results["chi_sq"] = chi_sq_list
     df_global_search_results["normalized solutions"] = solutions_list
 
-    if run_type == "default":
-        df_global_search_results["data"] = [ExperimentalData.exp_data] * len(chi_sq_list)
-
     df_global_search_results.to_csv("global search results.csv")
-
     return df_global_search_results

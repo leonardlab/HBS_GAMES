@@ -11,7 +11,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-from games.config.experimental_data import ExperimentalData
 from games.config.settings import settings
 
 plt.style.use(settings["context"] + "paper.mplstyle.py")
@@ -68,6 +67,11 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     df_opt = df_opt[df_opt["r_sq"] >= 0.99]
     dose_responses = list(df_opt["Simulation results"])
 
+    #define experimental data
+    x = df_opt['x'].iloc[0]
+    exp_data = df_opt['exp_data'].iloc[0]
+    exp_error = df_opt['exp_error'].iloc[0]
+
     # =============================================================================
     # 1. dose response for parameter sets with r_sq > .99
     # ============================================================================
@@ -76,11 +80,11 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
 
     # Plot experimental/training data
     ax1.errorbar(
-        ExperimentalData().x,
-        ExperimentalData().exp_data,
+        x,
+        exp_data,
         color="black",
         marker="o",
-        yerr=ExperimentalData().exp_error,
+        yerr=exp_error,
         fillstyle="none",
         linestyle="none",
         capsize=2,
@@ -89,14 +93,12 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     ax1.set_xscale("symlog")
 
     # Plot simulated data for each parameter set indf_opt
-    n = len(dose_responses)
-    color = plt.cm.Blues(np.linspace(0.1, 1, n))
-    plt.rcParams["axes.prop_cycle"] = cycler.cycler("color", color)
+    sns.set_palette("Greys", len(dose_responses))
     count = 0
     for dose_response in dose_responses:
         count += 1
         ax1.plot(
-            ExperimentalData().x,
+            x,
             dose_response,
             linestyle=":",
             marker=None,

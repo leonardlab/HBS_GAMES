@@ -65,6 +65,7 @@ def calc_chi_sq(exp_=list, sim=list, std=list) -> float:
         chi2 value (float)
 
     '"""
+
     if settings["weight_by_error"] == "no":
         std = [1] * len(exp_)
 

@@ -11,8 +11,8 @@ from games.modules.parameter_estimation.global_search import (
     generate_parameter_sets,
     solve_global_search,
 )
+from games.config.experimental_data import define_experimental_data
 from games.config.settings import parameter_estimation_problem_definition, folder_path
-from games.config.experimental_data import ExperimentalData
 from games.plots.plots_pem_evaluation import plot_pem_evaluation
 from games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data import (
     generate_pem_evaluation_data,
@@ -21,7 +21,6 @@ from games.modules.parameter_estimation_method_evaluation.evaluate_parameter_est
     define_initial_guesses_for_pem_eval,
     optimize_pem_evaluation_data,
 )
-
 
 def run_parameter_estimation_method_evaluation() -> None:
     """Runs parameter estimation method evaluation by first generating
@@ -43,19 +42,19 @@ def run_parameter_estimation_method_evaluation() -> None:
 
     print("Generating PEM evaluation data...")
     df_parameters = generate_parameter_sets(parameter_estimation_problem_definition)
-    df_global_search_results = solve_global_search(df_parameters, run_type="PEM evaluation")
+    x, exp_data, exp_error = define_experimental_data()
+    df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error, run_type="PEM evaluation")
     pem_evaluation_data_list, chi_sq_pem_evaluation_criterion = generate_pem_evaluation_data(
         df_global_search_results
     )
     print("PEM evaluation data generated.")
 
     print("Starting optimization for PEM evaluation data...")
-    ExperimentalData.data_type = "PEM evaluation"
     df_initial_guesses_list = define_initial_guesses_for_pem_eval(
         df_global_search_results, pem_evaluation_data_list
     )
     df_list = optimize_pem_evaluation_data(
-        df_initial_guesses_list, pem_evaluation_data_list, chi_sq_pem_evaluation_criterion
+        df_initial_guesses_list, chi_sq_pem_evaluation_criterion
     )
     plot_pem_evaluation(df_list, chi_sq_pem_evaluation_criterion)
     print("PEM evaluation complete")

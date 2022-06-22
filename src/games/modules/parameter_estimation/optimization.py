@@ -15,7 +15,7 @@ from lmfit import Parameters as Parameters_lmfit
 from games.models.set_model import model
 from games.modules.solve_single import solve_single_parameter_set
 from games.config.settings import settings, parameter_estimation_problem_definition
-from games.config.experimental_data import ExperimentalData
+from games.config.experimental_data import define_experimental_data
 from games.plots.plots_training_data import plot_training_data
 from games.plots.plots_parameter_estimation import (
     plot_parameter_distributions_after_optimization,
@@ -64,7 +64,7 @@ def define_best_optimization_results(
         df containing the results of all optimization runs
 
     run_type
-        a string defining the run_type ('default' or 'PPL')
+        a string defining the run_type ('default' or 'PPL' or 'PEM evaluation)
 
     Returns
     -------
@@ -86,18 +86,19 @@ def define_best_optimization_results(
         best_case_parameters.append(val)
     best_case_parameters = [np.round(parameter, 5) for parameter in best_case_parameters]
     solutions_norm = df_optimization_results["Simulation results"].iloc[0]
-    filename = "BEST FIT TO TRAINING DATA"
+    filename = "best fit to training data"
 
     r_sq_opt = round(df_optimization_results["r_sq"].iloc[0], 3)
     chi_sq_opt_min = round(df_optimization_results["chi_sq"].iloc[0], 3)
 
-    if run_type == "default":
+    if run_type != "ppl":
         plot_training_data(
-            ExperimentalData.x,
+            df_optimization_results['x'].iloc[0],
             solutions_norm,
-            ExperimentalData.exp_data,
-            ExperimentalData.exp_error,
+            df_optimization_results['exp_data'].iloc[0],
+            df_optimization_results['exp_error'].iloc[0],
             filename,
+            run_type
         )
         plot_chi_sq_trajectory(list(df_optimization_results["chi_sq_list"].iloc[0]))
 
@@ -120,7 +121,8 @@ def optimize_all(
     run_type: str = "default",
     problem: dict = parameter_estimation_problem_definition,
 ) -> Tuple[float, float, pd.DataFrame]:
-    """Runs optimization for each intitial guess and saves results
+
+    """Runs optimization for each initial guess and saves results
 
     Parameters
     ----------
@@ -128,7 +130,7 @@ def optimize_all(
         df containing the results of the global search
 
     run_type
-        a string defining the run_type ('default' or 'PPL' or 'PPL threshold')
+        a string defining the run_type ('default' or 'ppl' or 'ppl threshold')
 
     problem
         a dictionary containing the parameter estimation problem -
@@ -152,7 +154,7 @@ def optimize_all(
     """
 
     df_global_search_results["problem"] = [problem] * len(df_global_search_results.index)
-    if run_type != "PPL threshold":
+    if run_type != "ppl threshold":
         df_global_search_results = df_global_search_results.sort_values(by=["chi_sq"])
         df_global_search_results = df_global_search_results.reset_index(drop=True)
         df_global_search_results = df_global_search_results.drop(
@@ -183,11 +185,17 @@ def optimize_all(
     df_optimization_results = df_optimization_results.sort_values(by=["chi_sq"], ascending=True)
     df_optimization_results = df_optimization_results.reset_index(drop=True)
 
+    #Add experimental data to results
+    df_optimization_results['x'] = df_global_search_results['x']
+    df_optimization_results['exp_data'] = df_global_search_results['exp_data']
+    df_optimization_results['exp_error'] = df_global_search_results['exp_error']
+
     r_sq_opt, chi_sq_opt_min, best_case_parameters = define_best_optimization_results(
         df_optimization_results, run_type
     )
     if run_type == "default":
         plot_parameter_distributions_after_optimization(df_optimization_results)
+
     df_optimization_results.to_csv("optimization results.csv")
 
     return r_sq_opt, chi_sq_opt_min, df_optimization_results, best_case_parameters
@@ -257,7 +265,7 @@ def define_parameters_for_opt(
 
 
 def define_results_row(
-    results: lmfit.model.ModelResult, initial_parameters: list, chi_sq_list: float
+    results: lmfit.model.ModelResult, initial_parameters: list, chi_sq_list: float, data_information: list
 ) -> Tuple[list, list]:
     """Defines results for each optimization run
 
@@ -271,6 +279,23 @@ def define_results_row(
 
     chi_sq_list
         a list of floats containing the chi_sq values for each function evaluation
+
+    data_informationFile "/home/kate/Documents/Code/GitHub/GAMES/src/games/modules/parameter_profile_likelihood/calculate_threshold.py", line 100, in calculate_chi_sq_fit
+    _, _, df_optimization_results, _ = optimize_all(df_noise, "ppl threshold")
+  File "/home/kate/Documents/Code/GitHub/GAMES/src/games/modules/parameter_estimation/optimization.py", line 158, in optimize_all
+    df_global_search_results = df_global_search_results.sort_values(by=["chi_sq"])
+
+        a list of lists containing x, exp_data, and exp_error
+
+        x
+            a list of floats containing the values of the independent variable
+
+        exp_data
+            a list of floats containing the values of the dependent variable
+
+        exp_error
+            a list of floats containing the values of the measurement error
+            for the dependent variable
 
 
     Returns
@@ -291,7 +316,8 @@ def define_results_row(
 
     # Solve ODEs with final optimized parameters
     model.parameters = list(results.params.valuesdict().values())[: len(initial_parameters)]
-    solutions_norm, chi_sq, r_sq = solve_single_parameter_set()
+    [x, exp_data, exp_error] = data_information
+    solutions_norm, chi_sq, r_sq = solve_single_parameter_set(x, exp_data, exp_error)
 
     # append best fit parameters to results_row for saving
     for index, best_val in enumerate(model.parameters):
@@ -339,7 +365,9 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
 
     initial_parameters = list(row[1 : len(settings["parameters"]) + 1])
     count = row[0] + 1
-    ExperimentalData.exp_data = row[-2]
+    x = row[-6]
+    exp_data = row[-5]
+    exp_error = row[-4]
     problem = row[-1]
     free_parameter_bounds = problem["bounds"]
     free_parameter_labels = problem["names"]
@@ -349,7 +377,7 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
     def solve_for_opt(x, p_1=0, p_2=0, p_3=0, p_4=0, p_5=0, p_6=0, p_7=0, p_8=0, p_9=0, p_10=0):
         p_opt = [p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10]
         model.parameters = p_opt[: len(settings["parameters"])]
-        solutions_norm, chi_sq, _ = solve_single_parameter_set()
+        solutions_norm, chi_sq, _ = solve_single_parameter_set(x, exp_data, exp_error)
         chi_sq_list.append(chi_sq)
         return np.array(solutions_norm)
 
@@ -359,20 +387,18 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
     model_lmfit = Model_lmfit(solve_for_opt, nan_policy="propagate")
 
     if settings["weight_by_error"] == "no":
-        weights_ = [1] * len(ExperimentalData.exp_error)
+        weights_ = [1] * len(exp_error)
     else:
-        weights_ = [1 / i for i in ExperimentalData.exp_error]
+        weights_ = [1 / i for i in exp_error]
 
     results = model_lmfit.fit(
-        ExperimentalData.exp_data,
+        exp_data,
         params_for_opt,
         method="leastsq",
-        x=ExperimentalData.x,
+        x=x,
         weights=weights_,
     )
 
-    print("Optimization round " + str(count) + " complete.")
-
-    results_row, results_row_labels = define_results_row(results, initial_parameters, chi_sq_list)
+    results_row, results_row_labels = define_results_row(results, initial_parameters, chi_sq_list, [x, exp_data, exp_error])
 
     return results_row, results_row_labels

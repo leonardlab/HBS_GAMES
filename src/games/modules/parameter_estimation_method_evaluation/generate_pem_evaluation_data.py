@@ -58,7 +58,7 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> list
 
     Parameters
     ----------
-    df_global_search
+    df_global_search_results
         a dataframe containing global search results
 
     Returns
@@ -88,10 +88,13 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> list
     for row in df_global_search_results.itertuples(name=None):
         # Define parameters
         p = list(row[1 : len(settings["parameters"]) + 1])
+        model.parameters = p
 
         # Solve for raw data
-        model.parameters = p
-        solutions_norm_raw, chi_sq, r_sq = solve_single_parameter_set()
+        x = list(df_global_search_results['x'].iloc[0])
+        exp_data = list(df_global_search_results['exp_data'].iloc[0])
+        exp_error  = list(df_global_search_results['exp_error'].iloc[0])
+        solutions_norm_raw, chi_sq, r_sq = solve_single_parameter_set(x, exp_data, exp_error)
 
         # Add noise
         solutions_norm_noise = add_noise(solutions_norm_raw, count)
@@ -100,7 +103,7 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> list
         # training data with and without noise
         r_sq = calc_r_sq(solutions_norm_raw, solutions_norm_noise)
         r_sq_list.append(r_sq)
-        chi_sq = calc_chi_sq(solutions_norm_raw, solutions_norm_noise)
+        chi_sq = calc_chi_sq(solutions_norm_raw, solutions_norm_noise, exp_error)
         chi_sq_list.append(chi_sq)
 
         pem_evaluation_data_list.append(solutions_norm_noise)

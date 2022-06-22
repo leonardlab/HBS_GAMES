@@ -8,17 +8,17 @@ Created on Wed Jun 15 15:17:53 2022
 from typing import Tuple
 import matplotlib.pyplot as plt
 from games.config.settings import settings
-from games.config.experimental_data import ExperimentalData
 
 plt.style.use(settings["context"] + "paper.mplstyle.py")
 
 
-def define_training_data_plot_settings() -> Tuple[str, str, str]:
+def define_training_data_plot_settings(run_type: str) -> Tuple[str, str, str]:
     """Defines plot settings based on the dataID and data_type
 
     Parameters
     ----------
-    None
+    run_type
+        a string containing the data type ('PEM evaluation' or else)
 
     Returns
     -------
@@ -47,7 +47,7 @@ def define_training_data_plot_settings() -> Tuple[str, str, str]:
         x_label = "synTF (ng)"
         x_scale = "linear"
 
-    if ExperimentalData.data_type == "PEM evaluation":
+    if run_type == "PEM evaluation":
         plot_color = "dimgrey"
         marker_type = "^"
 
@@ -59,7 +59,7 @@ def define_training_data_plot_settings() -> Tuple[str, str, str]:
 
 
 def plot_training_data(
-    x_values: list, y_sim: list, y_exp: list, y_exp_error: list, filename: str
+    x_values: list, y_sim: list, y_exp: list, y_exp_error: list, filename: str, run_type: str
 ) -> None:
     """Plots a 2-dimensional figure.
 
@@ -80,11 +80,14 @@ def plot_training_data(
     filename
        string defining the filename used to save the plot
 
+    run_type
+        a string containing the data type ('PEM evaluation' or else)
+
     Returns
     -------
     None
     """
-    x_label, y_label, x_scale, plot_color, marker_type = define_training_data_plot_settings()
+    x_label, y_label, x_scale, plot_color, marker_type = define_training_data_plot_settings(run_type)
     plt.figure(figsize=(3, 3))
     plt.plot(x_values, y_sim, linestyle="dotted", marker="None", label="sim", color=plot_color)
     plt.errorbar(

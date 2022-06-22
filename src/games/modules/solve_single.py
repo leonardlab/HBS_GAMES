@@ -14,16 +14,24 @@ from games.utilities.metrics import calc_chi_sq, calc_r_sq
 from games.plots.plots_training_data import plot_training_data
 from games.plots.plots_timecourses import plot_timecourses
 from games.config.settings import settings, folder_path
-from games.config.experimental_data import ExperimentalData
+from games.config.experimental_data import define_experimental_data
 
 
-def solve_single_parameter_set() -> Tuple[list, float, float]:
+def solve_single_parameter_set(x: list, exp_data: list, exp_error: list) -> Tuple[list, float, float]:
     """
     Solves model for a single parameter set
 
     Parameters
     ----------
-    None
+    x
+        a list of floats containing the values of the independent variable
+
+    exp_data
+        a list of floats containing the values of the dependent variable
+
+    exp_error
+        a list of floats containing the values of the measurement error
+        for the dependent variable
 
     Returns
     -------
@@ -39,15 +47,15 @@ def solve_single_parameter_set() -> Tuple[list, float, float]:
 
     if settings["modelID"] == "synTF_chem":
         if settings["dataID"] == "ligand dose response":
-            solutions = model.solve_ligand_sweep(ExperimentalData.x)
+            solutions = model.solve_ligand_sweep(x)
 
     elif settings["modelID"] == "synTF":
         if settings["dataID"] == "synTF dose response":
-            solutions = model.solve_synTF_sweep(ExperimentalData.x)
+            solutions = model.solve_synTF_sweep(x)
 
     solutions_norm = [i / max(solutions) for i in solutions]
-    chi_sq = calc_chi_sq(ExperimentalData.exp_data, solutions_norm, ExperimentalData.exp_error)
-    r_sq = calc_r_sq(ExperimentalData.exp_data, solutions_norm)
+    chi_sq = calc_chi_sq(exp_data, solutions_norm, exp_error)
+    r_sq = calc_r_sq(exp_data, solutions_norm)
 
     return solutions_norm, chi_sq, r_sq
 
@@ -75,15 +83,18 @@ def run_single_parameter_set() -> Tuple[list, float, float]:
     path = create_folder(folder_path, sub_folder_name)
     os.chdir(path)
     model.parameters = settings["parameters"]
-    solutions_norm, chi_sq, r_sq = solve_single_parameter_set()
-    filename = "FIT TO TRAINING DATA"
+    x, exp_data, exp_error = define_experimental_data()
+    solutions_norm, chi_sq, r_sq = solve_single_parameter_set(x, exp_data, exp_error)
+    filename = "fit to training data"
+    run_type = 'default'
     plot_timecourses()
     plot_training_data(
-        ExperimentalData.x,
+        x,
         solutions_norm,
-        ExperimentalData.exp_data,
-        ExperimentalData.exp_error,
+        exp_data,
+        exp_error,
         filename,
+        run_type
     )
 
     print("")

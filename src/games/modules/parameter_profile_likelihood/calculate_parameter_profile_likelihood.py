@@ -17,10 +17,10 @@ from games.config.settings import settings, parameter_estimation_problem_definit
 from games.plots.plots_parameter_profile_likelihood import plot_parameter_profile_likelihood
 from games.plots.plots_parameter_profile_likelihood import plot_parameter_relationships
 from games.plots.plots_parameter_profile_likelihood import plot_internal_states_along_ppl
-
+from games.config.experimental_data import define_experimental_data
 
 def calculate_chi_sq_ppl_single_datapoint(
-    fixed_val: float, fixed_index_in_free_parameter_list: int
+    fixed_val: float, fixed_index_in_free_parameter_list: int, parameters: list
 ) -> Tuple[float, float, list]:
     """
     Calculates chi_sq_ppl for a single datapoint on the profile likelihood
@@ -33,6 +33,9 @@ def calculate_chi_sq_ppl_single_datapoint(
     fixed_index_in_free_parameter_list
         an integer defining the index in the list of FREE parameters
         (settings["free_parameters"]) that should be fixed for this calculation
+
+    parameters
+        a list of floats of the initial parameter values (fixed and free)
 
     Returns
     -------
@@ -67,8 +70,9 @@ def calculate_chi_sq_ppl_single_datapoint(
     ]
 
     # Run PEM
-    df_parameters = generate_parameter_sets(problem_ppl)
-    df_global_search_results = solve_global_search(df_parameters)
+    df_parameters = generate_parameter_sets(problem_ppl, parameters)
+    x, exp_data, exp_error = define_experimental_data()
+    df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error)
     _, calibrated_chi_sq, _, calibrated_parameters = optimize_all(
         df_global_search_results, run_type="ppl", problem=problem_ppl
     )
@@ -276,8 +280,18 @@ def calculate_ppl(
 
                 print("new val: " + str(round(fixed_val, 4)))  # linear
 
+                parameters_single_datapoint = settings["parameters"]
+                for i, all_parameter_label in enumerate(settings["parameter_labels"]):  # for each parameter in p_all
+                    for j, free_parameter_label in enumerate(settings["free_parameter_labels"]):  # for each free parameter
+                        # if parameter is a free parameter, replace with calibrated
+                        if all_parameter_label == free_parameter_label:
+                            if i == fixed_index:
+                                parameters_single_datapoint[i] = fixed_val  # replace with fixed val
+                            else:
+                                parameters_single_datapoint[i] = calibrated_parameter_values[i]  # Replace with cal val
+
                 param_val, chi_sq_ppl_val, param_vals = calculate_chi_sq_ppl_single_datapoint(
-                    fixed_val, fixed_index_in_free_parameter_list
+                    fixed_val, fixed_index_in_free_parameter_list, parameters_single_datapoint
                 )
                 print("")
                 print("chi_sq_ppl: " + str(round(chi_sq_ppl_val, 3)))
@@ -433,7 +447,6 @@ def calculate_ppl(
                         fixed_parameter_values.append(param_val)
                         all_parameter_values.append(param_vals)
                         print("break - Threshold chi_sq reached")
-                        print("min_step used - cannot take a smaller step")
                         break
 
                     # if parameter hits bound
@@ -444,7 +457,6 @@ def calculate_ppl(
                         fixed_parameter_values.append(param_val)
                         all_parameter_values.append(param_vals)
                         print("break - Parameter bound reached")
-                        print("min_step used - cannot take a smaller step")
                         break
 
                     # if parameter is not above the threshold or the parameter bound,

@@ -5,7 +5,7 @@
   "parameters" : [15, 0.05, 0.05, 36, 100, 2],
   "parameter_labels" : ["e", "b", "k_bind", "m", "km", "n"],
   "free_parameter_labels" : ["e", "n"],
-  "parameter_labels_for_PPL" : ["e"],
+  "parameter_labels_for_ppl" : ["e"],
   "non_default_bounds": {"n" : [0, 0.602]},
   "num_parameter_sets_global_search" : 10,
   "num_parameter_sets_optimization" : 2,
