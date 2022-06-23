@@ -98,14 +98,14 @@ def calculate_chi_sq_fit(calibrated_parameters: list, exp_data_noise_list: list)
         df_noise[parameter_label] = [calibrated_parameters[i]] * settings["num_noise_realizations"]
 
     x, _, exp_error = define_experimental_data()
-    df_noise['x'] = [x] * len(df_noise.index)
+    df_noise["x"] = [x] * len(df_noise.index)
     df_noise["exp_data"] = exp_data_noise_list
-    df_noise['exp_error'] = [exp_error] * len(df_noise.index)
+    df_noise["exp_error"] = [exp_error] * len(df_noise.index)
 
-    #add placeholder columns to match data structure for other
-    #optimization runs that have initial guesses defined after a global search
-    df_noise['placeholder 1'] = [0] * len(df_noise.index)
-    df_noise['placeholder 2'] = [0] * len(df_noise.index)
+    # add placeholder columns to match data structure for other
+    # optimization runs that have initial guesses defined after a global search
+    df_noise["placeholder 1"] = [0] * len(df_noise.index)
+    df_noise["placeholder 2"] = [0] * len(df_noise.index)
 
     _, _, df_optimization_results, _ = optimize_all(df_noise, "ppl threshold")
     chi_sq_fit_list = list(df_optimization_results["chi_sq"])

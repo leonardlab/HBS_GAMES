@@ -15,7 +15,108 @@ from games.modules.solve_single import solve_single_parameter_set
 from games.config.settings import settings
 
 
-def generate_parameter_sets(problem_global_search: dict, all_parameters: list = settings["parameters"]) -> pd.DataFrame:
+def replace_parameter_values_for_sweep(
+    df_parameters_default: pd.DataFrame,
+    num_parameters: int,
+    free_parameter_labels: list,
+    params_linear: list,
+) -> pd.DataFrame:
+    """Replaces the column of each free parameter with the list of parameters from the sweep
+
+    Parameters
+    ----------
+    df_parameters_default
+        df with columns defining to parameter identities
+        and rows defining the parameter values for each set in
+        the sweep with default values only
+
+    num_parameters
+        an int defining the total number of parameters (free and fixed)
+
+    free_parameter_labels
+        a list of strings defining the free parameter labels
+
+    params_linear
+        an array containing parameter values from the global search parameter sweep in linear scale
+
+    Returns
+    -------
+    df_parameters
+        df with columns defining to parameter identities
+        and rows defining the parameter values for each set in
+        the sweep
+    """
+    df_parameters = df_parameters_default
+    for i in range(0, num_parameters):
+        for label in free_parameter_labels:
+            if free_parameter_labels[i] == label:
+                df_parameters[label] = params_linear[:, i]
+
+    return df_parameters
+
+
+def create_default_df(
+    n_search: int, all_parameter_labels: list, all_parameters: list
+) -> pd.DataFrame:
+    """Generate df with default values for all parameters, before the global search
+
+    Parameters
+    ----------
+    n_search
+        an int defining the number of parameter sets to define for the global search
+
+    all_parameter_labels
+        a list of strings containing all initial parameter labels,
+        including fixed and free parameters
+
+    all_parameters
+        a list of floats containing all initial parameter values,
+        including fixed and free parameters
+
+    Returns
+    -------
+    df_parameters
+        df with columns defining to parameter identities
+        and rows defining the parameter values for each set in the sweep
+        with only the default values
+    """
+
+    # Create an empty dataframe to store results of the parameter sweep
+    df_parameters = pd.DataFrame()
+
+    # Fill each column of the dataframe with the initial values set in settings["
+    for i, param in enumerate(all_parameter_labels):
+        param_array = np.full((1, n_search), all_parameters[i])
+        param_array = param_array.tolist()
+        df_parameters[param] = param_array[0]
+    return df_parameters
+
+
+def convert_parameters_to_linear(param_values_global_search: list) -> np.ndarray:
+    """Converts parameter array to linear scale
+
+    Parameters
+    ----------
+    param_values_global_search
+        an list containing parameter values from the global search parameter sweep in log scale
+
+    Returns
+    -------
+    params_linear
+        an array containing parameter values from the global search parameter sweep in linear scale
+    """
+
+    params_linear = []
+    for item in param_values_global_search:
+        params_linear.append([10 ** (val) for val in item])
+    params_linear = np.asarray(params_linear)
+
+    return params_linear
+
+
+def generate_parameter_sets(
+    problem_global_search: dict, all_parameters: list = settings["parameters"]
+) -> pd.DataFrame:
     """
     Generate parameter sets for global search
 
@@ -24,7 +125,7 @@ def generate_parameter_sets(problem_global_search: dict, all_parameters: list = 
     problem_global_search
         a dictionary including the number, labels, and bounds for the free parameters
 
-    fixed_parameters
+    all_parameters
         a list of floats containing all initial parameter values,
         including fixed and free parameters
 
@@ -33,41 +134,20 @@ def generate_parameter_sets(problem_global_search: dict, all_parameters: list = 
     -------
     df_parameters
         df with columns defining to parameter identities
-        and rows defining the paramter values for each set in the sweep
+        and rows defining the parameter values for each set in the sweep
     """
-
-    fit_params = problem_global_search[
-        "names"
-    ]  # only the currently free parameters (as set in settings)
-    num_params = problem_global_search["num_vars"]
-    all_params = settings["parameter_labels"]  # all params that are potentially free
     n_search = settings["num_parameter_sets_global_search"]
-
-    # Create an empty dataframe to store results of the parameter sweep
-    df_parameters = pd.DataFrame()
-
-    # Fill each column of the dataframe with the intial values set in settings["
-    for i, _ in enumerate(all_params):
-        param = all_params[i]
-        param_array = np.full((1, n_search), all_parameters[i])
-        param_array = param_array.tolist()
-        df_parameters[param] = param_array[0]
-
-    # Perform LHS
-    param_values = latin.sample(problem_global_search, n_search, seed=456767)
-
-    # Transform back to to linear scale
-    params_converted = []
-    for item in param_values:
-        params_converted.append([10 ** (val) for val in item])
-    params_converted = np.asarray(params_converted)
-
-    # Replace the column of each fit parameter with the list of parameters from the sweep
-    for item in range(0, num_params):
-        for name in fit_params:
-            if fit_params[item] == name:
-                df_parameters[name] = params_converted[:, item]
-
+    df_parameters_default = create_default_df(
+        n_search, settings["parameter_labels"], all_parameters
+    )
+    param_values_global_search = latin.sample(problem_global_search, n_search, seed=456767)
+    params_linear = convert_parameters_to_linear(param_values_global_search)
+    df_parameters = replace_parameter_values_for_sweep(
+        df_parameters_default,
+        problem_global_search["num_vars"],
+        problem_global_search["names"],
+        params_linear,
+    )
     df_parameters.to_csv("parameter sweep.csv")
 
     return df_parameters
@@ -92,18 +172,20 @@ def solve_single_for_global_search(row: tuple) -> Tuple[list, float]:
         a float defining the chi_sq value
 
     """
-    #Unpack row
+    # Unpack row
     model.parameters = list(row[1:-3])
     x = row[-3]
     exp_data = row[-2]
     exp_error = row[-1]
 
-    #Solve equations
+    # Solve equations
     solutions, chi_sq, _ = solve_single_parameter_set(x, exp_data, exp_error)
     return solutions, chi_sq
 
 
-def solve_global_search(df_parameters: pd.DataFrame, x: list, exp_data: list, exp_error: list, run_type: str = "default") -> pd.DataFrame:
+def solve_global_search(
+    df_parameters: pd.DataFrame, x: list, exp_data: list, exp_error: list, run_type: str = "default"
+) -> pd.DataFrame:
     """
     Generates parameter sets for global search
 
@@ -133,12 +215,12 @@ def solve_global_search(df_parameters: pd.DataFrame, x: list, exp_data: list, ex
         for each parameter set
 
     """
-    #Add experimental data items to df
-    df_parameters['x'] = [x] * len(df_parameters.index)
-    df_parameters['exp_data'] = [exp_data] * len(df_parameters.index)
-    df_parameters['exp_error'] = [exp_error] * len(df_parameters.index)
+    # Add experimental data items to df
+    df_parameters["x"] = [x] * len(df_parameters.index)
+    df_parameters["exp_data"] = [exp_data] * len(df_parameters.index)
+    df_parameters["exp_error"] = [exp_error] * len(df_parameters.index)
 
-    #Solve for each parameter set in global search
+    # Solve for each parameter set in global search
     chi_sq_list = []
     solutions_list = []
     if settings["parallelization"] == "no":
@@ -158,7 +240,7 @@ def solve_global_search(df_parameters: pd.DataFrame, x: list, exp_data: list, ex
             solutions_list.append(item[0])
             chi_sq_list.append(item[1])
 
-    #structure results
+    # structure results
     df_global_search_results = df_parameters
     df_global_search_results["chi_sq"] = chi_sq_list
     df_global_search_results["normalized solutions"] = solutions_list

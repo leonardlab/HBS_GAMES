@@ -1,7 +1,8 @@
 {
   "folder_name": "synTF_chem testy test",
-  "modelID" : "synTF_chem",
+  "systemID" : "synTF_chem",
   "dataID" : "ligand dose response",
+  "modelID" : "A",
   "parameters" : [15, 0.05, 0.05, 36, 100, 2],
   "parameter_labels" : ["e", "b", "k_bind", "m", "km", "n"],
   "free_parameter_labels" : ["e", "n"],

@@ -9,89 +9,113 @@ from typing import Tuple
 import pandas as pd
 from games.config.settings import settings
 
+
 def define_experimental_data() -> Tuple[list, list, list]:
-	""""
-	Imports, normalizes, and defines experimental data
+    """ "
+    Imports, normalizes, and defines experimental data
 
-	Parameters
-	----------
-	None
+    Parameters
+    ----------
+    None
 
-	Returns
-	-------
-	x
-		a list of floats containing the values of the independent variable
+    Returns
+    -------
+    x
+            a list of floats containing the values of the independent variable
 
-	exp_data
-		a list of floats containing the values of the dependent variable
+    exp_data
+            a list of floats containing the values of the dependent variable
 
-	exp_error
-		a list of floats containing the values of the measurement error
-		for the dependent variable
-	"""
+    exp_error
+            a list of floats containing the values of the measurement error
+            for the dependent variable
+    """
 
-	x, exp_data_raw, exp_error_raw = import_data()
-	exp_data, exp_error = normalize_data(exp_data_raw, exp_error_raw)
+    x, exp_data_raw, exp_error_raw = import_data()
+    exp_data, exp_error = normalize_data_by_maximum_value(
+        exp_data_raw, settings["dataID"], exp_error_raw
+    )
 
-	return x, exp_data, exp_error
+    return x, exp_data, exp_error
+
 
 def import_data() -> Tuple[list, list, list]:
-	"""Imports experimental data
+    """Imports experimental data
 
-	Parameters
-	----------
-	None
+    Parameters
+    ----------
+    None
 
-	Returns
-	-------
-	x
-	a list of floats defining the independent variable for the given dataset
+    Returns
+    -------
+    x
+    a list of floats defining the independent variable for the given dataset
 
-	exp_data_raw
-	a list of floats defining the dependent variable for the given
-	dataset (before normalization)
+    exp_data_raw
+    a list of floats defining the dependent variable for the given
+    dataset (before normalization)
 
-	exp_error_raw
-	 a list of floats defining the measurement error for
-	 the dependent variable for the given dataset (before normalization)
-	"""
-	path = settings["context"] + "config/"
-	filename = path + "training_data_" + settings["dataID"] + ".csv"
-	df_exp = pd.read_csv(filename)
-	x = list(df_exp["x"])
-	exp_data_raw = list(df_exp["y"])
-	exp_error_raw = list(df_exp["y_err"])
+    exp_error_raw
+     a list of floats defining the measurement error for
+     the dependent variable for the given dataset (before normalization)
+    """
+    path = settings["context"] + "config/"
+    filename = path + "training_data_" + settings["dataID"] + ".csv"
+    df_exp = pd.read_csv(filename)
+    x = list(df_exp["x"])
+    exp_data_raw = list(df_exp["y"])
+    exp_error_raw = list(df_exp["y_err"])
 
-	return x, exp_data_raw, exp_error_raw
+    return x, exp_data_raw, exp_error_raw
 
-def normalize_data(exp_data_raw: list, exp_error_raw: list) -> Tuple[list, list]:
-	"""Normalizes experimental data by maximum value
 
-	Parameters
-	----------
-	exp_data_raw
-	a list of floats defining the dependent variable for the given
-	dataset (before normalization)
+def normalize_data_by_maximum_value(
+    solutions_raw: list, dataID: str, error_raw: list = [0]
+) -> Tuple[list, list]:
+    """Normalizes data by maximum value
 
-	exp_error_raw
-	 a list of floats defining the measurement error for
-	 the dependent variable for the given dataset (before normalization)
+    Parameters
+    ----------
+    solutions_raw
+        a list of floats defining the solutions before normalization
 
-	Returns
-	-------
-	exp_data
-	a list of floats defining the dependent variable for the given
-	dataset (after normalization)
+    dataID
+        a string defining the dataID
 
-	exp_error
-	 a list of floats defining the measurement error for
-	 the dependent variable for the given dataset (after normalization)
-	"""
+    error_raw
+        a list of floats defining the measurement error before normalization
+        default is 0 so that this function can also be used for simulated data
 
-	exp_data = []
-	exp_error = []
-	max_val = max(exp_data_raw)
-	for i, val in enumerate(exp_data_raw):
-		exp_data.append(val / max_val)
-		exp_error.append(exp_error_raw[i] / max_val)
-	return exp_data, exp_error
+    Returns
+    -------
+    solutions_norm
+    a list of floats defining the dependent variable for the given
+    dataset (after normalization)
+
+    error_norm
+     a list of floats defining the measurement error for
+     the dependent variable for the given dataset (after normalization),
+     if relevant
+    """
+
+    if dataID == "ligand dose response and DBD dose response":
+        # normalize ligand dose response
+        solutions_norm_1 = [i / max(solutions_raw[:11]) for i in solutions_raw[:11]]
+
+        # normalize DBD dose response
+        solutions_norm_2 = [i / max(solutions_raw[11:]) for i in solutions_raw[11:]]
+        solutions_norm = solutions_norm_1 + solutions_norm_2
+
+        if len(error_raw) > 1:
+            error_norm = [i / max(solutions_raw) for i in error_raw]
+        else:
+            error_norm = [0]
+
+    else:
+        solutions_norm = [i / max(solutions_raw) for i in solutions_raw]
+        if len(error_raw) > 1:
+            error_norm = [i / max(solutions_raw) for i in error_raw]
+        else:
+            error_norm = [0]
+
+    return solutions_norm, error_norm

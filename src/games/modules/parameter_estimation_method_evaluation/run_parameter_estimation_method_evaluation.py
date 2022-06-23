@@ -22,6 +22,7 @@ from games.modules.parameter_estimation_method_evaluation.evaluate_parameter_est
     optimize_pem_evaluation_data,
 )
 
+
 def run_parameter_estimation_method_evaluation() -> None:
     """Runs parameter estimation method evaluation by first generating
     PEM evaluation data and then running multi-start optimziation
@@ -43,7 +44,9 @@ def run_parameter_estimation_method_evaluation() -> None:
     print("Generating PEM evaluation data...")
     df_parameters = generate_parameter_sets(parameter_estimation_problem_definition)
     x, exp_data, exp_error = define_experimental_data()
-    df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error, run_type="PEM evaluation")
+    df_global_search_results = solve_global_search(
+        df_parameters, x, exp_data, exp_error, run_type="PEM evaluation"
+    )
     pem_evaluation_data_list, chi_sq_pem_evaluation_criterion = generate_pem_evaluation_data(
         df_global_search_results
     )
@@ -53,8 +56,6 @@ def run_parameter_estimation_method_evaluation() -> None:
     df_initial_guesses_list = define_initial_guesses_for_pem_eval(
         df_global_search_results, pem_evaluation_data_list
     )
-    df_list = optimize_pem_evaluation_data(
-        df_initial_guesses_list, chi_sq_pem_evaluation_criterion
-    )
+    df_list = optimize_pem_evaluation_data(df_initial_guesses_list, chi_sq_pem_evaluation_criterion)
     plot_pem_evaluation(df_list, chi_sq_pem_evaluation_criterion)
     print("PEM evaluation complete")

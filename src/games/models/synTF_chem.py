@@ -11,6 +11,7 @@ from typing import Tuple
 import numpy as np
 from scipy.integrate import odeint
 from games.config.settings import settings
+from games.plots.plots_training_data import plot_training_data_2d
 
 
 class synTF_chem:
@@ -21,9 +22,9 @@ class synTF_chem:
 
     def __init__(
         self,
-        parameters=None,
-        inputs=None,
-        input_ligand=1000,
+        parameters: list = None,
+        inputs: list = None,
+        input_ligand: float = 1000,
     ) -> None:
 
         """Initializes synTF_Chem model.
@@ -31,7 +32,7 @@ class synTF_chem:
         Parameters
         ----------
         parameters
-            List of floats defining the parame ters
+            List of floats defining the parameters
 
         inputs
             List of floats defining the inputs
@@ -44,7 +45,7 @@ class synTF_chem:
         None
 
         """
-        self.state_labels = state_labels = [
+        self.state_labels = [
             "ZF mRNA",
             "ZF protein",
             "AD mRNA",
@@ -61,7 +62,7 @@ class synTF_chem:
         y_init = np.zeros(number_of_states)
         self.initial_conditions = y_init
 
-    def solve_single(self) -> Tuple[np.ndarray, np.ndarray]:
+    def solve_single(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Solves synTF_Chem model for a single set of parameters and inputs, including 2 steps
            1) Time from transfection to ligand addition
            2) Time from ligand addition to measurement via flow cytometry
@@ -122,7 +123,7 @@ class synTF_chem:
         )
 
     @staticmethod
-    def gradient(y=np.ndarray, t=np.ndarray, parameters=list, inputs=list) -> np.ndarray:
+    def gradient(y: np.ndarray, t: np.ndarray, parameters: list, inputs: list) -> np.ndarray:
         """Defines the gradient for synTF_Chem model.
 
         Parameters
@@ -140,8 +141,14 @@ class synTF_chem:
             An list of floats corresponding to the gradient of each model state at time t
 
         """
-        [_, b, k_bind, m, km, n] = parameters
+
         [dose_a, dose_b] = inputs
+        if settings["modelID"] == "A":
+            [_, b, k_bind, m, km, n] = parameters
+
+        if settings["modelID"] == "B":
+            [_, b, k_bind, m_star, km, n] = parameters
+            m = m_star * b
 
         fractional_activation_promoter = (b + m * (y[5] / km) ** n) / (
             1 + (y[5] / km) ** n + (y[1] / km) ** n
@@ -150,36 +157,38 @@ class synTF_chem:
         if math.isnan(fractional_activation_promoter):
             fractional_activation_promoter = 0
 
-        K_TXN = 1
-        K_TRANS = 1
-        KDEG_RNA = 2.7
-        KDEG_PROTEIN = 0.35
-        KDEG_REPORTER = 0.029
-        KDEG_LIGAND = 0.01
+        k_txn = 1
+        k_trans = 1
+        kdeg_rna = 2.7
+        kdeg_protein = 0.35
+        kdeg_reporter = 0.029
+        kdeg_ligand = 0.01
 
         dydt = np.array(
             [
-                K_TXN * dose_a - KDEG_RNA * y[0],  # y0 A mRNA
-                K_TRANS * y[0] - KDEG_PROTEIN * y[1] - k_bind * y[1] * y[3] * y[4],  # y1 A protein
-                K_TXN * dose_b - KDEG_RNA * y[2],  # y2 B mRNA
-                K_TRANS * y[2] - KDEG_PROTEIN * y[3] - k_bind * y[1] * y[3] * y[4],  # y3 B protein
-                -k_bind * y[1] * y[3] * y[4] - y[4] * KDEG_LIGAND,  # y4 Ligand
-                k_bind * y[1] * y[3] * y[4] - KDEG_PROTEIN * y[5],  # y5 Activator
-                K_TXN * fractional_activation_promoter - KDEG_RNA * y[6],  # y6 Reporter mRNA
-                K_TRANS * y[6] - KDEG_REPORTER * y[7],  # y7 Reporter protein
+                k_txn * dose_a - kdeg_rna * y[0],  # y0 A mRNA
+                k_trans * y[0] - kdeg_protein * y[1] - k_bind * y[1] * y[3] * y[4],  # y1 A protein
+                k_txn * dose_b - kdeg_rna * y[2],  # y2 B mRNA
+                k_trans * y[2] - kdeg_protein * y[3] - k_bind * y[1] * y[3] * y[4],  # y3 B protein
+                -k_bind * y[1] * y[3] * y[4] - y[4] * kdeg_ligand,  # y4 Ligand
+                k_bind * y[1] * y[3] * y[4] - kdeg_protein * y[5],  # y5 Activator
+                k_txn * fractional_activation_promoter - kdeg_rna * y[6],  # y6 Reporter mRNA
+                k_trans * y[6] - kdeg_reporter * y[7],  # y7 Reporter protein
             ]
         )
 
         return dydt
 
-    def solve_ligand_sweep(self, x_ligand=float) -> list:
+    def solve_experiment(self, x: list, dataID: str) -> list:
         """Solve synTF_Chem model for a list of ligand values.
 
         Parameters
         ----------
-        x_ligand
-            A list of integers containing the ligand amounts to sweep over
+        x
+            a list of floats containing the independent variable
 
+        dataID
+            a string defining the dataID
 
         Returns
         -------
@@ -190,10 +199,94 @@ class synTF_chem:
         """
 
         solutions = []
-        self.inputs = [50, 50]
-        for ligand in x_ligand:
-            self.input_ligand = ligand
-            _, _, _, sol = self.solve_single()
-            solutions.append(sol[-1, -1])
+        if (
+            dataID == "ligand dose response"
+            or dataID == "ligand dose response and DBD dose response"
+        ):
+            self.inputs = [50, 50]  # ng
+            for ligand in x[:11]:
+                self.input_ligand = ligand
+                _, _, _, sol = self.solve_single()
+                solutions.append(sol[-1, -1])
+
+        if dataID == "ligand dose response and DBD dose response":
+            for ad_dose in [20, 10]:  # ng
+                for dbd_dose in x[11:19]:
+                    self.inputs = [dbd_dose, ad_dose]
+                    self.input_ligand = 100
+                    _, _, _, sol = self.solve_single()
+                    solutions.append(sol[-1, -1])
 
         return solutions
+
+    @staticmethod
+    def plot_training_data(
+        x: list,
+        solutions_norm: list,
+        exp_data: list,
+        exp_error: list,
+        filename: str,
+        run_type: str,
+    ) -> None:
+        """
+        Plots training data and simulated training data
+
+        Parameters
+        ----------
+        x
+            list of floats defining the independent variable
+
+        solutions_norm
+            list of floats defining the simulated dependent variable
+
+        exp_data
+            list of floats defining the experimental dependent variable
+
+        exp_error
+            list of floats defining the experimental error for the dependent variable
+
+        filename
+           a string defining the filename used to save the plot
+
+        run_type
+            a string containing the data type ('PEM evaluation' or else)
+
+        Returns
+        -------
+        None"""
+        if settings["dataID"] == "ligand dose response":
+            plot_training_data_2d(x, solutions_norm, exp_data, exp_error, filename, run_type)
+
+        elif settings["dataID"] == "ligand dose response and DBD dose response":
+            filename_1 = filename + "ligand dose response"
+            plot_training_data_2d(
+                x[:11],
+                solutions_norm[:11],
+                exp_data[:11],
+                exp_error[:11],
+                filename_1,
+                run_type,
+                "ligand",
+            )
+
+            filename_2 = filename + "DBD dose response 20ng AD"
+            plot_training_data_2d(
+                x[11:19],
+                solutions_norm[11:19],
+                exp_data[11:19],
+                exp_error[11:19],
+                filename_2,
+                run_type,
+                "DBD",
+            )
+
+            filename_3 = filename + "DBD dose response 10ng AD"
+            plot_training_data_2d(
+                x[19:],
+                solutions_norm[19:],
+                exp_data[19:],
+                exp_error[19:],
+                filename_3,
+                run_type,
+                "DBD",
+            )

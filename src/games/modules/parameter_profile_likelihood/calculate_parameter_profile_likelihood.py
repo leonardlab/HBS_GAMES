@@ -19,9 +19,10 @@ from games.plots.plots_parameter_profile_likelihood import plot_parameter_relati
 from games.plots.plots_parameter_profile_likelihood import plot_internal_states_along_ppl
 from games.config.experimental_data import define_experimental_data
 
+
 def calculate_chi_sq_ppl_single_datapoint(
     fixed_val: float, fixed_index_in_free_parameter_list: int, parameters: list
-) -> Tuple[float, float, list]:
+) -> float:
     """
     Calculates chi_sq_ppl for a single datapoint on the profile likelihood
 
@@ -115,7 +116,7 @@ def calculate_ppl(
     start_time = datetime.datetime.now()  # Record the start time
 
     # Determine index for ppl based on parameter_label
-    # These are the indicies of the free parameters in the list settings["parameter_labels"]
+    # These are the indices of the free parameters in the list settings["parameter_labels"]
     for i, label in enumerate(settings["parameter_labels"]):
         if label == parameter_label:
             fixed_index = i
@@ -281,14 +282,20 @@ def calculate_ppl(
                 print("new val: " + str(round(fixed_val, 4)))  # linear
 
                 parameters_single_datapoint = settings["parameters"]
-                for i, all_parameter_label in enumerate(settings["parameter_labels"]):  # for each parameter in p_all
-                    for j, free_parameter_label in enumerate(settings["free_parameter_labels"]):  # for each free parameter
+                for i, all_parameter_label in enumerate(
+                    settings["parameter_labels"]
+                ):  # for each parameter in p_all
+                    for j, free_parameter_label in enumerate(
+                        settings["free_parameter_labels"]
+                    ):  # for each free parameter
                         # if parameter is a free parameter, replace with calibrated
                         if all_parameter_label == free_parameter_label:
                             if i == fixed_index:
                                 parameters_single_datapoint[i] = fixed_val  # replace with fixed val
                             else:
-                                parameters_single_datapoint[i] = calibrated_parameter_values[i]  # Replace with cal val
+                                parameters_single_datapoint[i] = calibrated_parameter_values[
+                                    i
+                                ]  # Replace with cal val
 
                 param_val, chi_sq_ppl_val, param_vals = calculate_chi_sq_ppl_single_datapoint(
                     fixed_val, fixed_index_in_free_parameter_list, parameters_single_datapoint

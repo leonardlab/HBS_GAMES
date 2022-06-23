@@ -41,7 +41,7 @@ def make_main_directory(settings: dict) -> str:
     return folder_path
 
 
-def create_folder(folder_path, sub_folder_name) -> str:
+def create_folder(folder_path: str, sub_folder_name: str) -> str:
     """Creates a new folder.
 
     Parameters
@@ -58,7 +58,14 @@ def create_folder(folder_path, sub_folder_name) -> str:
         path leading to new folder
     """
     path = folder_path + "/" + sub_folder_name
-    os.makedirs(path)
+
+    try:
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    except FileExistsError:
+        print("Directory already exists")
+
     return path
 
 

@@ -38,10 +38,10 @@ def plot_parameter_relationships(df_results: pd.DataFrame, parameter_label: str)
 
     """
     # Define indices of free parameters
-    indicies = []
+    indices = []
     for i, label in enumerate(settings["parameter_labels"]):
         if label in settings["free_parameter_labels"]:
-            indicies.append(i)
+            indices.append(i)
 
     # Grab data fromdf_results and take log of x values
     x = list(df_results["fixed " + parameter_label])
@@ -177,7 +177,7 @@ def plot_parameter_profile_likelihood(
     plt.savefig("profile likelihood plot " + parameter_label + ".svg")
 
 
-def plot_internal_states_along_ppl(df_results: pd.DataFrame, parameter_label: str):
+def plot_internal_states_along_ppl(df_results: pd.DataFrame, parameter_label: str) -> None:
     """Plot parameter relationships for along PPL for a given parameter
 
     Parameters

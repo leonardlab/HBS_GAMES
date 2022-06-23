@@ -8,6 +8,7 @@ Created on Thu Jun 16 09:11:29 2022
 from typing import Tuple
 import numpy as np
 from scipy.integrate import odeint
+from games.plots.plots_training_data import plot_training_data_2d
 
 
 class synTF:
@@ -91,33 +92,36 @@ class synTF:
 
         """
 
-        K_TXN = 1
-        K_TRANS = 1
-        KDEG_RNA = 2.7
-        KDEG_PROTEIN = 0.35
-        KDEG_REPORTER = 0.029
+        k_txn = 1
+        k_trans = 1
+        kdeg_rna = 2.7
+        kdeg_protein = 0.35
+        kdeg_reporter = 0.029
 
         [g] = parameters
         [dose_a] = inputs
 
         dydt = np.array(
             [
-                K_TXN * dose_a - KDEG_RNA * y[0],  # y0 synTF mRNA
-                K_TRANS * y[0] - KDEG_PROTEIN * y[1],  # y1 synTF protein
-                K_TXN * g * y[1] - KDEG_RNA * y[2],  # y2 Reporter mRNA
-                K_TRANS * y[2] - KDEG_REPORTER * y[3],  # y3 Reporter protein
+                k_txn * dose_a - kdeg_rna * y[0],  # y0 synTF mRNA
+                k_trans * y[0] - kdeg_protein * y[1],  # y1 synTF protein
+                k_txn * g * y[1] - kdeg_rna * y[2],  # y2 Reporter mRNA
+                k_trans * y[2] - kdeg_reporter * y[3],  # y3 Reporter protein
             ]
         )
 
         return dydt
 
-    def solve_synTF_sweep(self, x=list) -> list:
+    def solve_experiment(self, x: list, dataID: str) -> list:
         """Solve synTF model for a list of synTF values.
 
         Parameters
         ----------
         x
-            list of conditions representing the input synTF amounts
+            a list of floats containing the independent variable
+
+        dataID
+            a string defining the dataID
 
         Returns
         -------
@@ -130,9 +134,48 @@ class synTF:
 
         """
         solutions = []
-        for synTF_amount in x:
-            self.inputs = [synTF_amount]
-            sol, _ = self.solve_single()
-            solutions.append(sol[-1, -1])
+        if dataID == "synTF dose response":
+            for synTF_amount in x:
+                self.inputs = [synTF_amount]
+                sol, _ = self.solve_single()
+                solutions.append(sol[-1, -1])
 
         return solutions
+
+    @staticmethod
+    def plot_training_data(
+        x: list,
+        solutions_norm: list,
+        exp_data: list,
+        exp_error: list,
+        filename: list,
+        run_type: list,
+    ) -> None:
+        """
+        Plots training data and simulated training data
+
+        Parameters
+        ----------
+        x
+            list of floats defining the independent variable
+
+        solutions_norm
+            list of floats defining the simulated dependent variable
+
+        exp_data
+            list of floats defining the experimental dependent variable
+
+        exp_error
+            list of floats defining the experimental error for the dependent variable
+
+        filename
+           string defining the filename used to save the plot
+
+        run_type
+            a string containing the data type ('PEM evaluation' or else)
+
+        Returns
+        -------
+        None"""
+
+        plot_training_data_2d(x, solutions_norm, exp_data, exp_error, filename, run_type)

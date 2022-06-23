@@ -6,11 +6,9 @@ Created on Wed Jun 15 15:19:16 2022
 @author: kate
 """
 from math import log10
-import cycler
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
 from games.config.settings import settings
 
 plt.style.use(settings["context"] + "paper.mplstyle.py")
@@ -41,9 +39,11 @@ def plot_chi_sq_trajectory(chi_sq_list: list) -> None:
     plt.savefig("chi_sq trajectory for best fit.svg", dpi=600)
 
 
-def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> None:
-    """Plot parameter distributions across initial guesses
-     following parameter estimation with training data
+def plot_training_data_fits(df_opt: pd.DataFrame) -> None:
+    """Plots fits to training data with similarly good r_sq values
+
+    Note: This function is not currently generalizable to other models and datasets and the
+     user must modify before running
 
     Parameters
     ----------
@@ -58,24 +58,18 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     -------
     './FITS r_sq ABOVE 0.99.svg' (plot of training data and simulated data for
          parameter sets with r_sq > = 0.99)
-    'OPTIMIZED PARAMETER DISTRIBUTIONS.svg' (plot of parameter distributions for
-         parameter sets with r_sq > = 0.99)
-
     """
 
     # Only keep rows for which r_sq >= .99
     df_opt = df_opt[df_opt["r_sq"] >= 0.99]
     dose_responses = list(df_opt["Simulation results"])
 
-    #define experimental data
-    x = df_opt['x'].iloc[0]
-    exp_data = df_opt['exp_data'].iloc[0]
-    exp_error = df_opt['exp_error'].iloc[0]
+    # define experimental data
+    x = df_opt["x"].iloc[0]
+    exp_data = df_opt["exp_data"].iloc[0]
+    exp_error = df_opt["exp_error"].iloc[0]
 
-    # =============================================================================
-    # 1. dose response for parameter sets with r_sq > .99
-    # ============================================================================
-    fig = plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(3, 3))
     ax1 = plt.subplot(111)
 
     # Plot experimental/training data
@@ -92,7 +86,7 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     )
     ax1.set_xscale("symlog")
 
-    # Plot simulated data for each parameter set indf_opt
+    # Plot simulated data for each parameter set in df_opt
     sns.set_palette("Greys", len(dose_responses))
     count = 0
     for dose_response in dose_responses:
@@ -108,9 +102,35 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     ax1.set_ylabel("Reporter expression")
     plt.savefig("./fits r_sq above 0.99.svg", bbox_inches="tight")
 
-    # =============================================================================
-    # 2. parameter distributions for parameter sets with r_sq > .99
-    # =============================================================================
+
+def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> None:
+    """Plot parameter distributions across initial guesses
+     following parameter estimation with training data
+
+    Parameters
+    ----------
+    df_opt
+        a dataframe containing the parameter estimation results after optimization
+
+    Returns
+    -------
+    None
+
+    Figures
+    -------
+    'OPTIMIZED PARAMETER DISTRIBUTIONS.svg' (plot of parameter distributions for
+         parameter sets with r_sq > = 0.99)
+
+    """
+    # Only keep rows for which r_sq >= .99
+    df_opt = df_opt[df_opt["r_sq"] >= 0.99]
+    dose_responses = list(df_opt["Simulation results"])
+
+    # define experimental data
+    x = df_opt["x"].iloc[0]
+    exp_data = df_opt["exp_data"].iloc[0]
+    exp_error = df_opt["exp_error"].iloc[0]
+
     df_opt_log = pd.DataFrame()
     for label in settings["parameter_labels"]:
         label_star = label + "*"

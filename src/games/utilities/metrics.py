@@ -10,7 +10,7 @@ import numpy as np
 from games.config.settings import settings
 
 
-def calc_r_sq(data_x=list, data_y=list) -> float:
+def calc_r_sq(data_x: list, data_y: list) -> float:
 
     """Calculate correlation coefficient, r_sq, between 2 datasets
 
@@ -44,7 +44,7 @@ def calc_r_sq(data_x=list, data_y=list) -> float:
     return r_sq
 
 
-def calc_chi_sq(exp_=list, sim=list, std=list) -> float:
+def calc_chi_sq(exp_: list, sim: list, std: list) -> float:
 
     """Calculate chi2 between 2 datasets with measurement error described by std
 

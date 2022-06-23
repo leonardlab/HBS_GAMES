@@ -13,12 +13,13 @@ from games.utilities.metrics import calc_chi_sq
 from games.modules.parameter_estimation.optimization import optimize_all
 from games.config.settings import settings, folder_path
 
+
 def define_initial_guesses_for_pem_eval(
     df_global_search_results: pd.DataFrame, pem_evaluation_data_list: list
 ) -> list:
     """Defines initial guesses for each pem evaluation optimization run
     based on results of global search PEM evaluation data and then running
-    multi-start optimziation with each set of PEM evaluation data
+    multi-start optimization with each set of PEM evaluation data
 
     Parameters
     ----------
@@ -41,12 +42,14 @@ def define_initial_guesses_for_pem_eval(
         df_new = df_global_search_results.copy()
         chi_sq_list = []
         for norm_solutions in list(df_global_search_results["normalized solutions"]):
-            chi_sq = calc_chi_sq(norm_solutions, pem_evaluation_data, df_global_search_results["exp_error"].iloc[0])
+            chi_sq = calc_chi_sq(
+                norm_solutions, pem_evaluation_data, df_global_search_results["exp_error"].iloc[0]
+            )
             chi_sq_list.append(chi_sq)
 
-        df_new['chi_sq'] = chi_sq_list
+        df_new["chi_sq"] = chi_sq_list
         df_new["exp_data"] = [pem_evaluation_data] * len(chi_sq_list)
-        df_new = df_new.sort_values(by=['chi_sq'])
+        df_new = df_new.sort_values(by=["chi_sq"])
         df_new = df_new.reset_index(drop=True)
         df_new = df_new.drop(df_new.index[0])
         df_new = df_new.reset_index(drop=True)
@@ -82,12 +85,13 @@ def optimize_pem_evaluation_data(
 
     for i, df_pem_evaluation in enumerate(df_initial_guesses_list):
         sub_folder_name = "PEM evaluation data " + str(i + 1)
-        create_folder(folder_path + '/MODULE 1 - EVALUATE PARAMETER ESTIMATION METHOD', sub_folder_name)
-        os.chdir('./' + sub_folder_name)
+        create_folder(
+            folder_path + "/MODULE 1 - EVALUATE PARAMETER ESTIMATION METHOD", sub_folder_name
+        )
+        os.chdir("./" + sub_folder_name)
         df_pem_evaluation.to_csv("initial guesses.csv")
 
         print("PEM evaluation dataset " + str(i + 1))
-        print(df_pem_evaluation)
         r_sq_mean, chi_sq_mean, df_optimization_results, _ = optimize_all(
             df_pem_evaluation, run_type="PEM evaluation"
         )
@@ -102,7 +106,6 @@ def optimize_pem_evaluation_data(
 
     print("chi_sq PEM evaluation criterion = " + str(np.round(chi_sq_pem_evaluation_criterion, 4)))
     print("chi_sq max across all PEM evaluation = " + str(np.round(chi_sq_max, 4)))
-
     print("r_sq min across all PEM evaluation = " + str(np.round(r_sq_min, 4)))
 
     if chi_sq_max <= chi_sq_pem_evaluation_criterion:
