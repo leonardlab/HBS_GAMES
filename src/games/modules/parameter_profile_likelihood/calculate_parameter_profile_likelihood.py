@@ -5,7 +5,7 @@ Created on Wed Jun 15 16:03:09 2022
 
 @author: kate
 """
-from typing import Tuple
+from typing import Tuple, List
 import datetime
 import pandas as pd
 from games.modules.parameter_estimation.optimization import optimize_all
@@ -22,7 +22,7 @@ from games.config.experimental_data import define_experimental_data
 
 def calculate_chi_sq_ppl_single_datapoint(
     fixed_val: float, fixed_index_in_free_parameter_list: int, parameters: list
-) -> float:
+) -> Tuple[float, float, List[float]]:
     """
     Calculates chi_sq_ppl for a single datapoint on the profile likelihood
 
@@ -86,7 +86,7 @@ def calculate_ppl(
     calibrated_parameter_values: list,
     calibrated_chi_sq: float,
     threshold_chi_sq: float,
-) -> Tuple[pd.DataFrame, float]:
+) -> float:
     """Calculates the ppl for the given parameter
 
     Parameters
@@ -105,9 +105,6 @@ def calculate_ppl(
 
     Returns
     -------
-    df
-        a df containing the ppl results for the given parameter
-
     elapsed_time_total
         a float defining the time to calculate the ppl for the given parameter (in minutes)
 
@@ -182,13 +179,17 @@ def calculate_ppl(
         print("max step: " + str(max_step))
 
         # Initialize lists to hold results for this ppl only
-        chi_sq_ppl_list = []  # chi_sq_ppl values
-        fixed_parameter_values = []  # fixed parameter values, linear scale
-        all_parameter_values = []  # lists of all parameter values
+        chi_sq_ppl_list: List[float] = []  # chi_sq_ppl values
+        fixed_parameter_values: List[float] = []  # fixed parameter values, linear scale
+        all_parameter_values: List[list] = []  # lists of all parameter values
 
-        # Initialize counters
+        # Initialize counters and values
         step_number = 0
         attempt_number = 0
+        step_val = 0.0
+        chi_sq_ppl_val = 0.0
+        param_val = 0.0
+        param_vals: List[float] = []
 
         while step_number < max_steps:
             print("******************")
@@ -204,7 +205,7 @@ def calculate_ppl(
                 print("starting val: " + str(fixed_val))
 
                 # Set the min_ for the binary step to 0 and the max_ to the max_step
-                min_ = 0
+                min_ = 0.0
                 max_ = max_step
 
                 print("min_binary_step: " + str(min_))
@@ -391,7 +392,7 @@ def calculate_ppl(
                         attempt_number = 0
 
                         # Set min_ bound back to 0 (no step from the previously recorded value)
-                        min_ = 0
+                        min_ = 0.0
 
                 # if the step size is the maximum step and the PL difference is still too low
                 elif max_flag is True and ppl_difference < min_threshold_limit:
@@ -437,7 +438,7 @@ def calculate_ppl(
                         print("*step accepted by default - max step value reached")
 
                         # Set min_ bound for step size calculations equal 0 (no step)
-                        min_ = 0
+                        min_ = 0.0
 
                         # Keep the step value at the maximum step value
                         step_val = max_step
@@ -482,7 +483,7 @@ def calculate_ppl(
                         print("*step accepted by default - min step value reached")
 
                         # Set min_ bound for step size calculations equal to the current step val
-                        min_ = 0
+                        min_ = 0.0
                         step_val = min_step
 
                 # if conditions are not met because PL difference is too large,
@@ -585,8 +586,8 @@ def calculate_ppl(
     stop_time = datetime.datetime.now()
     elapsed_time = stop_time - start_time
     elapsed_time_total = round(elapsed_time.total_seconds(), 1)
-    elapsed_time_total = round(elapsed_time_total / 60, 4)
-    print("Time (minutes): " + str(elapsed_time_total))
+    elapsed_time_total = round(elapsed_time_total / 3600, 4)
+    print("Time (hours): " + str(elapsed_time_total))
     print("***")
 
     # Structure and save results

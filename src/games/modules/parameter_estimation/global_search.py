@@ -5,7 +5,7 @@ Created on Fri Jun  3 15:25:19 2022
 
 @author: kate
 """
-from typing import Tuple
+from typing import Tuple, List
 import multiprocessing as mp
 import numpy as np
 import pandas as pd
@@ -18,8 +18,8 @@ from games.config.settings import settings
 def replace_parameter_values_for_sweep(
     df_parameters_default: pd.DataFrame,
     num_parameters: int,
-    free_parameter_labels: list,
-    params_linear: list,
+    free_parameter_labels: List[str],
+    params_linear: np.ndarray,
 ) -> pd.DataFrame:
     """Replaces the column of each free parameter with the list of parameters from the sweep
 
@@ -37,7 +37,8 @@ def replace_parameter_values_for_sweep(
         a list of strings defining the free parameter labels
 
     params_linear
-        an array containing parameter values from the global search parameter sweep in linear scale
+        an array containing parameter values from the
+        global search parameter sweep in linear scale
 
     Returns
     -------
@@ -56,7 +57,7 @@ def replace_parameter_values_for_sweep(
 
 
 def create_default_df(
-    n_search: int, all_parameter_labels: list, all_parameters: list
+    n_search: int, all_parameter_labels: List[str], all_parameters: List[float]
 ) -> pd.DataFrame:
     """Generate df with default values for all parameters, before the global search
 
@@ -92,30 +93,32 @@ def create_default_df(
     return df_parameters
 
 
-def convert_parameters_to_linear(param_values_global_search: list) -> np.ndarray:
+def convert_parameters_to_linear(param_values_global_search: List[list]) -> np.ndarray:
     """Converts parameter array to linear scale
 
     Parameters
     ----------
     param_values_global_search
-        an list containing parameter values from the global search parameter sweep in log scale
+        a list of lists containing parameter values from the
+        global search parameter sweep in log scale
 
     Returns
     -------
-    params_linear
-        an array containing parameter values from the global search parameter sweep in linear scale
+    params_linear_array
+        an array containing parameter values from the global
+        search parameter sweep in linear scale
     """
 
     params_linear = []
     for item in param_values_global_search:
         params_linear.append([10 ** (val) for val in item])
-    params_linear = np.asarray(params_linear)
+    params_linear_array = np.asarray(params_linear)
 
-    return params_linear
+    return params_linear_array
 
 
 def generate_parameter_sets(
-    problem_global_search: dict, all_parameters: list = settings["parameters"]
+    problem_global_search: dict, all_parameters: List[float] = settings["parameters"]
 ) -> pd.DataFrame:
     """
     Generate parameter sets for global search
@@ -153,7 +156,7 @@ def generate_parameter_sets(
     return df_parameters
 
 
-def solve_single_for_global_search(row: tuple) -> Tuple[list, float]:
+def solve_single_for_global_search(row: tuple) -> Tuple[List[float], float]:
     """
     Solves equation for a single parameter set - structure is
     necessary for upstream multiprocessing code
@@ -184,7 +187,7 @@ def solve_single_for_global_search(row: tuple) -> Tuple[list, float]:
 
 
 def solve_global_search(
-    df_parameters: pd.DataFrame, x: list, exp_data: list, exp_error: list, run_type: str = "default"
+    df_parameters: pd.DataFrame, x: List[float], exp_data: List[float], exp_error: List[float]
 ) -> pd.DataFrame:
     """
     Generates parameter sets for global search
@@ -236,7 +239,7 @@ def solve_global_search(
             pool.join()
             output = [[list(x[0]), round(x[1], 4)] for x in result]
 
-        for i, item in enumerate(output):
+        for _, item in enumerate(output):
             solutions_list.append(item[0])
             chi_sq_list.append(item[1])
 

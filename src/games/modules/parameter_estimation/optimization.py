@@ -5,7 +5,7 @@ Created on Fri Jun  3 15:25:37 2022
 
 @author: kate
 """
-from typing import Tuple
+from typing import Tuple, Type, List, Any
 import multiprocessing as mp
 import numpy as np
 import pandas as pd
@@ -23,8 +23,8 @@ from games.plots.plots_parameter_estimation import (
 
 
 def generalize_parameter_labels(
-    parameter_labels: list, free_parameter_labels: list
-) -> Tuple[list, list]:
+    parameter_labels: List[str], free_parameter_labels: List[str]
+) -> Tuple[List[str], List[str]]:
     """Generates generalized parameter labels (p_1, p_2, etc.) for use in optimization functions
 
     Parameters
@@ -57,7 +57,7 @@ def generalize_parameter_labels(
 
 def define_best_optimization_results(
     df_optimization_results: pd.DataFrame, run_type: str
-) -> Tuple[float, float, list]:
+) -> Tuple[float, float, List[float]]:
     """Prints best parameter set from optimization to
     console and plots the best fit to training data
 
@@ -122,7 +122,7 @@ def optimize_all(
     df_global_search_results: pd.DataFrame,
     run_type: str = "default",
     problem: dict = parameter_estimation_problem_definition,
-) -> Tuple[float, float, pd.DataFrame, list]:
+) -> Tuple[float, float, pd.DataFrame, List[float]]:
 
     """Runs optimization for each initial guess and saves results
 
@@ -178,7 +178,7 @@ def optimize_all(
             pool.close()
             pool.join()
             output = [[list(x[0]), list(x[1])] for x in result]
-        for i, item in enumerate(output):
+        for _, item in enumerate(output):
             all_opt_results.append(item[0])
         results_row_labels = output[0][1]
 
@@ -197,7 +197,7 @@ def optimize_all(
     )
     if run_type == "default":
         plot_parameter_distributions_after_optimization(df_optimization_results)
-        if settings["systemID"] == "synTF_chem" and settings["dataID"] == "ligand dose response":
+        if settings["modelID"] == "synTF_chem" and settings["dataID"] == "ligand dose response":
             plot_training_data_fits(df_optimization_results)
 
     df_optimization_results.to_csv("optimization results.csv")
@@ -206,11 +206,11 @@ def optimize_all(
 
 
 def define_parameters_for_opt(
-    initial_parameters: list,
-    free_parameter_labels: list,
-    free_parameter_bounds: list,
-    parameter_labels: list,
-) -> Tuple[list, any]:
+    initial_parameters: List[float],
+    free_parameter_labels: List[str],
+    free_parameter_bounds: List[list],
+    parameter_labels: List[str],
+) -> Tuple[List[bool], Type[Parameters_lmfit]]:
     """Defines parameters for optimization with structure necessary for LMFit optimization code
 
     Parameters
@@ -230,6 +230,10 @@ def define_parameters_for_opt(
 
     Returns
     -------
+    vary_list
+        a list of booleans defining whether each parameter is allowed to vary
+        in the optimziation run
+
     params_for_opt
         an object defining the parameters and bounds for optimization
         (in structure necessary for LMFit optimization code)
@@ -276,10 +280,10 @@ def define_parameters_for_opt(
 
 def define_results_row(
     results: lmfit.model.ModelResult,
-    initial_parameters: list,
-    chi_sq_list: float,
-    data_information: list,
-) -> Tuple[list, list]:
+    initial_parameters: List[float],
+    chi_sq_list: List[float],
+    data_information: List[list],
+) -> Tuple[List[Any], List[str]]:
     """Defines results for each optimization run
 
     Parameters
@@ -355,7 +359,7 @@ def define_results_row(
     return results_row, results_row_labels
 
 
-def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
+def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
     """Runs optimization for a single initial guess
 
     Parameters
@@ -383,7 +387,19 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
 
     chi_sq_list = []
 
-    def solve_for_opt(x, p_1=0, p_2=0, p_3=0, p_4=0, p_5=0, p_6=0, p_7=0, p_8=0, p_9=0, p_10=0):
+    def solve_for_opt(
+        x: List[float],
+        p_1: float = 0,
+        p_2: float = 0,
+        p_3: float = 0,
+        p_4: float = 0,
+        p_5: float = 0,
+        p_6: float = 0,
+        p_7: float = 0,
+        p_8: float = 0,
+        p_9: float = 0,
+        p_10: float = 0,
+    ) -> np.ndarray:
         p_opt = [p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10]
         model.parameters = p_opt[: len(settings["parameters"])]
         solutions_norm, chi_sq, _ = solve_single_parameter_set(x, exp_data, exp_error)
@@ -415,6 +431,6 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[list, list]:
         results, initial_parameters, chi_sq_list, [x, exp_data, exp_error]
     )
 
-    if len(free_parameters) == len(settings["free_parameter_labels"]):  # if not a ppl run
+    if len(free_parameter_labels) == len(settings["free_parameter_labels"]):  # if not a ppl run
         print("Optimization run " + str(count + 1) + " complete")
     return results_row, results_row_labels

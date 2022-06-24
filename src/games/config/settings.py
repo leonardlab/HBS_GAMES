@@ -108,7 +108,7 @@ def define_settings() -> Tuple[dict, str, dict]:
 
     Returns
     -------
-    settings
+    settings_import
         a dictionary containing all settings for the run
 
     folder_path
@@ -119,33 +119,37 @@ def define_settings() -> Tuple[dict, str, dict]:
 
     """
     file = open("./src/games/config/config.json", encoding="utf-8")
-    settings = json.load(file)
+    settings_import = json.load(file)
 
     # Define free parameter indices and add to settings dictionary
     free_parameters, free_parameter_indices = define_free_parameter_indices(
-        settings["parameters"], settings["parameter_labels"], settings["free_parameter_labels"]
+        settings_import["parameters"],
+        settings_import["parameter_labels"],
+        settings_import["free_parameter_labels"],
     )
-    settings["free_parameter_indices"] = free_parameter_indices
-    settings["free_parameters"] = free_parameters
+    settings_import["free_parameter_indices"] = free_parameter_indices
+    settings_import["free_parameters"] = free_parameters
 
     # Define bounds for free parameters
     bounds_log_default = set_default_parameter_bounds(
-        settings["bounds_orders_of_magnitude"], settings["free_parameters"]
+        settings_import["bounds_orders_of_magnitude"], settings_import["free_parameters"]
     )
     bounds_log = set_non_default_parameter_bounds(
-        bounds_log_default, settings["non_default_bounds"], settings["free_parameter_labels"]
+        bounds_log_default,
+        settings_import["non_default_bounds"],
+        settings_import["free_parameter_labels"],
     )
-    settings["bounds_log"] = bounds_log
+    settings_import["bounds_log"] = bounds_log
 
     # Define parameter estimation problem
-    parameter_estimation_problem_definition = {
+    parameter_estimation_problem_definition_ = {
         "num_vars": len(free_parameters),
-        "names": settings["free_parameter_labels"],
+        "names": settings_import["free_parameter_labels"],
         "bounds": bounds_log,  #
     }
     # Make main results directory and define path
-    folder_path = make_main_directory(settings)
-    return settings, folder_path, parameter_estimation_problem_definition
+    folder_path_ = make_main_directory(settings_import)
+    return settings_import, folder_path_, parameter_estimation_problem_definition_
 
 
 settings, folder_path, parameter_estimation_problem_definition = define_settings()

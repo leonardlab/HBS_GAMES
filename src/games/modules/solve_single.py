@@ -6,7 +6,7 @@ Created on Fri Jun  3 15:25:47 2022
 @author: kate
 """
 import os
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 from games.models.set_model import model
 from games.utilities.saving import create_folder
@@ -17,8 +17,8 @@ from games.config.experimental_data import define_experimental_data, normalize_d
 
 
 def solve_single_parameter_set(
-    x: list, exp_data: list, exp_error: list
-) -> Tuple[list, float, float]:
+    x: List[float], exp_data: List[float], exp_error: List[float]
+) -> Tuple[List[float], float, float]:
     """
     Solves model for a single parameter set
 
@@ -55,7 +55,7 @@ def solve_single_parameter_set(
     return solutions_norm, chi_sq, r_sq
 
 
-def run_single_parameter_set() -> Tuple[list, float, float]:
+def run_single_parameter_set() -> Tuple[List[float], float, float]:
     """Solves model for a single parameter set using dataID defined in settings["
 
     Parameters

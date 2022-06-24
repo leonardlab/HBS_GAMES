@@ -7,7 +7,7 @@ Created on Thu Jun 16 09:11:29 2022
 """
 
 import math
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 from scipy.integrate import odeint
 from games.config.settings import settings
@@ -22,8 +22,8 @@ class synTF_chem:
 
     def __init__(
         self,
-        parameters: list = None,
-        inputs: list = None,
+        parameters: List[float] = [1, 1, 1, 1, 1, 1],
+        inputs: List[float] = None,
         input_ligand: float = 1000,
     ) -> None:
 
@@ -55,8 +55,8 @@ class synTF_chem:
             "Rep RNA",
             "Rep protein",
         ]
-        self.parameters = np.array(parameters)
-        self.inputs = np.array(inputs)
+        self.parameters = parameters
+        self.inputs = inputs
         self.input_ligand = input_ligand
         number_of_states = 8
         y_init = np.zeros(number_of_states)
@@ -143,10 +143,10 @@ class synTF_chem:
         """
 
         [dose_a, dose_b] = inputs
-        if settings["modelID"] == "A":
+        if settings["mechanismID"] == "A" or settings["mechanismID"] == "B":
             [_, b, k_bind, m, km, n] = parameters
 
-        if settings["modelID"] == "B":
+        if settings["mechanismID"] == "C" or settings["mechanismID"] == "D":
             [_, b, k_bind, m_star, km, n] = parameters
             m = m_star * b
 
@@ -199,10 +199,8 @@ class synTF_chem:
         """
 
         solutions = []
-        if (
-            dataID == "ligand dose response"
-            or dataID == "ligand dose response and DBD dose response"
-        ):
+
+        if dataID in ("ligand dose response", "ligand dose response and DBD dose response"):
             self.inputs = [50, 50]  # ng
             for ligand in x[:11]:
                 self.input_ligand = ligand

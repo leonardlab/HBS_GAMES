@@ -44,9 +44,7 @@ def run_parameter_estimation_method_evaluation() -> None:
     print("Generating PEM evaluation data...")
     df_parameters = generate_parameter_sets(parameter_estimation_problem_definition)
     x, exp_data, exp_error = define_experimental_data()
-    df_global_search_results = solve_global_search(
-        df_parameters, x, exp_data, exp_error, run_type="PEM evaluation"
-    )
+    df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error)
     pem_evaluation_data_list, chi_sq_pem_evaluation_criterion = generate_pem_evaluation_data(
         df_global_search_results
     )

@@ -5,12 +5,12 @@ Created on Wed Jun 15 10:36:16 2022
 
 @author: kate
 """
-from typing import Tuple
+from typing import Tuple, List
 import pandas as pd
 from games.config.settings import settings
 
 
-def define_experimental_data() -> Tuple[list, list, list]:
+def define_experimental_data() -> Tuple[List[float], List[float], List[float]]:
     """ "
     Imports, normalizes, and defines experimental data
 
@@ -39,25 +39,25 @@ def define_experimental_data() -> Tuple[list, list, list]:
     return x, exp_data, exp_error
 
 
-def import_data() -> Tuple[list, list, list]:
+def import_data() -> Tuple[List[float], List[float], List[float]]:
     """Imports experimental data
 
-    Parameters
-    ----------
-    None
+       Parameters
+       ----------
+       None
 
-    Returns
-    -------
-    x
-    a list of floats defining the independent variable for the given dataset
+       Returns
+       -------
+       x
+       a list of floats defining the independent variable for the given dataset
+    0.0
+       exp_data_raw
+       a list of floats defining the dependent variable for the given
+       dataset (before normalization)
 
-    exp_data_raw
-    a list of floats defining the dependent variable for the given
-    dataset (before normalization)
-
-    exp_error_raw
-     a list of floats defining the measurement error for
-     the dependent variable for the given dataset (before normalization)
+       exp_error_raw
+        a list of floats defining the measurement error for
+        the dependent variable for the given dataset (before normalization)
     """
     path = settings["context"] + "config/"
     filename = path + "training_data_" + settings["dataID"] + ".csv"
@@ -70,8 +70,8 @@ def import_data() -> Tuple[list, list, list]:
 
 
 def normalize_data_by_maximum_value(
-    solutions_raw: list, dataID: str, error_raw: list = [0]
-) -> Tuple[list, list]:
+    solutions_raw: List[float], dataID: str, error_raw: List[float] = [0.0]
+) -> Tuple[List[float], List[float]]:
     """Normalizes data by maximum value
 
     Parameters

@@ -18,12 +18,12 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = 'SANDBOX'
-copyright = 'YYYY, AUTHOR_NAME'
-author = 'AUTHOR_NAME'
+project = 'GAMES'
+copyright = '2022, Dray_Kate'
+author = 'Dray_Kate'
 
 # The full version, including alpha/beta/rc tags
-release = 'VERSION NUMBER X.X.X'
+release = 'VERSION NUMBER 2.0.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -56,7 +56,7 @@ autodoc_default_options = {
 }
 
 # List of modules to be mocked up. Useful when some external dependencies are not met at build time and break the building process.
-autodoc_mock_imports = []
+autodoc_mock_imports = ['lmfit', 'salib']
 
 # -- Options for HTML output -------------------------------------------------
 

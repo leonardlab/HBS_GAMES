@@ -5,6 +5,7 @@ Created on Tue Jun 14 12:39:44 2022
 
 @author: kate
 """
+from typing import Tuple, List
 import os
 from games.config.settings import parameter_estimation_problem_definition, folder_path
 from games.config.experimental_data import define_experimental_data
@@ -16,7 +17,7 @@ from games.modules.parameter_estimation.global_search import (
 )
 
 
-def run_parameter_estimation() -> None:
+def run_parameter_estimation() -> Tuple[float, List[float]]:
     """Runs parameter estimation method (multi-start optimization)
 
     Parameters
@@ -37,7 +38,6 @@ def run_parameter_estimation() -> None:
     os.chdir(path)
 
     print("Starting global search...")
-    data_type = "training"
     x, exp_data, exp_error = define_experimental_data()
     df_parameters = generate_parameter_sets(parameter_estimation_problem_definition)
     df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error)

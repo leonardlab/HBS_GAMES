@@ -5,6 +5,7 @@ Created on Wed Jun 15 16:13:15 2022
 
 @author: kate
 """
+from typing import Tuple, List
 import json
 from math import sqrt
 import pandas as pd
@@ -105,9 +106,9 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> Tupl
 
     # Define, add noise to, and save PEM evaluation data
     count = 1
-    pem_evaluation_data_list = []
-    r_sq_list = []
-    chi_sq_list = []
+    pem_evaluation_data_list: List[list] = []
+    r_sq_list: List[float] = []
+    chi_sq_list: List[float] = []
     for row in df_global_search_results_filtered.itertuples(name=None):
         # Define parameters
         p = list(row[1 : len(settings["parameters"]) + 1])

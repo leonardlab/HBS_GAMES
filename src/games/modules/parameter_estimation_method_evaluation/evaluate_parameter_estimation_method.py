@@ -5,6 +5,7 @@ Created on Wed Jun 15 16:13:15 2022
 
 @author: kate
 """
+from typing import List
 import os
 import pandas as pd
 import numpy as np
@@ -15,8 +16,8 @@ from games.config.settings import settings, folder_path
 
 
 def define_initial_guesses_for_pem_eval(
-    df_global_search_results: pd.DataFrame, pem_evaluation_data_list: list
-) -> list:
+    df_global_search_results: pd.DataFrame, pem_evaluation_data_list: List[list]
+) -> List[pd.DataFrame]:
     """Defines initial guesses for each pem evaluation optimization run
     based on results of global search PEM evaluation data and then running
     multi-start optimization with each set of PEM evaluation data
@@ -38,7 +39,7 @@ def define_initial_guesses_for_pem_eval(
     """
 
     df_initial_guesses_list = []
-    for i, pem_evaluation_data in enumerate(pem_evaluation_data_list):
+    for _, pem_evaluation_data in enumerate(pem_evaluation_data_list):
         df_new = df_global_search_results.copy()
         chi_sq_list = []
         for norm_solutions in list(df_global_search_results["normalized solutions"]):
@@ -60,9 +61,9 @@ def define_initial_guesses_for_pem_eval(
 
 
 def optimize_pem_evaluation_data(
-    df_initial_guesses_list: list,
+    df_initial_guesses_list: List[pd.DataFrame],
     chi_sq_pem_evaluation_criterion: float,
-) -> None:
+) -> List[pd.DataFrame]:
     """Runs optimization for each set of pem evaluation data
 
     Parameters

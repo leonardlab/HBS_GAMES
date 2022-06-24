@@ -5,6 +5,7 @@ Created on Wed Jun 15 15:19:16 2022
 
 @author: kate
 """
+from typing import List
 from math import log10
 import pandas as pd
 import seaborn as sns
@@ -14,7 +15,7 @@ from games.config.settings import settings
 plt.style.use(settings["context"] + "paper.mplstyle.py")
 
 
-def plot_chi_sq_trajectory(chi_sq_list: list) -> None:
+def plot_chi_sq_trajectory(chi_sq_list: List[float]) -> None:
     """Plots the chi_sq trajectory following an optimization run
 
     Parameters
@@ -124,23 +125,21 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     """
     # Only keep rows for which r_sq >= .99
     df_opt = df_opt[df_opt["r_sq"] >= 0.99]
-    dose_responses = list(df_opt["Simulation results"])
+    if len(df_opt.index) == 0:
+        print('No parameter sets wtih r_sq > 0.99')
 
-    # define experimental data
-    x = df_opt["x"].iloc[0]
-    exp_data = df_opt["exp_data"].iloc[0]
-    exp_error = df_opt["exp_error"].iloc[0]
+    else:
+        # Restructure dataframe
+        df_opt_log = pd.DataFrame()
+        for label in settings["parameter_labels"]:
+            label_star = label + "*"
+            new_list = [log10(i) for i in list(df_opt[label_star])]
+            df_opt_log[label] = new_list
+        df_opt_log["r_sq"] = df_opt["r_sq"]
 
-    df_opt_log = pd.DataFrame()
-    for label in settings["parameter_labels"]:
-        label_star = label + "*"
-        new_list = [log10(i) for i in list(df_opt[label_star])]
-        df_opt_log[label] = new_list
-    df_opt_log["r_sq"] = df_opt["r_sq"]
-
-    plt.subplots(1, 1, figsize=(4, 3), sharex=True)
-    df_opt_log = pd.melt(df_opt_log, id_vars=["r_sq"], value_vars=settings["parameter_labels"])
-    ax = sns.boxplot(x="variable", y="value", data=df_opt_log, color="dodgerblue")
-    ax = sns.swarmplot(x="variable", y="value", data=df_opt_log, color="gray")
-    ax.set(xlabel="Parameter", ylabel="log(value)")
-    plt.savefig("optimized parameter distributions.svg", dpi=600)
+        plt.subplots(1, 1, figsize=(4, 3), sharex=True)
+        df_opt_log = pd.melt(df_opt_log, id_vars=["r_sq"], value_vars=settings["parameter_labels"])
+        ax = sns.boxplot(x="variable", y="value", data=df_opt_log, color="dodgerblue")
+        ax = sns.swarmplot(x="variable", y="value", data=df_opt_log, color="gray")
+        ax.set(xlabel="Parameter", ylabel="log(value)")
+        plt.savefig("optimized parameter distributions.svg", dpi=600)

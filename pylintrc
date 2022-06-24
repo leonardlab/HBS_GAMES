@@ -4,7 +4,7 @@
 disable=missing-module-docstring
 
 # Set good names.
-good-names=i,j,x,y,z,synTF_chem, synTF, e, b, m, km, n, t, a, synTF_amount, g, solve_synTF_sweep, mu, sigma, p, q
+good-names=i,j,x,y,z,synTF_chem, synTF, e, b, m, km, n, t, a, synTF_amount, g, solve_synTF_sweep, mu, sigma, p, q, ax, dataID, mechanismID, mechanismID
 
 [DESIGN]
 

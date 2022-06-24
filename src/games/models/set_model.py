@@ -10,9 +10,9 @@ from games.models.synTF import synTF
 from games.models.synTF_chem import synTF_chem
 
 
-def set_model() -> any:
+def set_model():
     """
-    Defines the model class to use depending on the systemID defined in Settings
+    Defines the model class to use depending on the modelID defined in Settings
 
     Parameters
     ----------
@@ -25,10 +25,10 @@ def set_model() -> any:
 
     """
 
-    if settings["systemID"] == "synTF_chem":
+    if settings["modelID"] == "synTF_chem":
         given_model = synTF_chem(parameters=settings["parameters"])
 
-    elif settings["systemID"] == "synTF":
+    elif settings["modelID"] == "synTF":
         given_model = synTF(parameters=settings["parameters"])
 
     return given_model

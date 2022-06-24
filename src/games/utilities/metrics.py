@@ -5,12 +5,13 @@ Created on Tue Jun 14 13:37:00 2022
 
 @author: kate
 """
+from typing import List
 from sklearn.linear_model import LinearRegression
 import numpy as np
 from games.config.settings import settings
 
 
-def calc_r_sq(data_x: list, data_y: list) -> float:
+def calc_r_sq(data_x: List[float], data_y: List[float]) -> float:
 
     """Calculate correlation coefficient, r_sq, between 2 datasets
 
@@ -30,21 +31,21 @@ def calc_r_sq(data_x: list, data_y: list) -> float:
     '"""
 
     # Restructure the data
-    data_x = np.array(data_x)
-    data_y = np.array(data_y)
-    data_x = data_x.reshape((-1, 1))
+    data_x_restructured = np.array(data_x)
+    data_y_restructured = np.array(data_y)
+    data_x_restructured = data_x_restructured.reshape((-1, 1))
 
     # Perform linear regression
     model_linear_regression = LinearRegression()
-    model_linear_regression.fit(data_x, data_y)
+    model_linear_regression.fit(data_x_restructured, data_y_restructured)
 
     # Calculate r_sq
-    r_sq = model_linear_regression.score(data_x, data_y)
+    r_sq = model_linear_regression.score(data_x_restructured, data_y_restructured)
 
     return r_sq
 
 
-def calc_chi_sq(exp_: list, sim: list, std: list) -> float:
+def calc_chi_sq(exp_: List[float], sim: List[float], std: List[float]) -> float:
 
     """Calculate chi2 between 2 datasets with measurement error described by std
 
@@ -69,7 +70,7 @@ def calc_chi_sq(exp_: list, sim: list, std: list) -> float:
     if settings["weight_by_error"] == "no":
         std = [1] * len(exp_)
 
-    chi_sq = 0
+    chi_sq = float(0)
     for i, sim_val in enumerate(sim):  # for each datapoint
         err = ((exp_[i] - sim_val) / (std[i])) ** 2
         chi_sq = chi_sq + err

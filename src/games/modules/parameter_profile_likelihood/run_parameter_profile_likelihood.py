@@ -5,6 +5,7 @@ Created on Mon Jun 13 14:24:39 2022
 
 @author: kate
 """
+from typing import List
 import os
 import numpy as np
 from games.config.settings import settings, folder_path
@@ -17,7 +18,9 @@ from games.modules.parameter_profile_likelihood.calculate_threshold import (
 )
 
 
-def run_parameter_profile_likelihood(calibrated_chi_sq: float, calibrated_parameters: list) -> None:
+def run_parameter_profile_likelihood(
+    calibrated_chi_sq: float, calibrated_parameters: List[float]
+) -> None:
     """Calculates parameter profile likelihood
 
     Parameters
@@ -45,8 +48,12 @@ def run_parameter_profile_likelihood(calibrated_chi_sq: float, calibrated_parame
         )
         time_list.append(time)
 
+    total_time = 0.0
+    for time in time_list:
+        total_time += time
+
     print("")
-    print("Total time (minutes): " + str(round(sum(time_list), 4)))
-    print("All ppl times (minutes): " + str(time_list))
-    print("Average time per parameter (minutes): " + str(round(np.mean(time_list), 4)))
-    print("SD (minutes): " + str(round(np.std(time_list), 4)))
+    print("Total time (hours): " + str(np.round(total_time, 2)))
+    print("All ppl times (hours): " + str(time_list))
+    print("Average time per parameter (hours): " + str(round(np.mean(time_list), 4)))
+    print("SD (hours): " + str(round(np.std(time_list), 4)))

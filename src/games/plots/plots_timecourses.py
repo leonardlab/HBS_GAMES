@@ -32,7 +32,7 @@ def plot_timecourses() -> None:
     fig.subplots_adjust(hspace=0.25)
     fig.subplots_adjust(wspace=0.2)
     axs = axs.ravel()
-    if settings["systemID"] == "synTF_chem":
+    if settings["modelID"] == "synTF_chem":
         model.inputs = [50, 50]
         model.input_ligand = 1000
         (
@@ -68,7 +68,7 @@ def plot_timecourses() -> None:
 
             axs[i].set_title(label, fontweight="bold", fontsize=8)
 
-    elif settings["systemID"] == "synTF":
+    elif settings["modelID"] == "synTF":
         solution, t = model.solve_single()
         for i, label in enumerate(model.state_labels):
             axs[i].plot(t, solution, linestyle="dotted", marker="None", color="black")

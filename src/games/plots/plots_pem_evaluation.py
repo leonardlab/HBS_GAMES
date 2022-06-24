@@ -5,7 +5,7 @@ Created on Thu May 26 09:48:43 2022
 
 @author: kate
 """
-
+from typing import List
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -14,7 +14,9 @@ from games.config.settings import settings
 plt.style.use(settings["context"] + "paper.mplstyle.py")
 
 
-def plot_pem_evaluation(df_list: list, chi_sq_pem_evaluation_criterion: float) -> None:
+def plot_pem_evaluation(
+    df_list: List[pd.DataFrame], chi_sq_pem_evaluation_criterion: float
+) -> None:
     """Plots results of PEM evaluation runs
 
     Parameters
@@ -37,12 +39,10 @@ def plot_pem_evaluation(df_list: list, chi_sq_pem_evaluation_criterion: float) -
     'PEM EVALUATION CRITERION.svg'
         (plot of the best optimized chi_sq values for each PEM evaluation dataset)
     """
-    run = []
-    chi_sq_list = []
-    r_sq_list = []
-    min_cf_list = []
-    min_cf_list = []
-    min_cf_list = []
+    run: List[int] = []
+    chi_sq_list: List[float] = []
+    r_sq_list: List[float] = []
+    min_cf_list: List[float] = []
 
     for i, df_opt in enumerate(df_list):
         chi_sq = list(df_opt["chi_sq"])

@@ -5,7 +5,7 @@ Created on Wed Jun 15 16:02:58 2022
 
 @author: kate
 """
-
+from typing import List, Tuple
 from math import sqrt
 import pandas as pd
 import numpy as np
@@ -19,7 +19,9 @@ from games.utilities.saving import save_chi_sq_distribution
 from games.plots.plots_parameter_profile_likelihood import plot_chi_sq_distribution
 
 
-def generate_noise_realizations_and_calc_chi_sq_ref(norm_solutions_ref: list):
+def generate_noise_realizations_and_calc_chi_sq_ref(
+    norm_solutions_ref: List[float],
+) -> Tuple[List[list], List[float]]:
     """Generates noise realizations and calculates chi_sq_ref
 
     Parameters
@@ -73,7 +75,9 @@ def generate_noise_realizations_and_calc_chi_sq_ref(norm_solutions_ref: list):
     return exp_data_noise_list, chi_sq_ref_list
 
 
-def calculate_chi_sq_fit(calibrated_parameters: list, exp_data_noise_list: list) -> list:
+def calculate_chi_sq_fit(
+    calibrated_parameters: List[float], exp_data_noise_list: List[list]
+) -> List[float]:
     """Runs optimization on each noise realization with
     the calibrated parameters as the initial guess
 
@@ -113,7 +117,9 @@ def calculate_chi_sq_fit(calibrated_parameters: list, exp_data_noise_list: list)
     return chi_sq_fit_list
 
 
-def calculate_threshold_chi_sq(calibrated_parameters: list, calibrated_chi_sq: float) -> float:
+def calculate_threshold_chi_sq(
+    calibrated_parameters: List[float], calibrated_chi_sq: float
+) -> float:
     """Calculates threshold chi_sq value for ppl calculations
 
     Parameters
@@ -131,8 +137,7 @@ def calculate_threshold_chi_sq(calibrated_parameters: list, calibrated_chi_sq: f
 
     """
 
-    p_ref = [15, 0.05, 0.05, 36, 100, 2]
-    model.parameters = p_ref
+    model.parameters = settings["parameters_reference"]
     x, exp_data, exp_error = define_experimental_data()
     norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set(x, exp_data, exp_error)
     print("chi_sq reference with training data: " + str(round(chi_sq_ref, 4)))
@@ -150,7 +155,8 @@ def calculate_threshold_chi_sq(calibrated_parameters: list, calibrated_chi_sq: f
     for i, ref_val in enumerate(chi_sq_ref_list):
         chi_sq_distribution.append(ref_val - chi_sq_fit_list[i])
     confidence_interval = 99
-    threshold_chi_sq = np.percentile(chi_sq_distribution, confidence_interval)
+    threshold_chi_sq_ = np.percentile(chi_sq_distribution, confidence_interval)
+    threshold_chi_sq = float(threshold_chi_sq_)
 
     plot_chi_sq_distribution(chi_sq_distribution, threshold_chi_sq)
     save_chi_sq_distribution(threshold_chi_sq, calibrated_parameters, calibrated_chi_sq)

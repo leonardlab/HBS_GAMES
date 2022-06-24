@@ -5,7 +5,7 @@ Created on Thu Jun 16 09:11:29 2022
 
 @author: kate
 """
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 from scipy.integrate import odeint
 from games.plots.plots_training_data import plot_training_data_2d
@@ -17,7 +17,7 @@ class synTF:
 
     """
 
-    def __init__(self, parameters=None, inputs=None) -> None:
+    def __init__(self, parameters: List[float] = None, inputs: List[float] = None) -> None:
         """Initializes synTF model.
 
         Parameters
@@ -34,8 +34,8 @@ class synTF:
 
         """
         self.state_labels = state_labels = ["ZFa mRNA", "ZFa protein", "Rep RNA", "Rep protein"]
-        self.parameters = np.array(parameters)
-        self.inputs = np.array(inputs)
+        self.parameters = parameters
+        self.inputs = inputs
         number_of_states = 4
         y_init = np.zeros(number_of_states)
         self.initial_conditions = y_init
@@ -74,7 +74,9 @@ class synTF:
         return solution, t
 
     @staticmethod
-    def gradient(y=np.ndarray, t=np.ndarray, parameters=list, inputs=list) -> np.ndarray:
+    def gradient(
+        y: np.ndarray, t: np.ndarray, parameters: List[float], inputs: List[float]
+    ) -> np.ndarray:
         """Defines the gradient for synTF model.
 
         Parameters
@@ -112,7 +114,7 @@ class synTF:
 
         return dydt
 
-    def solve_experiment(self, x: list, dataID: str) -> list:
+    def solve_experiment(self, x: List[float], dataID: str) -> List[float]:
         """Solve synTF model for a list of synTF values.
 
         Parameters
@@ -125,9 +127,6 @@ class synTF:
 
         Returns
         -------
-        synTF_amounts
-            A list of integers containing the synTF amounts to sweep over
-
         solutions
             A list of floats containing the value of the reporter protein
             at the final timepoint for each synTF amount
@@ -144,12 +143,12 @@ class synTF:
 
     @staticmethod
     def plot_training_data(
-        x: list,
-        solutions_norm: list,
-        exp_data: list,
-        exp_error: list,
-        filename: list,
-        run_type: list,
+        x: List[float],
+        solutions_norm: List[float],
+        exp_data: List[float],
+        exp_error: List[float],
+        filename: str,
+        run_type: str,
     ) -> None:
         """
         Plots training data and simulated training data

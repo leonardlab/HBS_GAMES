@@ -4,6 +4,7 @@
 Created on Tue Jun 14 13:47:26 2022
 @author: kate
 """
+from typing import List
 import os
 import json
 from datetime import date
@@ -70,7 +71,7 @@ def create_folder(folder_path: str, sub_folder_name: str) -> str:
 
 
 def save_chi_sq_distribution(
-    threshold_chi_sq: float, calibrated_parameters: list, calibrated_chi_sq: float
+    threshold_chi_sq: float, calibrated_parameters: List[float], calibrated_chi_sq: float
 ) -> None:
     """Saves threshold chi_sq value for PPL calculations
 
@@ -99,7 +100,7 @@ def save_chi_sq_distribution(
     print("Conditions saved.")
 
 
-def save_pem_evaluation_data(solutions_norm_noise: list) -> None:
+def save_pem_evaluation_data(solutions_norm_noise: List[list]) -> None:
     """
     Saves PEM evaluation data
 
