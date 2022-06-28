@@ -114,13 +114,12 @@ def define_settings() -> Tuple[dict, str, dict]:
     folder_path
         a string defining the path to the main results directory for the run
 
-    parameter_estimation_pfileroblem_definition
+    parameter_estimation_problem_definition
         a dictionary defining the parameter estimation problem
 
     """
     file = open("./src/games/config/config.json", encoding="utf-8")
     settings_import = json.load(file)
-
     # Define free parameter indices and add to settings dictionary
     free_parameters, free_parameter_indices = define_free_parameter_indices(
         settings_import["parameters"],

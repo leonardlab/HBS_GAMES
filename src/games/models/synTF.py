@@ -33,7 +33,7 @@ class synTF:
         None
 
         """
-        self.state_labels = state_labels = ["ZFa mRNA", "ZFa protein", "Rep RNA", "Rep protein"]
+        self.state_labels = ["ZFa mRNA", "ZFa protein", "Rep RNA", "Rep protein"]
         self.parameters = parameters
         self.inputs = inputs
         number_of_states = 4
@@ -100,14 +100,16 @@ class synTF:
         kdeg_protein = 0.35
         kdeg_reporter = 0.029
 
-        [g] = parameters
+        [b, m, w] = parameters
         [dose_a] = inputs
+
+        fractional_activation_promoter = b + m * w * y[1] / (1 + w * y[1])
 
         dydt = np.array(
             [
                 k_txn * dose_a - kdeg_rna * y[0],  # y0 synTF mRNA
                 k_trans * y[0] - kdeg_protein * y[1],  # y1 synTF protein
-                k_txn * g * y[1] - kdeg_rna * y[2],  # y2 Reporter mRNA
+                k_txn * fractional_activation_promoter - kdeg_rna * y[2],  # y2 Reporter mRNA
                 k_trans * y[2] - kdeg_reporter * y[3],  # y3 Reporter protein
             ]
         )

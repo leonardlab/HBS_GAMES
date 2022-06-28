@@ -25,7 +25,7 @@ from games.modules.parameter_estimation_method_evaluation.evaluate_parameter_est
 
 def run_parameter_estimation_method_evaluation() -> None:
     """Runs parameter estimation method evaluation by first generating
-    PEM evaluation data and then running multi-start optimziation
+    PEM evaluation data and then running multi-start optimization
     with each set of PEM evaluation data
 
     Parameters

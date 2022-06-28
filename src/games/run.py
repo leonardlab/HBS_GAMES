@@ -62,6 +62,8 @@ def run(modules: str) -> None:
 
     if "3" in modules:
         print("Starting Module 3...")
+        calibrated_chi_sq = 0.784
+        calibrated_parameters = [15.22, 1, 1, 585.3, 105, 2.04]
         run_parameter_profile_likelihood(calibrated_chi_sq, calibrated_parameters)
         print("Module 3 completed")
         print("")

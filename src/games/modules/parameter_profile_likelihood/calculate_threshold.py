@@ -5,6 +5,7 @@ Created on Wed Jun 15 16:02:58 2022
 
 @author: kate
 """
+import matplotlib.pyplot as plt
 from typing import List, Tuple
 from math import sqrt
 import pandas as pd
@@ -13,10 +14,79 @@ from games.models.set_model import model
 from games.modules.parameter_estimation.optimization import optimize_all
 from games.modules.solve_single import solve_single_parameter_set
 from games.config.settings import settings
-from games.config.experimental_data import define_experimental_data
+from games.config.experimental_data import define_experimental_data, normalize_data_by_maximum_value
 from games.utilities.metrics import calc_chi_sq
 from games.utilities.saving import save_chi_sq_distribution
 from games.plots.plots_parameter_profile_likelihood import plot_chi_sq_distribution
+from games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data import add_noise
+
+
+def define_noise_array(
+    exp_error: List[float], num_data_sets: int, modelID: str) -> np.ndarray:
+    """Generates noise values to add to original experimental data
+
+   NOTE: This function has been refactored to generate noise values in a more modular way.
+    The original method for generating noise is retained for synTF_chem to ensure that results from
+    this refactored code match those in the GAMES paper.
+
+    For future use, the code used here for synTF_chem can be deleted.
+
+    This function can also be combined with generate_noise_pem_evaluation in
+    generate_pem_evaluation_data.py (used to generate noise for PEM evaluation) for future use.
+    The functions are left separate here  because slightly different methods for random number
+    generation and seeding were used in the original GAMES code such that combining the functions
+    may lead to slightly different results that do not exactly match the results from the paper
+    (although the trends and conclusions would remain the same).
+
+    Parameters
+    ----------
+    exp_error
+        a list of floats containing standard deviation for
+        each data point in the data set
+
+    num_data_sets
+        an integer defining the number of datasets with noise to generate
+
+    modelID
+        a string defining the modelID
+
+    Returns
+    -------
+    noise_array
+        an array containing the noise values to add to each data
+        point (j) for each noise realization (i)
+    """
+    # Define mean for error distribution
+    mu = 0
+    if modelID == "synTF_chem":
+        # Define standard error for error distribution
+        sigma = 0.05 / sqrt(3)
+
+        # Generate noise array
+        np.random.seed(6754)
+        noise_array = np.random.normal(mu, sigma, (num_data_sets, len(exp_error)))
+
+    else:
+        # Calculate standard error values (assuming triplicate measurements)
+        sigma_values_standard_error = [i / sqrt(3) for i in exp_error]
+
+        # Generate noise array for each datapoint (j)
+        starting_seed = 6754
+        for j, sigma_val in enumerate(sigma_values_standard_error):
+            # Use a different seed for each noise generation
+            np.random.seed(starting_seed + j)
+
+            # Generate a different noise value for each noise
+            # realization and add to array
+            noise_row = np.random.normal(mu, sigma_val, num_data_sets)
+            if j == 0:
+                noise_array = np.array([noise_row])
+            else:
+                noise_array = np.vstack([noise_array, noise_row])
+
+        noise_array = np.transpose(noise_array)
+
+    return noise_array
 
 
 def generate_noise_realizations_and_calc_chi_sq_ref(
@@ -46,31 +116,72 @@ def generate_noise_realizations_and_calc_chi_sq_ref(
     exp_data_noise_list = []
     chi_sq_ref_list = []
 
-    # Define mean and standard error for error distribution
-    mu = 0
-    sigma = 0.05 / sqrt(3)
-
-    # Generate noise array
-    np.random.seed(6754)
-    noise_array = np.random.normal(
-        mu, sigma, (settings["num_noise_realizations"], len(exp_data_original))
+    # generate array with noise values for each noise realization and dataset
+    noise_array = define_noise_array(
+        exp_error, settings["num_noise_realizations"], settings["modelID"]
     )
 
     for i in range(0, settings["num_noise_realizations"]):
+        exp_data_noise_norm = add_noise(solutions_norm_raw, list(noise_array[i, :]), dataID)
+        exp_data_noise_list.append(exp_data_noise_norm)
         # add noise and append to experimental data to list for saving
-        exp_data_noise = []
-        for j, val in enumerate(exp_data_original):
-            new_val = val + noise_array[i, j]
-            new_val = max(new_val, 0.0)
-            exp_data_noise.append(new_val)
+        #exp_data_noise = []
+        #for j, val in enumerate(exp_data_original):
+        #    new_val = val + noise_array[i, j]
+        #    new_val = max(new_val, 0.0)
+        #    exp_data_noise.append(new_val)
 
         # re-normalize data
-        exp_data_noise_norm = [i / max(exp_data_noise) for i in exp_data_noise]
-        exp_data_noise_list.append(exp_data_noise_norm)
+        #exp_data_noise_norm, _ = normalize_data_by_maximum_value(exp_data_noise, settings["dataID"])
 
         # Calculate chi_sq_ref using noise realization i
         chi_sq = calc_chi_sq(norm_solutions_ref, exp_data_noise_norm, exp_error)
         chi_sq_ref_list.append(chi_sq)
+
+        plt.figure()
+        x, exp_data, exp_error = define_experimental_data()
+
+        if i < 10:
+            plt.plot(
+                x[:11],
+                exp_data_noise_norm[:11],
+                marker="o",
+                color="lightseagreen",
+                label="exp noise",
+            )
+            plt.plot(
+                x[:11],
+                norm_solutions_ref[:11],
+                marker="None",
+                linestyle=":",
+                color="lightseagreen",
+                label="sim p_ref",
+            )
+            plt.legend()
+            plt.xscale("symlog")
+            plt.title("chi_sq_ref " + str(i) + " = " + str(chi_sq))
+            plt.savefig("./chi_sq_ref " + str(i) + " ligand dr")
+
+            plt.figure()
+            plt.plot(
+                x[11:],
+                exp_data_noise_norm[11:],
+                marker="o",
+                color="lightseagreen",
+                label="exp noise",
+            )
+            plt.plot(
+                x[11:],
+                norm_solutions_ref[11:],
+                marker="None",
+                linestyle=":",
+                color="lightseagreen",
+                label="sim p_ref",
+            )
+            plt.legend()
+            plt.xscale("linear")
+            plt.title("chi_sq_ref " + str(i) + " = " + str(chi_sq))
+            plt.savefig("./chi_sq_ref " + str(i) + " dbd dr")
 
     return exp_data_noise_list, chi_sq_ref_list
 
@@ -101,7 +212,7 @@ def calculate_chi_sq_fit(
     for i, parameter_label in enumerate(settings["parameter_labels"]):
         df_noise[parameter_label] = [calibrated_parameters[i]] * settings["num_noise_realizations"]
 
-    x, _, exp_error = define_experimental_data()
+    x, exp_data, exp_error = define_experimental_data()
     df_noise["x"] = [x] * len(df_noise.index)
     df_noise["exp_data"] = exp_data_noise_list
     df_noise["exp_error"] = [exp_error] * len(df_noise.index)
@@ -114,6 +225,65 @@ def calculate_chi_sq_fit(
     _, _, df_optimization_results, _ = optimize_all(df_noise, "ppl threshold")
     chi_sq_fit_list = list(df_optimization_results["chi_sq"])
 
+    for i, exp_data_noise in enumerate(exp_data_noise_list[:10]):
+        plt.figure()
+        plt.plot(
+            x[:11],
+            exp_data[:11],
+            marker="o",
+            linestyle="None",
+            color="dimgrey",
+            label="exp data original",
+        )
+        plt.plot(
+            x[:11],
+            exp_data_noise[:11],
+            marker="^",
+            linestyle="None",
+            color="lightseagreen",
+            label="exp data noise",
+        )
+        plt.plot(
+            x[:11],
+            df_optimization_results["Simulation results"].iloc[i][:11],
+            marker="None",
+            linestyle=":",
+            color="lightseagreen",
+        )
+        plt.title("chi_sq_fit " + str(i) + " = " + str(chi_sq_fit_list[i]))
+        plt.legend()
+        plt.xscale("symlog")
+        plt.savefig("./chi_sq_fit " + str(i) + " ligand dr")
+
+        plt.figure()
+        plt.plot(
+            x[11:],
+            exp_data[11:],
+            marker="o",
+            linestyle="None",
+            color="dimgrey",
+            label="exp data original",
+        )
+        plt.plot(
+            x[11:],
+            exp_data_noise[11:],
+            marker="^",
+            linestyle="None",
+            color="lightseagreen",
+            label="exp data noise",
+        )
+        plt.plot(
+            x[11:],
+            df_optimization_results["Simulation results"].iloc[i][11:],
+            marker="None",
+            linestyle=":",
+            color="lightseagreen",
+        )
+        plt.title("chi_sq_fit " + str(i) + " = " + str(chi_sq_fit_list[i]))
+        plt.legend()
+        plt.xscale("linear")
+        plt.savefig("./chi_sq_fit " + str(i) + " dbd dr")
+
     return chi_sq_fit_list
 
 
@@ -121,6 +291,19 @@ def calculate_threshold_chi_sq(
     calibrated_parameters: List[float], calibrated_chi_sq: float
 ) -> float:
     """Calculates threshold chi_sq value for ppl calculations
+
+    NOTE: for the GAMES example, a reference parameter set was used to
+    provide a proof-of-principle demonstration of the workflow.
+    In practical modeling situations, the reference parameters u
+    sed to generate the training data will be unknown and the
+    goal will be to estimate these parameters. In such situations, the
+    calibrated parameter set should be used as the reference parameters.
+    This distinction is made in this function by setting the reference parameters
+    to the calibrated parameters. For use for other models/datasets, the reference parameters
+    can be removed from config.json and the following code can be removed from this function:
+
+    if settings["modelID"] == 'synTF_chem':
+        model.parameters = settings["parameters_reference"]
 
     Parameters
     ----------
@@ -136,8 +319,12 @@ def calculate_threshold_chi_sq(
         a float defining the threshold chi_sq value
 
     """
+    if settings["modelID"] == 'synTF_chem':
+        model.parameters = settings["parameters_reference"]
 
-    model.parameters = settings["parameters_reference"]
+    else:
+        model.parameters = calibrated_parameters
+
     x, exp_data, exp_error = define_experimental_data()
     norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set(x, exp_data, exp_error)
     print("chi_sq reference with training data: " + str(round(chi_sq_ref, 4)))
@@ -147,8 +334,11 @@ def calculate_threshold_chi_sq(
         norm_solutions_ref
     )
 
+    print("chi_sq_ref_list: " + str(chi_sq_ref_list))
+
     print("Calculating chi_sq_fit...")
     chi_sq_fit_list = calculate_chi_sq_fit(calibrated_parameters, exp_data_noise_list)
+    print("chi_sq_fit_list: " + str(chi_sq_ref_list))
 
     # Calculate threshold chi_sq
     chi_sq_distribution = []

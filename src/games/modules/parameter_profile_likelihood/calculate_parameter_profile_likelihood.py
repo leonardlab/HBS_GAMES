@@ -5,7 +5,7 @@ Created on Wed Jun 15 16:03:09 2022
 
 @author: kate
 """
-from typing import Tuple, List
+from typing import Tuple, List, Union
 import datetime
 import pandas as pd
 from games.modules.parameter_estimation.optimization import optimize_all
@@ -18,6 +18,78 @@ from games.plots.plots_parameter_profile_likelihood import plot_parameter_profil
 from games.plots.plots_parameter_profile_likelihood import plot_parameter_relationships
 from games.plots.plots_parameter_profile_likelihood import plot_internal_states_along_ppl
 from games.config.experimental_data import define_experimental_data
+
+
+def set_ppl_settings(
+    parameter_label: str,
+    direction: int,
+    default_values: List[Union[float, int]],
+    non_default_min_step_fraction_ppl: dict,
+    non_default_max_step_fraction_ppl: dict,
+    non_default_number_steps_ppl: dict,
+) -> Tuple[float, float, int]:
+    """Defines ppl settings for the given parameter if non_default settings values are specified
+
+    Parameters
+    ----------
+    parameter_label
+       a string defining the given parameter
+
+    direction
+       an integer defining the direction
+       (-1 for negative direction, 1 for positive direction)
+
+    default_values
+        a list of floats or integers defining the default values for
+        [min_step_fraction, max_step_fraction, number_steps]
+
+    non_default_min_step_fraction_ppl
+        a list of dictionaries defining the non-default values for each setting
+        each key is the parameter name and each value is a list where the
+        first item is the direction of ppl calculations
+        and the second item is the value for the given setting and
+        the given parameter/direction. For example, {"k": [1, 100]} means that
+        the value of the given setting should be 100 for parameter k in the positive direction
+
+    non_default_max_step_fraction_ppl
+        same as above but setting = max step fraction
+
+    non_default_number_steps_ppl
+        same as above but setting = max number steps fraction
+
+    Returns
+    -------
+    min_step_fraction
+       a float defining the fraction of the calibrated parameter that defines the minimum step size
+
+    max_step_fraction
+       a float defining the fraction of the calibrated parameter that defines the maximum step size
+
+    max_steps
+       an integer defining the maximum number of allowable steps
+    """
+    # Min step value
+    for key, values in non_default_min_step_fraction_ppl.items():
+        if key == parameter_label and values[0] == direction:
+            min_step_fraction = values[1]
+        else:
+            min_step_fraction = default_values[0]
+
+    # Max step value
+    for key, values in non_default_max_step_fraction_ppl.items():
+        if key == parameter_label and values[0] == direction:
+            max_step_fraction = values[1]
+        else:
+            max_step_fraction = default_values[1]
+
+    # Max number of steps
+    for key, values in non_default_number_steps_ppl.items():
+        if key == parameter_label and values[0] == direction:
+            max_steps = values[1]
+        else:
+            max_steps = default_values[2]
+
+    return min_step_fraction, max_step_fraction, max_steps
 
 
 def calculate_chi_sq_ppl_single_datapoint(
@@ -124,20 +196,12 @@ def calculate_ppl(
         if label == parameter_label:
             fixed_index_in_free_parameter_list = j
 
-    # Set the minimum and maximum acceptable step choices
-    # set the min step to 1% of starting value
-    min_step_list = [0.01 * i for i in calibrated_parameter_values]
-
-    # set the max step to 20% of starting value
-    max_step_list = [0.2 * i for i in calibrated_parameter_values]
-
-    # Set the target value for PL difference between steps
+    # Set the target value for PPL difference between steps
     # and acceptable range
     q = 0.1
     target_val = threshold_chi_sq * q
     min_threshold_limit = target_val * 0.1
     max_threshold_limit = target_val * 2
-    max_steps = 50  # Set maximum number of steps for EACH direction
 
     # Set min and max flags to default values
     min_flag = False
@@ -162,21 +226,25 @@ def calculate_ppl(
         elif direction == 1:
             print("positive direction")
 
-        # Set default min and max step vals for the fixed parameter
-        min_step = min_step_list[fixed_index]
-        max_step = max_step_list[fixed_index]
+        # Define ppl hyperparameters for given parameter and direction
+        min_step_fraction, max_step_fraction, max_steps = set_ppl_settings(
+            parameter_label,
+            direction,
+            [
+                settings["default_min_step_fraction_ppl"],
+                settings["default_max_step_fraction_ppl"],
+                settings["default_number_steps_ppl"],
+            ],
+            settings["non_default_min_step_fraction_ppl"],
+            settings["non_default_max_step_fraction_ppl"],
+            settings["non_default_number_steps_ppl"],
+        )
 
-        # Set parameter-specific ppl hyperparameters if relevant
-        if parameter_label == "k_bind" and direction == -1:
-            min_step = 0.01 * min_step
-        if parameter_label == "m" and direction == -1:
-            min_step = 0.01 * min_step
-        if parameter_label == "m" and direction == 1:
-            max_step = 3 * max_step
-            max_steps = 100
+        min_step = min_step_fraction * calibrated_parameter_values[fixed_index]
+        max_step = max_step_fraction * calibrated_parameter_values[fixed_index]
 
-        print("min step: " + str(min_step))
-        print("max step: " + str(max_step))
+        print("min step value: " + str(min_step))
+        print("max step value: " + str(max_step))
 
         # Initialize lists to hold results for this ppl only
         chi_sq_ppl_list: List[float] = []  # chi_sq_ppl values

@@ -126,7 +126,7 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     # Only keep rows for which r_sq >= .99
     df_opt = df_opt[df_opt["r_sq"] >= 0.99]
     if len(df_opt.index) == 0:
-        print('No parameter sets wtih r_sq > 0.99')
+        print("No parameter sets wtih r_sq > 0.99")
 
     else:
         # Restructure dataframe

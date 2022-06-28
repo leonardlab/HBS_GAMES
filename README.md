@@ -1,12 +1,100 @@
-# Python project template repository
+# GAMES code
 
-[![Build Status](https://github.com/bagherilab/python_project_template/workflows/build/badge.svg)](https://github.com/bagherilab/python_project_template/actions?query=workflow%3Abuild)
-[![Codecov](https://img.shields.io/codecov/c/gh/bagherilab/python_project_template?token=HYF4KEB84L)](https://codecov.io/gh/bagherilab/python_project_template)
-[![Lint Status](https://github.com/bagherilab/python_project_template/workflows/lint/badge.svg)](https://github.com/bagherilab/python_project_template/actions?query=workflow%3Alint)
-[![Documentation](https://github.com/bagherilab/python_project_template/workflows/documentation/badge.svg)](https://bagherilab.github.io/python_project_template/)
-[![Code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+v2.0.0 is a refactored version of the GAMES code used in Dray et al. 2022. 
+This version includes a variety of Python tools for type annotation, linting, testing, and documentation, along with a new, improved, and more user-friendly code stucture that is more amenable to extention to different models, data sets, and simulation conditions. 
+Information on how to install and run each Python tool is included below.
+ 
 
-This repository is a template for Python projects that uses the GitHub Actions and the following tools:
+## Extending the code to a new model 
+
+To add a new model, the user must only add a new file in the models directory and a new .csv with the experimental data file.
+The model file should include a class with the model name and should include the same general functions at the example shown here (synTF_chem, synTF).
+Note that the model synTF is not mentioned in the GAMES paper, but is included her as an example of how to integrate multiple different models in the GAMES workflow. The experimental data file should have a similar structure to the examples provided.  
+
+
+## Changing run settings 
+
+To change run settings, the user can edit the "config.json" file and change each item as needed (for example, parameter estimation method hyperparameters or free parameters). 
+The user must change the "context" value to the path to the GAMES directory on their own machine.  
+
+## Running GAMES with the command line 
+
+To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), use the command line to run the following, where x is the module number: 
+
+```
+$ run --modules='x' 
+```
+
+Mutiple modules can be run in series. For example,  the following command will run modules 2 and 3.  
+
+```
+$ run --modules='23' 
+```
+
+##Unit tests
+
+We provide a small number of unit tests here as a learning tool and proof-of-principle for the testing architecture. 
+The user may want to use the examples shown here to write more unit tests or functional tests based on their own needs.  
+
+##Settings 
+
+Descriptions of all settings in config.json
+
+  - folder_name: a string defining the name of folder to save results to  
+
+  - modelID:  sa tring defining the model to use, should be same name as the relevant class 
+
+  - dataID : a string defining the data to use, .csv defining the data should be named "training_data_" + dataID, name of dataID is user-defined 
+
+  - mechanismID : a string defining the identify of the mechanism to use, if there is only one version of a given model, this variable is unnecessary 
+
+  - context : a string defining the absolute path to GAMES/src/games in the given context (computer) where the code will be run 
+
+  - parameters: a list of integers defining the starting values for each parameter. If a given parameter is not free in this run, the parameter fill be fixed at the value in this list 
+
+  - parameters_reference : a list of integers defining the reference values for each parameter, only necessary for proof-of-principle demonstrations such that the parameter used to define the training data are known 
+
+  - parameter_labels : a list of strings defining the labels for the parameters defined in the "parameters" variable  
+
+  - free_parameter_labels": a list of strings defining the labels for the parameters that are free in this run 
+
+  - bounds_orders_of_magnitude": an integer defining the orders of magnitude in each direction that parameters are allowed to vary, all free parameters have these bounds by default 
+
+  - non_default_bounds: a dictionary defining parameters  that have non-default bounds – key is the parameter label and value is a list with the minimum bound as the first item and the maximum bound as the second item 
+
+  - num_parameter_sets_global_search" an integer defining the number of parameter sets in the global search 
+
+  - num_parameter_sets_optimization : an integer defining the number of initial guesses for optimization 
+
+  - weight_by_error: a string ("yes" or "no") defining whether the cost function is weighted by measurement error 
+
+  - num_pem_evaluation_datasets: an integer defining the number of pem evaluation data sets to generate 
+
+  - parallelization : a string ("yes" or "no") defining whether the run should be parallelized 
+
+  - num_cores : an integer defining the number of cores to parallelize the run across, not relevant if parallelization = 'no' 
+
+  - num_noise_realizations : an integer defining the number of noise realizations to use to define the PPL threshold 
+
+  - parameter_labels_for_ppl : a list of strings defining the parameter labels for which the PPL should be calculated 
+
+  - default_min_step_fraction_ppl : a float defining the default fraction of the calibrated value to set the minimum step for PPL 
+
+  - non_default_min_step_fraction_ppl : a dictionary defining non-default min step values for PPL – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and fraction as the second value 
+
+  - default_max_step_fraction_ppl : a floatdefining the default fraction of the calibrated value to set the maximum step for PPL 
+
+  - non_default_max_step_fraction_ppl : a dictionary defining non-default max step values for PPL – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and fraction as the second value 
+
+  - default_max_number_steps_ppl: an integer defining the default maximum number of PPL steps in each direction 
+
+  - non_default_number_steps_ppl : a dictionary defining non-default maximum number of PPL steps – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and number of steps as the second value 
+
+ 
+
+# Python project tools
+
+This repositor uses the GitHub Actions and the following tools:
 
 - [Poetry](https://python-poetry.org/) for packaging and dependency management
 - [Tox](https://tox.readthedocs.io/en/latest/) for automated testing
@@ -27,24 +115,22 @@ The other tools will be installed by Poetry.
 $ poetry init
 ```
 
-3. Install dependencies.
-
-```bash
-$ poetry install
-```
-
-4. Activate the environment (this is all you need for day-to-day development):
+3. Activate the environment (this is all you need for day-to-day development):
 
 ```bash
 $ poetry shell
 ```
 
-5. Run the CLI.
+4. Install dependencies.
 
 ```bash
-$ python src/sandbox/cli.py 10
-[1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
-55
+$ poetry install
+```
+
+5. Run a test with the CLI.
+
+```bash
+$ run --modules='0' 
 ```
 
 ## General commands
@@ -81,13 +167,6 @@ You can additionally specify version constraints (e.g. `<dependency>@<version co
 Use `-D` to indicate development dependencies.
 You can also add dependencies directly to the  file.
 
-For projects with CLI, you can simplify the call to the CLI so instead of `python src/sandbox/cli.py 10` you can simply call `sandbox-cli 10`.
-Add these commands to the `pyproject.toml` by linking a command and the method to call:
-
-```toml
-[tool.poetry.scripts]
-sandbox-cli = "sandbox.cli:cli"
-```
 
 ### GitHub Actions
 
@@ -129,16 +208,6 @@ Pylint can be configured in `.pylintrc` to ignore specific messages (such as `mi
 
 Mypy performs static type checking.
 Adding type hinting makes it easier to find bugs and removes the need to add tests solely for type checking.
-
-Mypy will avoid assuming types in imported dependencies, so will generally throw a `Cannot find implementation or library stub for module` error.
-Update `mypy.ini` to ignore these missing imports:
-
-```
-[mypy-<dependency>.*]
-ignore_missing_imports = True
-```
-
-Add a `py.typed` file to each module to indicate that the module is typed.
 
 ### Sphinx
 

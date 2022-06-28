@@ -92,7 +92,7 @@ def define_best_optimization_results(
     r_sq_opt = round(df_optimization_results["r_sq"].iloc[0], 3)
     chi_sq_opt_min = round(df_optimization_results["chi_sq"].iloc[0], 3)
 
-    if run_type != "ppl":
+    if run_type != "ppl" or "ppl threshold":
         filename = "best fit to training data"
         model.plot_training_data(
             df_optimization_results["x"].iloc[0],
@@ -184,8 +184,9 @@ def optimize_all(
 
     print("Optimization complete.")
     df_optimization_results = pd.DataFrame(all_opt_results, columns=results_row_labels)
-    df_optimization_results = df_optimization_results.sort_values(by=["chi_sq"], ascending=True)
-    df_optimization_results = df_optimization_results.reset_index(drop=True)
+    if run_type != "ppl threshold":
+        df_optimization_results = df_optimization_results.sort_values(by=["chi_sq"], ascending=True)
+        df_optimization_results = df_optimization_results.reset_index(drop=True)
 
     # Add experimental data to results
     df_optimization_results["x"] = df_global_search_results["x"]
@@ -432,5 +433,5 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
     )
 
     if len(free_parameter_labels) == len(settings["free_parameter_labels"]):  # if not a ppl run
-        print("Optimization run " + str(count + 1) + " complete")
+        print("Optimization run " + str(count) + " complete")
     return results_row, results_row_labels
