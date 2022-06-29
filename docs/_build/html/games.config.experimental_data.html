@@ -84,8 +84,76 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-config-experimental-data-module">
-<h1>games.config.experimental_data module<a class="headerlink" href="#games-config-experimental-data-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.config.experimental_data">
+<span id="games-config-experimental-data-module"></span><h1>games.config.experimental_data module<a class="headerlink" href="#module-games.config.experimental_data" title="Permalink to this headline"></a></h1>
+<p>Created on Wed Jun 15 10:36:16 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.config.experimental_data.define_experimental_data">
+<span class="sig-name descname"><span class="pre">define_experimental_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/config/experimental_data.html#define_experimental_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.config.experimental_data.define_experimental_data" title="Permalink to this definition"></a></dt>
+<dd><p>Imports, normalizes, and defines experimental data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>x</em> – a list of floats containing the values of the independent variable</p></li>
+<li><p><em>exp_data</em> – a list of floats containing the values of the dependent variable</p></li>
+<li><p><em>exp_error</em> – a list of floats containing the values of the measurement error
+for the dependent variable</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.config.experimental_data.import_data">
+<span class="sig-name descname"><span class="pre">import_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/config/experimental_data.html#import_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.config.experimental_data.import_data" title="Permalink to this definition"></a></dt>
+<dd><p>Imports experimental data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>None</strong> – </p></li>
+<li><p><strong>Returns</strong> – </p></li>
+<li><p><strong>x</strong> – a list of floats defining the independent variable for the given dataset</p></li>
+<li><p><strong>exp_data_raw</strong> – a list of floats defining the dependent variable for the given
+dataset (before normalization)</p></li>
+<li><p><strong>exp_error_raw</strong> – a list of floats defining the measurement error for
+the dependent variable for the given dataset (before normalization)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.config.experimental_data.normalize_data_by_maximum_value">
+<span class="sig-name descname"><span class="pre">normalize_data_by_maximum_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solutions_raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[0.0]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/config/experimental_data.html#normalize_data_by_maximum_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.config.experimental_data.normalize_data_by_maximum_value" title="Permalink to this definition"></a></dt>
+<dd><p>Normalizes data by maximum value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>solutions_raw</strong> – a list of floats defining the solutions before normalization</p></li>
+<li><p><strong>dataID</strong> – a string defining the dataID</p></li>
+<li><p><strong>error_raw</strong> – a list of floats defining the measurement error before normalization
+default is 0 so that this function can also be used for simulated data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>solutions_norm</em></p></li>
+<li><p><em>a list of floats defining the dependent variable for the given</em></p></li>
+<li><p><em>dataset (after normalization)</em></p></li>
+<li><p><em>error_norm</em> – a list of floats defining the measurement error for
+the dependent variable for the given dataset (after normalization),
+if relevant</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

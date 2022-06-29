@@ -85,8 +85,118 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-modules-parameter-profile-likelihood-calculate-threshold-module">
-<h1>games.modules.parameter_profile_likelihood.calculate_threshold module<a class="headerlink" href="#games-modules-parameter-profile-likelihood-calculate-threshold-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.modules.parameter_profile_likelihood.calculate_threshold">
+<span id="games-modules-parameter-profile-likelihood-calculate-threshold-module"></span><h1>games.modules.parameter_profile_likelihood.calculate_threshold module<a class="headerlink" href="#module-games.modules.parameter_profile_likelihood.calculate_threshold" title="Permalink to this headline"></a></h1>
+<p>Created on Wed Jun 15 16:02:58 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_profile_likelihood.calculate_threshold.define_noise_array">
+<span class="sig-name descname"><span class="pre">define_noise_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_data_sets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modelID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_profile_likelihood/calculate_threshold.html#define_noise_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_profile_likelihood.calculate_threshold.define_noise_array" title="Permalink to this definition"></a></dt>
+<dd><p>Generates noise values to add to original experimental data</p>
+<p>NOTE: This function has been refactored to generate noise values in a more modular way.
+The original method for generating noise is retained for synTF_chem to ensure that results from
+this refactored code match those in the GAMES paper.</p>
+<p>For future use, the code used here for synTF_chem can be deleted.</p>
+<p>This function can also be combined with generate_noise_pem_evaluation in
+generate_pem_evaluation_data.py (used to generate noise for PEM evaluation) for future use.
+The functions are left separate here  because slightly different methods for random number
+generation and seeding were used in the original GAMES code such that combining the functions
+may lead to slightly different results that do not exactly match the results from the paper
+(although the trends and conclusions would remain the same).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exp_error</strong> – a list of floats containing standard deviation for
+each data point in the data set</p></li>
+<li><p><strong>num_data_sets</strong> – an integer defining the number of datasets with noise to generate</p></li>
+<li><p><strong>modelID</strong> – a string defining the modelID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an array containing the noise values to add to each data
+point (j) for each noise realization (i)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>noise_array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_profile_likelihood.calculate_threshold.generate_noise_realizations_and_calc_chi_sq_ref">
+<span class="sig-name descname"><span class="pre">generate_noise_realizations_and_calc_chi_sq_ref</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">norm_solutions_ref</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_profile_likelihood/calculate_threshold.html#generate_noise_realizations_and_calc_chi_sq_ref"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_profile_likelihood.calculate_threshold.generate_noise_realizations_and_calc_chi_sq_ref" title="Permalink to this definition"></a></dt>
+<dd><p>Generates noise realizations and calculates chi_sq_ref</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>norm_solutions_ref</strong> – a list of floats containing the solutions generated with the reference parameters</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>exp_data_noise_list</em> – a list of lists containing the noise realizations
+(length = # noise realizations)</p></li>
+<li><p><em>chi_sq_ref_list</em> – a list of floats containing the chi_sq_ref values for each noise realization
+(length = # noise realizations)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_profile_likelihood.calculate_threshold.calculate_chi_sq_fit">
+<span class="sig-name descname"><span class="pre">calculate_chi_sq_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calibrated_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_data_noise_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_profile_likelihood/calculate_threshold.html#calculate_chi_sq_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_profile_likelihood.calculate_threshold.calculate_chi_sq_fit" title="Permalink to this definition"></a></dt>
+<dd><p>Runs optimization on each noise realization with
+the calibrated parameters as the initial guess</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calibrated_parameters</strong> – a list of floats defining the calibrated parameter values</p></li>
+<li><p><strong>exp_data_noise_list</strong> – a list of lists containing the noise realizations
+(length = # noise realizations)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of floats defining the chi_sq_fit values for each noise realization</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>chi_sq_fit_list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_profile_likelihood.calculate_threshold.calculate_threshold_chi_sq">
+<span class="sig-name descname"><span class="pre">calculate_threshold_chi_sq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calibrated_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibrated_chi_sq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_profile_likelihood/calculate_threshold.html#calculate_threshold_chi_sq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_profile_likelihood.calculate_threshold.calculate_threshold_chi_sq" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates threshold chi_sq value for ppl calculations</p>
+<p>NOTE: for the GAMES example, a reference parameter set was used to
+provide a proof-of-principle demonstration of the workflow.
+In practical modeling situations, the reference parameters u
+sed to generate the training data will be unknown and the
+goal will be to estimate these parameters. In such situations, the
+calibrated parameter set should be used as the reference parameters.
+This distinction is made in this function by setting the reference parameters
+to the calibrated parameters. For use for other models/datasets, the reference parameters
+can be removed from config.json and the following code can be removed from this function:</p>
+<dl class="simple">
+<dt>if settings[“modelID”] == ‘synTF_chem’:</dt><dd><p>model.parameters = settings[“parameters_reference”]</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calibrated_parameters</strong> – a list of floats containing the calibrated values for each parameter</p></li>
+<li><p><strong>calibrated_chi_sq</strong> – a float defining the chi_sq associated with the calibrated parameter set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a float defining the threshold chi_sq value</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>threshold_chi_sq</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

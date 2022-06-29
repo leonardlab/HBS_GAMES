@@ -84,8 +84,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-plots-plots-pem-evaluation-module">
-<h1>games.plots.plots_pem_evaluation module<a class="headerlink" href="#games-plots-plots-pem-evaluation-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.plots.plots_pem_evaluation">
+<span id="games-plots-plots-pem-evaluation-module"></span><h1>games.plots.plots_pem_evaluation module<a class="headerlink" href="#module-games.plots.plots_pem_evaluation" title="Permalink to this headline"></a></h1>
+<p>Created on Thu May 26 09:48:43 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.plots.plots_pem_evaluation.plot_pem_evaluation">
+<span class="sig-name descname"><span class="pre">plot_pem_evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi_sq_pem_evaluation_criterion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/games/plots/plots_pem_evaluation.html#plot_pem_evaluation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.plots.plots_pem_evaluation.plot_pem_evaluation" title="Permalink to this definition"></a></dt>
+<dd><p>Plots results of PEM evaluation runs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_list</strong> – a list of dataframes defining the optimization results (length = #PEM evaluation data sets)</p></li>
+<li><p><strong>chi_sq_pem_evaluation_criterion</strong> – a float defining the pem evaluation criterion for chi_sq</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>None</em></p></li>
+<li><p><em>Figures</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>‘PEM EVALUATION CRITERION ALL OPT.svg’</em> – (plot of ALL optimized chi_sq values for each PEM evaluation dataset)</p></li>
+<li><p><em>’PEM EVALUATION CRITERION.svg’</em> – (plot of the best optimized chi_sq values for each PEM evaluation dataset)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

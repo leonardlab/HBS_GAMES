@@ -85,8 +85,92 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-modules-parameter-profile-likelihood-calculate-parameter-profile-likelihood-module">
-<h1>games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood module<a class="headerlink" href="#games-modules-parameter-profile-likelihood-calculate-parameter-profile-likelihood-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood">
+<span id="games-modules-parameter-profile-likelihood-calculate-parameter-profile-likelihood-module"></span><h1>games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood module<a class="headerlink" href="#module-games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood" title="Permalink to this headline"></a></h1>
+<p>Created on Wed Jun 15 16:03:09 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.set_ppl_settings">
+<span class="sig-name descname"><span class="pre">set_ppl_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_default_min_step_fraction_ppl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_default_max_step_fraction_ppl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_default_max_number_steps_ppl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_profile_likelihood/calculate_parameter_profile_likelihood.html#set_ppl_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.set_ppl_settings" title="Permalink to this definition"></a></dt>
+<dd><p>Defines ppl settings for the given parameter if non_default settings values are specified</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_label</strong> – a string defining the given parameter</p></li>
+<li><p><strong>direction</strong> – an integer defining the direction
+(-1 for negative direction, 1 for positive direction)</p></li>
+<li><p><strong>default_values</strong> – a list of floats or integers defining the default values for
+[min_step_fraction, max_step_fraction, number_steps]</p></li>
+<li><p><strong>non_default_min_step_fraction_ppl</strong> – a list of dictionaries defining the non-default values for each setting
+each key is the parameter name and each value is a list where the
+first item is the direction of ppl calculations
+and the second item is the value for the given setting and
+the given parameter/direction. For example, {“k”: [1, 100]} means that
+the value of the given setting should be 100 for parameter k in the positive direction</p></li>
+<li><p><strong>non_default_max_step_fraction_ppl</strong> – same as above but setting = max step fraction</p></li>
+<li><p><strong>non_default_max_number_steps_ppl</strong> – same as above but setting = max number steps fraction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>min_step_fraction</em> – a float defining the fraction of the calibrated parameter that defines the minimum step size</p></li>
+<li><p><em>max_step_fraction</em> – a float defining the fraction of the calibrated parameter that defines the maximum step size</p></li>
+<li><p><em>max_steps</em> – an integer defining the maximum number of allowable steps</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.calculate_chi_sq_ppl_single_datapoint">
+<span class="sig-name descname"><span class="pre">calculate_chi_sq_ppl_single_datapoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_index_in_free_parameter_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_profile_likelihood/calculate_parameter_profile_likelihood.html#calculate_chi_sq_ppl_single_datapoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.calculate_chi_sq_ppl_single_datapoint" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates chi_sq_ppl for a single datapoint on the profile likelihood</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fixed_val</strong> – a float defining the value that the fixed index should be fixed at</p></li>
+<li><p><strong>fixed_index_in_free_parameter_list</strong> – an integer defining the index in the list of FREE parameters
+(settings[“free_parameters”]) that should be fixed for this calculation</p></li>
+<li><p><strong>parameters</strong> – a list of floats of the initial parameter values (fixed and free)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>fixed_val</em> – a float defining the value that the fixed index should be fixed at
+(x-axis value of the datapoint for ppl plots)</p></li>
+<li><p><em>calibrated_chi_sq</em> – a float defining the minimum chi_sq attainable for the parameter
+estimation problem (x-axis value of the datapoint for ppl plots)</p></li>
+<li><p><em>calibrated_parameters</em> – a list of floats defining the parameter set for which the min_chi_sq
+was obtained</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.calculate_ppl">
+<span class="sig-name descname"><span class="pre">calculate_ppl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibrated_parameter_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibrated_chi_sq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_chi_sq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_profile_likelihood/calculate_parameter_profile_likelihood.html#calculate_ppl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.calculate_ppl" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the ppl for the given parameter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_label</strong> – a string defining the parameter label</p></li>
+<li><p><strong>calibrated_parameter_values</strong> – a list of floats containing the calibrated values for each parameter</p></li>
+<li><p><strong>calibrated_chi_sq</strong> – a float defining the chi_sq associated with the calibrated parameter set</p></li>
+<li><p><strong>threshold_chi_sq</strong> – a float defining the threshold chi_sq value</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a float defining the time to calculate the ppl for the given parameter (in minutes)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>elapsed_time_total</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

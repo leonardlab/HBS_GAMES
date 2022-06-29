@@ -56,7 +56,7 @@ autodoc_default_options = {
 }
 
 # List of modules to be mocked up. Useful when some external dependencies are not met at build time and break the building process.
-autodoc_mock_imports = ['lmfit', 'salib']
+autodoc_mock_imports = ["numpy", "pandas", "matplotlib", "scipy", "click", 'lmfit', 'SAlib', 'seaborn', 'os', 'json', 'typing', 'math', 'multiprocessing', 'datetime', 'sklearn', 'cycler']
 
 # -- Options for HTML output -------------------------------------------------
 

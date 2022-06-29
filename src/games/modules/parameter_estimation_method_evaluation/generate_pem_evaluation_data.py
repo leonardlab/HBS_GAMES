@@ -6,7 +6,6 @@ Created on Wed Jun 15 16:13:15 2022
 @author: kate
 """
 from typing import Tuple, List
-import json
 from math import sqrt
 import pandas as pd
 import numpy as np
@@ -19,7 +18,8 @@ from games.utilities.saving import save_pem_evaluation_data
 
 
 def add_noise(solutions_norm_raw: List[float], noise: List[float], dataID: str):
-    """Adds noise to a set of simulated data
+    """
+    Adds noise to a set of simulated data
 
     Parameters
     ----------
@@ -29,7 +29,7 @@ def add_noise(solutions_norm_raw: List[float], noise: List[float], dataID: str):
     noise
         a list of floats defining the noise values to add to each data point
 
-   dataID
+    dataID
         a string defining the dataID
 
     Returns

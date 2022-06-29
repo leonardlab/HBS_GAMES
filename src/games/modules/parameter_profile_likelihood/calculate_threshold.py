@@ -5,7 +5,6 @@ Created on Wed Jun 15 16:02:58 2022
 
 @author: kate
 """
-import matplotlib.pyplot as plt
 from typing import List, Tuple
 from math import sqrt
 import pandas as pd
@@ -25,7 +24,7 @@ def define_noise_array(
     exp_error: List[float], num_data_sets: int, modelID: str) -> np.ndarray:
     """Generates noise values to add to original experimental data
 
-   NOTE: This function has been refactored to generate noise values in a more modular way.
+    NOTE: This function has been refactored to generate noise values in a more modular way.
     The original method for generating noise is retained for synTF_chem to ensure that results from
     this refactored code match those in the GAMES paper.
 
@@ -55,6 +54,7 @@ def define_noise_array(
     noise_array
         an array containing the noise values to add to each data
         point (j) for each noise realization (i)
+
     """
     # Define mean for error distribution
     mu = 0

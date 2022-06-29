@@ -146,51 +146,51 @@ Descriptions of all settings in config.json
 
   - modelID:  sa tring defining the model to use, should be same name as the relevant class 
 
-  - dataID : a string defining the data to use, .csv defining the data should be named "training_data_" + dataID, name of dataID is user-defined 
+  - dataID: a string defining the data to use, .csv defining the data should be named "training_data_" + dataID, name of dataID is user-defined 
 
-  - mechanismID : a string defining the identify of the mechanism to use, if there is only one version of a given model, this variable is unnecessary 
+  - mechanismID: a string defining the identify of the mechanism to use, if there is only one version of a given model, this variable is unnecessary 
 
-  - context : a string defining the absolute path to GAMES/src/games in the given context (computer) where the code will be run 
+  - context: a string defining the absolute path to GAMES/src/games in the given context (computer) where the code will be run 
 
   - parameters: a list of integers defining the starting values for each parameter. If a given parameter is not free in this run, the parameter fill be fixed at the value in this list 
 
-  - parameters_reference : a list of integers defining the reference values for each parameter, only necessary for proof-of-principle demonstrations such that the parameter used to define the training data are known 
+  - parameters_reference: a list of integers defining the reference values for each parameter, only necessary for proof-of-principle demonstrations such that the parameter used to define the training data are known 
 
-  - parameter_labels : a list of strings defining the labels for the parameters defined in the "parameters" variable  
+  - parameter_labels: a list of strings defining the labels for the parameters defined in the "parameters" variable  
 
-  - free_parameter_labels": a list of strings defining the labels for the parameters that are free in this run 
+  - free_parameter_labels: a list of strings defining the labels for the parameters that are free in this run 
 
-  - bounds_orders_of_magnitude": an integer defining the orders of magnitude in each direction that parameters are allowed to vary, all free parameters have these bounds by default 
+  - bounds_orders_of_magnitude: an integer defining the orders of magnitude in each direction that parameters are allowed to vary, all free parameters have these bounds by default 
 
   - non_default_bounds: a dictionary defining parameters  that have non-default bounds – key is the parameter label and value is a list with the minimum bound as the first item and the maximum bound as the second item 
 
-  - num_parameter_sets_global_search" an integer defining the number of parameter sets in the global search 
+  - num_parameter_sets_global_search: an integer defining the number of parameter sets in the global search 
 
-  - num_parameter_sets_optimization : an integer defining the number of initial guesses for optimization 
+  - num_parameter_sets_optimization: an integer defining the number of initial guesses for optimization 
 
   - weight_by_error: a string ("yes" or "no") defining whether the cost function is weighted by measurement error 
 
   - num_pem_evaluation_datasets: an integer defining the number of pem evaluation data sets to generate 
 
-  - parallelization : a string ("yes" or "no") defining whether the run should be parallelized 
+  - parallelization: a string ("yes" or "no") defining whether the run should be parallelized 
 
-  - num_cores : an integer defining the number of cores to parallelize the run across, not relevant if parallelization = 'no' 
+  - num_cores: an integer defining the number of cores to parallelize the run across, not relevant if parallelization = 'no' 
 
-  - num_noise_realizations : an integer defining the number of noise realizations to use to define the PPL threshold 
+  - num_noise_realizations: an integer defining the number of noise realizations to use to define the PPL threshold 
 
-  - parameter_labels_for_ppl : a list of strings defining the parameter labels for which the PPL should be calculated 
+  - parameter_labels_for_ppl: a list of strings defining the parameter labels for which the PPL should be calculated 
 
-  - default_min_step_fraction_ppl : a float defining the default fraction of the calibrated value to set the minimum step for PPL 
+  - default_min_step_fraction_ppl: a float defining the default fraction of the calibrated value to set the minimum step for PPL 
 
-  - non_default_min_step_fraction_ppl : a dictionary defining non-default min step values for PPL – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and fraction as the second value 
+  - non_default_min_step_fraction_ppl: a dictionary defining non-default min step values for PPL – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and fraction as the second value 
 
-  - default_max_step_fraction_ppl : a floatdefining the default fraction of the calibrated value to set the maximum step for PPL 
+  - default_max_step_fraction_ppl: a floatdefining the default fraction of the calibrated value to set the maximum step for PPL 
 
-  - non_default_max_step_fraction_ppl : a dictionary defining non-default max step values for PPL – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and fraction as the second value 
+  - non_default_max_step_fraction_ppl: a dictionary defining non-default max step values for PPL – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and fraction as the second value 
 
   - default_max_number_steps_ppl: an integer defining the default maximum number of PPL steps in each direction 
 
-  - non_default_number_steps_ppl : a dictionary defining non-default maximum number of PPL steps – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and number of steps as the second value 
+  - non_default_number_steps_ppl: a dictionary defining non-default maximum number of PPL steps – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and number of steps as the second value 
 
 ### Changing run settings 
 
@@ -212,7 +212,7 @@ The user may want to use the examples shown here to write more unit tests or fun
 
 ### Functional tests
 
-Functional tests are included using the synTF example, which is a much simpler and less computationally expensive example than the synTF-Chem model used in the GAMES paper.
+Functional tests are included for the synTF example, which is a simpler and less computationally expensive example than the synTF-Chem model used in the GAMES paper.
 
 
 # Python project tools
@@ -245,13 +245,13 @@ $ poetry shell
 $ poetry install
 ```
 
-4. Run a test with the CLI.
+4. Run a test with the command line interface (CLI).
 
 ```bash
 $ run --modules='0' 
 ```
 
-## General commands
+## Makefile commands
 
 The `Makefile` include three commands for working with the project.
 
@@ -259,31 +259,22 @@ The `Makefile` include three commands for working with the project.
 - `make build` will run tests, format, lint, and type check your code (you can also just run `tox`)
 - `make docs` will generate documentation
 
-## Template updates
-
-There are a number of places in this template reposiotry that are specific to the template and will need to be updated for your specific project:
-
-- Badge links in the `README.md`
-- Section `[tool.poetry]` in `pyproject.toml`
-- Project information section in `docs/conf.py`
-
 ## Repository tools
 
 ### Poetry
 
 Poetry makes it explicit what dependencies (and what versions of those dependencies) are necessary for the project.
 When new dependencies are added, Poetry performs an exhaustive dependency resolution to make sure that all the dependencies (and their versions) can work together.
-This does mean the initial install can take a little while, especially if you have many dependencies, but subsequent installs will be faster once the `poetry.lock` file has been created.
 
 To add a dependency, use:
 
-```bash
+```
 $ poetry add <dependency>
 ```
 
 You can additionally specify version constraints (e.g. `<dependency>@<version constraints>`).
 Use `-D` to indicate development dependencies.
-You can also add dependencies directly to the  file.
+You can also add dependencies directly to the file.
 
 
 ### GitHub Actions
@@ -305,39 +296,28 @@ Tox aims to automate and standardize testing.
 You can use tox to automatically run tests on different python versions, as well as things like linting and type checking.
 
 Tox can be configured in `tox.ini` for additional python versions or testing environments.
-Note that the type checking specified in the provided `tox.ini` is more strict than the type checking specified in `.github/workflows/lint.yml`.
 
-You can run specific tox environments using:
+You can run tox by simply running
 
-```bash
-$ tox -e <env>
+```
+$ tox 
 ```
 
 ### Pylint
 
-Pylint checks for basic errors in your code, aims to enforce a coding standard, and identifies code smells.
-The tool will score code out of 10, with the linting GitHub Action set to pass if the score is above 7.
-Most recommendations from Pylint are good, but it is not perfect.
-Make sure to be deliberate with which messages you ignore and which recommendations you follow.
+Pylint checks for basic errors in the code and aims to enforce a coding standard.
+The tool will score code out of 10.
+Most recommendations from Pylint are good, but it is not perfect; make sure to be deliberate with which messages you ignore and which recommendations you follow.
 
-Pylint can be configured in `.pylintrc` to ignore specific messages (such as `missing-module-docstring`), exclude certain variable names that Pylint considers too short, and adjust additional settings relevant for your project.
+Pylint can be configured in `.pylintrc` to ignore specific messages (such as `missing-module-docstring`), exclude certain variable names that Pylint considers too short, and adjust additional settings when relevant.
 
 ### Mypy
 
-Mypy performs static type checking.
-Adding type hinting makes it easier to find bugs and removes the need to add tests solely for type checking.
+Mypy performs static type checking, which can make it easier to find bugs and removes the need to add tests solely for type checking.
 
 ### Sphinx
 
-Sphinx is a tool to generate documentation.
-We have set it up to automatically generate documenation from [Numpy style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html).
-It will also pull `README.md` into the main page.
+We used Sphinx to automatically generate documenation using Numpy style docstrings - [Numpy style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html). Documentation for each module can be found in 'GAMES/docs/build_'.
 
-Note that the documentation workflow `.github/workflows/documentation.yml` does not import dependencies, which will break the building process.
-To avoid this, make sure to list your external dependencies in `conf.py` in the `autodoc_mock_imports` variable.
 
-### Codecov
 
-To use Codecov, you must set up the repo on [app.codecov.io](app.codecov.io) and add the code code token (`CODECOV_TOKEN`) as a repository secret.
-Make sure to also up the badge token (not that same as the secret token!) in your README.
-Coverage results from `.github/workflows/build.yml` will be automatically uploaded.

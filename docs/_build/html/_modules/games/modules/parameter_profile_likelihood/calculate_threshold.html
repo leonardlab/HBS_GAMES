@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>games.modules.parameter_profile_likelihood.calculate_threshold &mdash; GAMES VERSION NUMBER 2.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> GAMES
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">Package modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GAMES</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>games.modules.parameter_profile_likelihood.calculate_threshold</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for games.modules.parameter_profile_likelihood.calculate_threshold</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed Jun 15 16:02:58 2022</span>
+
+<span class="sd">@author: kate</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">games.models.set_model</span> <span class="kn">import</span> <span class="n">model</span>
+<span class="kn">from</span> <span class="nn">games.modules.parameter_estimation.optimization</span> <span class="kn">import</span> <span class="n">optimize_all</span>
+<span class="kn">from</span> <span class="nn">games.modules.solve_single</span> <span class="kn">import</span> <span class="n">solve_single_parameter_set</span>
+<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">games.config.experimental_data</span> <span class="kn">import</span> <span class="n">define_experimental_data</span><span class="p">,</span> <span class="n">normalize_data_by_maximum_value</span>
+<span class="kn">from</span> <span class="nn">games.utilities.metrics</span> <span class="kn">import</span> <span class="n">calc_chi_sq</span>
+<span class="kn">from</span> <span class="nn">games.utilities.saving</span> <span class="kn">import</span> <span class="n">save_chi_sq_distribution</span>
+<span class="kn">from</span> <span class="nn">games.plots.plots_parameter_profile_likelihood</span> <span class="kn">import</span> <span class="n">plot_chi_sq_distribution</span>
+<span class="kn">from</span> <span class="nn">games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data</span> <span class="kn">import</span> <span class="n">add_noise</span>
+
+
+<div class="viewcode-block" id="define_noise_array"><a class="viewcode-back" href="../../../../games.modules.parameter_profile_likelihood.calculate_threshold.html#games.modules.parameter_profile_likelihood.calculate_threshold.define_noise_array">[docs]</a><span class="k">def</span> <span class="nf">define_noise_array</span><span class="p">(</span>
+    <span class="n">exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">num_data_sets</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">modelID</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generates noise values to add to original experimental data</span>
+
+<span class="sd">    NOTE: This function has been refactored to generate noise values in a more modular way.</span>
+<span class="sd">    The original method for generating noise is retained for synTF_chem to ensure that results from</span>
+<span class="sd">    this refactored code match those in the GAMES paper.</span>
+
+<span class="sd">    For future use, the code used here for synTF_chem can be deleted.</span>
+
+<span class="sd">    This function can also be combined with generate_noise_pem_evaluation in</span>
+<span class="sd">    generate_pem_evaluation_data.py (used to generate noise for PEM evaluation) for future use.</span>
+<span class="sd">    The functions are left separate here  because slightly different methods for random number</span>
+<span class="sd">    generation and seeding were used in the original GAMES code such that combining the functions</span>
+<span class="sd">    may lead to slightly different results that do not exactly match the results from the paper</span>
+<span class="sd">    (although the trends and conclusions would remain the same).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    exp_error</span>
+<span class="sd">        a list of floats containing standard deviation for</span>
+<span class="sd">        each data point in the data set</span>
+
+<span class="sd">    num_data_sets</span>
+<span class="sd">        an integer defining the number of datasets with noise to generate</span>
+
+<span class="sd">    modelID</span>
+<span class="sd">        a string defining the modelID</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    noise_array</span>
+<span class="sd">        an array containing the noise values to add to each data</span>
+<span class="sd">        point (j) for each noise realization (i)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define mean for error distribution</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">modelID</span> <span class="o">==</span> <span class="s2">&quot;synTF_chem&quot;</span><span class="p">:</span>
+        <span class="c1"># Define standard error for error distribution</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.05</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="c1"># Generate noise array</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">6754</span><span class="p">)</span>
+        <span class="n">noise_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="p">(</span><span class="n">num_data_sets</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">exp_error</span><span class="p">)))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Calculate standard error values (assuming triplicate measurements)</span>
+        <span class="n">sigma_values_standard_error</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exp_error</span><span class="p">]</span>
+
+        <span class="c1"># Generate noise array for each datapoint (j)</span>
+        <span class="n">starting_seed</span> <span class="o">=</span> <span class="mi">6754</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">sigma_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sigma_values_standard_error</span><span class="p">):</span>
+            <span class="c1"># Use a different seed for each noise generation</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">starting_seed</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span>
+
+            <span class="c1"># Generate a different noise value for each noise</span>
+            <span class="c1"># realization and add to array</span>
+            <span class="n">noise_row</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma_val</span><span class="p">,</span> <span class="n">num_data_sets</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">noise_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">noise_row</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">noise_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">noise_array</span><span class="p">,</span> <span class="n">noise_row</span><span class="p">])</span>
+
+        <span class="n">noise_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">noise_array</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">noise_array</span></div>
+
+
+<div class="viewcode-block" id="generate_noise_realizations_and_calc_chi_sq_ref"><a class="viewcode-back" href="../../../../games.modules.parameter_profile_likelihood.calculate_threshold.html#games.modules.parameter_profile_likelihood.calculate_threshold.generate_noise_realizations_and_calc_chi_sq_ref">[docs]</a><span class="k">def</span> <span class="nf">generate_noise_realizations_and_calc_chi_sq_ref</span><span class="p">(</span>
+    <span class="n">norm_solutions_ref</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Generates noise realizations and calculates chi_sq_ref</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    norm_solutions_ref</span>
+<span class="sd">        a list of floats containing the solutions generated with the reference parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    exp_data_noise_list</span>
+<span class="sd">        a list of lists containing the noise realizations</span>
+<span class="sd">        (length = # noise realizations)</span>
+
+<span class="sd">    chi_sq_ref_list</span>
+<span class="sd">        a list of floats containing the chi_sq_ref values for each noise realization</span>
+<span class="sd">        (length = # noise realizations)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Generate noise realizations and calculate chi_sq_ref for each noise realization</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">exp_data_original</span><span class="p">,</span> <span class="n">exp_error</span> <span class="o">=</span> <span class="n">define_experimental_data</span><span class="p">()</span>
+    <span class="n">exp_data_noise_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">chi_sq_ref_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># generate array with noise values for each noise realization and dataset</span>
+    <span class="n">noise_array</span> <span class="o">=</span> <span class="n">define_noise_array</span><span class="p">(</span>
+        <span class="n">exp_error</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;num_noise_realizations&quot;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modelID&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;num_noise_realizations&quot;</span><span class="p">]):</span>
+        <span class="n">exp_data_noise_norm</span> <span class="o">=</span> <span class="n">add_noise</span><span class="p">(</span><span class="n">norm_solutions_ref</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">noise_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]),</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">])</span>
+        <span class="n">exp_data_noise_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp_data_noise_norm</span><span class="p">)</span>
+
+        <span class="c1"># Calculate chi_sq_ref using noise realization i</span>
+        <span class="n">chi_sq</span> <span class="o">=</span> <span class="n">calc_chi_sq</span><span class="p">(</span><span class="n">norm_solutions_ref</span><span class="p">,</span> <span class="n">exp_data_noise_norm</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+        <span class="n">chi_sq_ref_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">exp_data_noise_list</span><span class="p">,</span> <span class="n">chi_sq_ref_list</span></div>
+
+
+<div class="viewcode-block" id="calculate_chi_sq_fit"><a class="viewcode-back" href="../../../../games.modules.parameter_profile_likelihood.calculate_threshold.html#games.modules.parameter_profile_likelihood.calculate_threshold.calculate_chi_sq_fit">[docs]</a><span class="k">def</span> <span class="nf">calculate_chi_sq_fit</span><span class="p">(</span>
+    <span class="n">calibrated_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">exp_data_noise_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Runs optimization on each noise realization with</span>
+<span class="sd">    the calibrated parameters as the initial guess</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    calibrated_parameters</span>
+<span class="sd">        a list of floats defining the calibrated parameter values</span>
+
+<span class="sd">    exp_data_noise_list</span>
+<span class="sd">        a list of lists containing the noise realizations</span>
+<span class="sd">        (length = # noise realizations)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    chi_sq_fit_list</span>
+<span class="sd">        a list of floats defining the chi_sq_fit values for each noise realization</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">df_noise</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">parameter_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">]):</span>
+        <span class="n">df_noise</span><span class="p">[</span><span class="n">parameter_label</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">calibrated_parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">*</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;num_noise_realizations&quot;</span><span class="p">]</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span> <span class="o">=</span> <span class="n">define_experimental_data</span><span class="p">()</span>
+    <span class="n">df_noise</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_noise</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df_noise</span><span class="p">[</span><span class="s2">&quot;exp_data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp_data_noise_list</span>
+    <span class="n">df_noise</span><span class="p">[</span><span class="s2">&quot;exp_error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">exp_error</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_noise</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="c1"># add placeholder columns to match data structure for other</span>
+    <span class="c1"># optimization runs that have initial guesses defined after a global search</span>
+    <span class="n">df_noise</span><span class="p">[</span><span class="s2">&quot;placeholder 1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_noise</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df_noise</span><span class="p">[</span><span class="s2">&quot;placeholder 2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_noise</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">df_optimization_results</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">optimize_all</span><span class="p">(</span><span class="n">df_noise</span><span class="p">,</span> <span class="s2">&quot;ppl threshold&quot;</span><span class="p">)</span>
+    <span class="n">chi_sq_fit_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;chi_sq&quot;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">chi_sq_fit_list</span></div>
+
+
+<div class="viewcode-block" id="calculate_threshold_chi_sq"><a class="viewcode-back" href="../../../../games.modules.parameter_profile_likelihood.calculate_threshold.html#games.modules.parameter_profile_likelihood.calculate_threshold.calculate_threshold_chi_sq">[docs]</a><span class="k">def</span> <span class="nf">calculate_threshold_chi_sq</span><span class="p">(</span>
+    <span class="n">calibrated_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">calibrated_chi_sq</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates threshold chi_sq value for ppl calculations</span>
+
+<span class="sd">    NOTE: for the GAMES example, a reference parameter set was used to</span>
+<span class="sd">    provide a proof-of-principle demonstration of the workflow.</span>
+<span class="sd">    In practical modeling situations, the reference parameters u</span>
+<span class="sd">    sed to generate the training data will be unknown and the</span>
+<span class="sd">    goal will be to estimate these parameters. In such situations, the</span>
+<span class="sd">    calibrated parameter set should be used as the reference parameters.</span>
+<span class="sd">    This distinction is made in this function by setting the reference parameters</span>
+<span class="sd">    to the calibrated parameters. For use for other models/datasets, the reference parameters</span>
+<span class="sd">    can be removed from config.json and the following code can be removed from this function:</span>
+
+<span class="sd">    if settings[&quot;modelID&quot;] == &#39;synTF_chem&#39;:</span>
+<span class="sd">        model.parameters = settings[&quot;parameters_reference&quot;]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    calibrated_parameters</span>
+<span class="sd">        a list of floats containing the calibrated values for each parameter</span>
+
+<span class="sd">    calibrated_chi_sq</span>
+<span class="sd">        a float defining the chi_sq associated with the calibrated parameter set</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    threshold_chi_sq</span>
+<span class="sd">        a float defining the threshold chi_sq value</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modelID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;synTF_chem&#39;</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameters_reference&quot;</span><span class="p">]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">calibrated_parameters</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span> <span class="o">=</span> <span class="n">define_experimental_data</span><span class="p">()</span>
+    <span class="n">norm_solutions_ref</span><span class="p">,</span> <span class="n">chi_sq_ref</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">solve_single_parameter_set</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;chi_sq reference with training data: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">chi_sq_ref</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Generating noise realizations and calculating chi_sq_ref...&quot;</span><span class="p">)</span>
+    <span class="n">exp_data_noise_list</span><span class="p">,</span> <span class="n">chi_sq_ref_list</span> <span class="o">=</span> <span class="n">generate_noise_realizations_and_calc_chi_sq_ref</span><span class="p">(</span>
+        <span class="n">norm_solutions_ref</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calculating chi_sq_fit...&quot;</span><span class="p">)</span>
+    <span class="n">chi_sq_fit_list</span> <span class="o">=</span> <span class="n">calculate_chi_sq_fit</span><span class="p">(</span><span class="n">calibrated_parameters</span><span class="p">,</span> <span class="n">exp_data_noise_list</span><span class="p">)</span>
+
+    <span class="c1"># Calculate threshold chi_sq</span>
+    <span class="n">chi_sq_distribution</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ref_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chi_sq_ref_list</span><span class="p">):</span>
+        <span class="n">chi_sq_distribution</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ref_val</span> <span class="o">-</span> <span class="n">chi_sq_fit_list</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">confidence_interval</span> <span class="o">=</span> <span class="mi">99</span>
+    <span class="n">threshold_chi_sq_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">chi_sq_distribution</span><span class="p">,</span> <span class="n">confidence_interval</span><span class="p">)</span>
+    <span class="n">threshold_chi_sq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">threshold_chi_sq_</span><span class="p">)</span>
+
+    <span class="n">plot_chi_sq_distribution</span><span class="p">(</span><span class="n">chi_sq_distribution</span><span class="p">,</span> <span class="n">threshold_chi_sq</span><span class="p">)</span>
+    <span class="n">save_chi_sq_distribution</span><span class="p">(</span><span class="n">threshold_chi_sq</span><span class="p">,</span> <span class="n">calibrated_parameters</span><span class="p">,</span> <span class="n">calibrated_chi_sq</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;******************&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modelID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;synTF&#39;</span><span class="p">:</span>
+        <span class="n">round_val</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">round_val</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">threshold_chi_sq</span><span class="p">)</span>
+    <span class="n">threshold_chi_sq_rounded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">threshold_chi_sq</span><span class="p">,</span> <span class="n">round_val</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;chi_sq threshold for &quot;</span>
+        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;free_parameters&quot;</span><span class="p">]))</span>
+        <span class="o">+</span> <span class="s2">&quot; parameters with &quot;</span>
+        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">confidence_interval</span><span class="p">)</span>
+        <span class="o">+</span> <span class="s2">&quot;</span><span class="si">% c</span><span class="s2">onfidence&quot;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">threshold_chi_sq_rounded</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;******************&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">threshold_chi_sq</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Dray_Kate.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

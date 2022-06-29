@@ -11,7 +11,7 @@ from games.config.settings import settings
 
 
 def define_experimental_data() -> Tuple[List[float], List[float], List[float]]:
-    """ "
+    """
     Imports, normalizes, and defines experimental data
 
     Parameters
@@ -21,14 +21,14 @@ def define_experimental_data() -> Tuple[List[float], List[float], List[float]]:
     Returns
     -------
     x
-            a list of floats containing the values of the independent variable
+        a list of floats containing the values of the independent variable
 
     exp_data
-            a list of floats containing the values of the dependent variable
+        a list of floats containing the values of the dependent variable
 
     exp_error
-            a list of floats containing the values of the measurement error
-            for the dependent variable
+        a list of floats containing the values of the measurement error
+        for the dependent variable
     """
 
     x, exp_data_raw, exp_error_raw = import_data()
@@ -40,25 +40,27 @@ def define_experimental_data() -> Tuple[List[float], List[float], List[float]]:
 
 
 def import_data() -> Tuple[List[float], List[float], List[float]]:
-    """Imports experimental data
+    """
+    Imports experimental data
 
-       Parameters
-       ----------
-       None
+    Parameters
+    ---------
+    None
 
-       Returns
-       -------
-       x
+    Returns
+    -------
+    x
        a list of floats defining the independent variable for the given dataset
-    0.0
-       exp_data_raw
+
+    exp_data_raw
        a list of floats defining the dependent variable for the given
        dataset (before normalization)
 
-       exp_error_raw
+    exp_error_raw
         a list of floats defining the measurement error for
         the dependent variable for the given dataset (before normalization)
     """
+
     path = settings["context"] + "config/"
     filename = path + "training_data_" + settings["dataID"] + ".csv"
     df_exp = pd.read_csv(filename)
@@ -89,13 +91,13 @@ def normalize_data_by_maximum_value(
     Returns
     -------
     solutions_norm
-    a list of floats defining the dependent variable for the given
-    dataset (after normalization)
+        a list of floats defining the dependent variable for the given
+        dataset (after normalization)
 
     error_norm
-     a list of floats defining the measurement error for
-     the dependent variable for the given dataset (after normalization),
-     if relevant
+         a list of floats defining the measurement error for
+         the dependent variable for the given dataset (after normalization),
+         if relevant
     """
 
     if dataID == "ligand dose response and DBD dose response":

@@ -84,8 +84,71 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-plots-plots-parameter-estimation-module">
-<h1>games.plots.plots_parameter_estimation module<a class="headerlink" href="#games-plots-plots-parameter-estimation-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.plots.plots_parameter_estimation">
+<span id="games-plots-plots-parameter-estimation-module"></span><h1>games.plots.plots_parameter_estimation module<a class="headerlink" href="#module-games.plots.plots_parameter_estimation" title="Permalink to this headline"></a></h1>
+<p>Created on Wed Jun 15 15:19:16 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.plots.plots_parameter_estimation.plot_chi_sq_trajectory">
+<span class="sig-name descname"><span class="pre">plot_chi_sq_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chi_sq_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/games/plots/plots_parameter_estimation.html#plot_chi_sq_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.plots.plots_parameter_estimation.plot_chi_sq_trajectory" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the chi_sq trajectory following an optimization run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>chi_sq_list</strong> – a list of floats defining the chi_sq value at each function evaluation</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.plots.plots_parameter_estimation.plot_training_data_fits">
+<span class="sig-name descname"><span class="pre">plot_training_data_fits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_opt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/games/plots/plots_parameter_estimation.html#plot_training_data_fits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.plots.plots_parameter_estimation.plot_training_data_fits" title="Permalink to this definition"></a></dt>
+<dd><p>Plots fits to training data with similarly good r_sq values</p>
+<dl class="simple">
+<dt>Note: This function is not currently generalizable to other models and datasets and the</dt><dd><p>user must modify before running</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df_opt</strong> – a dataframe containing the parameter estimation results after optimization</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>None</em></p></li>
+<li><p><em>Figures</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>‘./FITS r_sq ABOVE 0.99.svg’ (plot of training data and simulated data for</em> – parameter sets with r_sq &gt; = 0.99)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.plots.plots_parameter_estimation.plot_parameter_distributions_after_optimization">
+<span class="sig-name descname"><span class="pre">plot_parameter_distributions_after_optimization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_opt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/games/plots/plots_parameter_estimation.html#plot_parameter_distributions_after_optimization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.plots.plots_parameter_estimation.plot_parameter_distributions_after_optimization" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Plot parameter distributions across initial guesses</dt><dd><p>following parameter estimation with training data</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df_opt</strong> – a dataframe containing the parameter estimation results after optimization</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>None</em></p></li>
+<li><p><em>Figures</em></p></li>
+<li><p><em>——-</em></p></li>
+<li><p><em>‘OPTIMIZED PARAMETER DISTRIBUTIONS.svg’ (plot of parameter distributions for</em> – parameter sets with r_sq &gt; = 0.99)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

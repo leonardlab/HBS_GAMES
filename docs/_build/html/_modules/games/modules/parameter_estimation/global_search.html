@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>games.modules.parameter_estimation.global_search &mdash; GAMES VERSION NUMBER 2.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> GAMES
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">Package modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GAMES</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>games.modules.parameter_estimation.global_search</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for games.modules.parameter_estimation.global_search</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Fri Jun  3 15:25:19 2022</span>
+
+<span class="sd">@author: kate</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">SALib.sample</span> <span class="kn">import</span> <span class="n">latin</span>
+<span class="kn">from</span> <span class="nn">games.models.set_model</span> <span class="kn">import</span> <span class="n">model</span>
+<span class="kn">from</span> <span class="nn">games.modules.solve_single</span> <span class="kn">import</span> <span class="n">solve_single_parameter_set</span>
+<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span>
+
+
+<div class="viewcode-block" id="replace_parameter_values_for_sweep"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.replace_parameter_values_for_sweep">[docs]</a><span class="k">def</span> <span class="nf">replace_parameter_values_for_sweep</span><span class="p">(</span>
+    <span class="n">df_parameters_default</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">num_parameters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">free_parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">params_linear</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Replaces the column of each free parameter with the list of parameters from the sweep</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df_parameters_default</span>
+<span class="sd">        df with columns defining to parameter identities</span>
+<span class="sd">        and rows defining the parameter values for each set in</span>
+<span class="sd">        the sweep with default values only</span>
+
+<span class="sd">    num_parameters</span>
+<span class="sd">        an int defining the total number of parameters (free and fixed)</span>
+
+<span class="sd">    free_parameter_labels</span>
+<span class="sd">        a list of strings defining the free parameter labels</span>
+
+<span class="sd">    params_linear</span>
+<span class="sd">        an array containing parameter values from the</span>
+<span class="sd">        global search parameter sweep in linear scale</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df_parameters</span>
+<span class="sd">        df with columns defining to parameter identities</span>
+<span class="sd">        and rows defining the parameter values for each set in</span>
+<span class="sd">        the sweep</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df_parameters</span> <span class="o">=</span> <span class="n">df_parameters_default</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_parameters</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">free_parameter_labels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">free_parameter_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span><span class="p">:</span>
+                <span class="n">df_parameters</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">params_linear</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">df_parameters</span></div>
+
+
+<div class="viewcode-block" id="create_default_df"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.create_default_df">[docs]</a><span class="k">def</span> <span class="nf">create_default_df</span><span class="p">(</span>
+    <span class="n">n_search</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">all_parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">all_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generate df with default values for all parameters, before the global search</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_search</span>
+<span class="sd">        an int defining the number of parameter sets to define for the global search</span>
+
+<span class="sd">    all_parameter_labels</span>
+<span class="sd">        a list of strings containing all initial parameter labels,</span>
+<span class="sd">        including fixed and free parameters</span>
+
+<span class="sd">    all_parameters</span>
+<span class="sd">        a list of floats containing all initial parameter values,</span>
+<span class="sd">        including fixed and free parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df_parameters</span>
+<span class="sd">        df with columns defining to parameter identities</span>
+<span class="sd">        and rows defining the parameter values for each set in the sweep</span>
+<span class="sd">        with only the default values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create an empty dataframe to store results of the parameter sweep</span>
+    <span class="n">df_parameters</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="c1"># Fill each column of the dataframe with the initial values set in settings[&quot;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_parameter_labels</span><span class="p">):</span>
+        <span class="n">param_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_search</span><span class="p">),</span> <span class="n">all_parameters</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">param_array</span> <span class="o">=</span> <span class="n">param_array</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">df_parameters</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">df_parameters</span></div>
+
+
+<div class="viewcode-block" id="convert_parameters_to_linear"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.convert_parameters_to_linear">[docs]</a><span class="k">def</span> <span class="nf">convert_parameters_to_linear</span><span class="p">(</span><span class="n">param_values_global_search</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Converts parameter array to linear scale</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    param_values_global_search</span>
+<span class="sd">        a list of lists containing parameter values from the</span>
+<span class="sd">        global search parameter sweep in log scale</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    params_linear_array</span>
+<span class="sd">        an array containing parameter values from the global</span>
+<span class="sd">        search parameter sweep in linear scale</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">params_linear</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">param_values_global_search</span><span class="p">:</span>
+        <span class="n">params_linear</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">item</span><span class="p">])</span>
+    <span class="n">params_linear_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">params_linear</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">params_linear_array</span></div>
+
+
+<div class="viewcode-block" id="generate_parameter_sets"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.generate_parameter_sets">[docs]</a><span class="k">def</span> <span class="nf">generate_parameter_sets</span><span class="p">(</span>
+    <span class="n">problem_global_search</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">all_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate parameter sets for global search</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    problem_global_search</span>
+<span class="sd">        a dictionary including the number, labels, and bounds for the free parameters</span>
+
+<span class="sd">    all_parameters</span>
+<span class="sd">        a list of floats containing all initial parameter values,</span>
+<span class="sd">        including fixed and free parameters</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df_parameters</span>
+<span class="sd">        df with columns defining to parameter identities</span>
+<span class="sd">        and rows defining the parameter values for each set in the sweep</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_search</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;num_parameter_sets_global_search&quot;</span><span class="p">]</span>
+    <span class="n">df_parameters_default</span> <span class="o">=</span> <span class="n">create_default_df</span><span class="p">(</span>
+        <span class="n">n_search</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">],</span> <span class="n">all_parameters</span>
+    <span class="p">)</span>
+    <span class="n">param_values_global_search</span> <span class="o">=</span> <span class="n">latin</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">problem_global_search</span><span class="p">,</span> <span class="n">n_search</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">456767</span><span class="p">)</span>
+    <span class="n">params_linear</span> <span class="o">=</span> <span class="n">convert_parameters_to_linear</span><span class="p">(</span><span class="n">param_values_global_search</span><span class="p">)</span>
+    <span class="n">df_parameters</span> <span class="o">=</span> <span class="n">replace_parameter_values_for_sweep</span><span class="p">(</span>
+        <span class="n">df_parameters_default</span><span class="p">,</span>
+        <span class="n">problem_global_search</span><span class="p">[</span><span class="s2">&quot;num_vars&quot;</span><span class="p">],</span>
+        <span class="n">problem_global_search</span><span class="p">[</span><span class="s2">&quot;names&quot;</span><span class="p">],</span>
+        <span class="n">params_linear</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">df_parameters</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;parameter sweep.csv&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df_parameters</span></div>
+
+
+<div class="viewcode-block" id="solve_single_for_global_search"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.solve_single_for_global_search">[docs]</a><span class="k">def</span> <span class="nf">solve_single_for_global_search</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves equation for a single parameter set - structure is</span>
+<span class="sd">    necessary for upstream multiprocessing code</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    row</span>
+<span class="sd">        tuple defining the parameters and experimental data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    solutions</span>
+<span class="sd">        a list of floats defining the simulation solutions</span>
+
+<span class="sd">    chi_sq</span>
+<span class="sd">        a float defining the chi_sq value</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Unpack row</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">exp_data</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">exp_error</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Solve equations</span>
+    <span class="n">solutions</span><span class="p">,</span> <span class="n">chi_sq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">solve_single_parameter_set</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">solutions</span><span class="p">,</span> <span class="n">chi_sq</span></div>
+
+
+<div class="viewcode-block" id="solve_global_search"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.solve_global_search">[docs]</a><span class="k">def</span> <span class="nf">solve_global_search</span><span class="p">(</span>
+    <span class="n">df_parameters</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">exp_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates parameter sets for global search</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df_parameters</span>
+<span class="sd">        df with columns defining to parameter identities</span>
+<span class="sd">        and rows defining the parameter values for each set in the sweep</span>
+<span class="sd">    x</span>
+<span class="sd">        a list of floats containing the values of the independent variable</span>
+
+<span class="sd">    exp_data</span>
+<span class="sd">        a list of floats containing the values of the dependent variable</span>
+
+<span class="sd">    exp_error</span>
+<span class="sd">        a list of floats containing the values of the measurement error</span>
+<span class="sd">        for the dependent variable</span>
+
+<span class="sd">    run_type</span>
+<span class="sd">        a string defining the run_type (&#39;default&#39; or &#39;PEM evaluation&#39;)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df_global_search_results</span>
+<span class="sd">        df that contains the information in df_parameters,</span>
+<span class="sd">        along with an extra column defining the cost function</span>
+<span class="sd">        for each parameter set</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Add experimental data items to df</span>
+    <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;exp_data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">exp_data</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;exp_error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">exp_error</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="c1"># Solve for each parameter set in global search</span>
+    <span class="n">chi_sq_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">solutions_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parallelization&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df_parameters</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">solutions</span><span class="p">,</span> <span class="n">chi_sq</span> <span class="o">=</span> <span class="n">solve_single_for_global_search</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="n">solutions_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">solutions</span><span class="p">)</span>
+            <span class="n">chi_sq_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parallelization&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;num_cores&quot;</span><span class="p">])</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">solve_single_for_global_search</span><span class="p">,</span> <span class="n">df_parameters</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4</span><span class="p">)]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+            <span class="n">solutions_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">chi_sq_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># structure results</span>
+    <span class="n">df_global_search_results</span> <span class="o">=</span> <span class="n">df_parameters</span>
+    <span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;chi_sq&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi_sq_list</span>
+    <span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;normalized solutions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">solutions_list</span>
+
+    <span class="n">df_global_search_results</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;global search results.csv&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df_global_search_results</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Dray_Kate.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

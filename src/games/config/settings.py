@@ -39,7 +39,7 @@ def define_free_parameter_indices(
     return free_parameters, free_parameter_indices
 
 
-def set_default_parameter_bounds(bounds_orders_of_magnitude: int, free_parameters: list) -> list:
+def set_default_parameter_bounds(bounds_orders_of_magnitude: int, free_parameters: List[float]) -> List[List]:
     """Defines the default parameter bounds
 
     Parameters
@@ -69,8 +69,8 @@ def set_default_parameter_bounds(bounds_orders_of_magnitude: int, free_parameter
 
 
 def set_non_default_parameter_bounds(
-    bounds_log: list, non_default_bounds: dict, free_parameter_labels: list
-) -> list:
+    bounds_log: list, non_default_bounds: dict, free_parameter_labels: List[str]
+) -> List[List]:
     """Replaces default bounds with user-specified bounds, when necessary
 
     Parameters
@@ -118,7 +118,7 @@ def define_settings() -> Tuple[dict, str, dict]:
         a dictionary defining the parameter estimation problem
 
     """
-    file = open("./src/games/config/config.json", encoding="utf-8")
+    file = open("/home/kate/Documents/Code/GitHub/GAMES/src/games/config/config.json", encoding="utf-8")
     settings_import = json.load(file)
     # Define free parameter indices and add to settings dictionary
     free_parameters, free_parameter_indices = define_free_parameter_indices(
