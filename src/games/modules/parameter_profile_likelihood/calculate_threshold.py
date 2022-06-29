@@ -111,7 +111,6 @@ def generate_noise_realizations_and_calc_chi_sq_ref(
 
     """
     # Generate noise realizations and calculate chi_sq_ref for each noise realization
-
     _, exp_data_original, exp_error = define_experimental_data()
     exp_data_noise_list = []
     chi_sq_ref_list = []
@@ -122,66 +121,12 @@ def generate_noise_realizations_and_calc_chi_sq_ref(
     )
 
     for i in range(0, settings["num_noise_realizations"]):
-        exp_data_noise_norm = add_noise(solutions_norm_raw, list(noise_array[i, :]), dataID)
+        exp_data_noise_norm = add_noise(norm_solutions_ref, list(noise_array[i, :]), settings["dataID"])
         exp_data_noise_list.append(exp_data_noise_norm)
-        # add noise and append to experimental data to list for saving
-        #exp_data_noise = []
-        #for j, val in enumerate(exp_data_original):
-        #    new_val = val + noise_array[i, j]
-        #    new_val = max(new_val, 0.0)
-        #    exp_data_noise.append(new_val)
-
-        # re-normalize data
-        #exp_data_noise_norm, _ = normalize_data_by_maximum_value(exp_data_noise, settings["dataID"])
 
         # Calculate chi_sq_ref using noise realization i
         chi_sq = calc_chi_sq(norm_solutions_ref, exp_data_noise_norm, exp_error)
         chi_sq_ref_list.append(chi_sq)
-
-        plt.figure()
-        x, exp_data, exp_error = define_experimental_data()
-
-        if i < 10:
-            plt.plot(
-                x[:11],
-                exp_data_noise_norm[:11],
-                marker="o",
-                color="lightseagreen",
-                label="exp noise",
-            )
-            plt.plot(
-                x[:11],
-                norm_solutions_ref[:11],
-                marker="None",
-                linestyle=":",
-                color="lightseagreen",
-                label="sim p_ref",
-            )
-            plt.legend()
-            plt.xscale("symlog")
-            plt.title("chi_sq_ref " + str(i) + " = " + str(chi_sq))
-            plt.savefig("./chi_sq_ref " + str(i) + " ligand dr")
-
-            plt.figure()
-            plt.plot(
-                x[11:],
-                exp_data_noise_norm[11:],
-                marker="o",
-                color="lightseagreen",
-                label="exp noise",
-            )
-            plt.plot(
-                x[11:],
-                norm_solutions_ref[11:],
-                marker="None",
-                linestyle=":",
-                color="lightseagreen",
-                label="sim p_ref",
-            )
-            plt.legend()
-            plt.xscale("linear")
-            plt.title("chi_sq_ref " + str(i) + " = " + str(chi_sq))
-            plt.savefig("./chi_sq_ref " + str(i) + " dbd dr")
 
     return exp_data_noise_list, chi_sq_ref_list
 
@@ -224,65 +169,6 @@ def calculate_chi_sq_fit(
 
     _, _, df_optimization_results, _ = optimize_all(df_noise, "ppl threshold")
     chi_sq_fit_list = list(df_optimization_results["chi_sq"])
-
-    for i, exp_data_noise in enumerate(exp_data_noise_list[:10]):
-        plt.figure()
-        plt.plot(
-            x[:11],
-            exp_data[:11],
-            marker="o",
-            linestyle="None",
-            color="dimgrey",
-            label="exp data original",
-        )
-        plt.plot(
-            x[:11],
-            exp_data_noise[:11],
-            marker="^",
-            linestyle="None",
-            color="lightseagreen",
-            label="exp data noise",
-        )
-        plt.plot(
-            x[:11],
-            df_optimization_results["Simulation results"].iloc[i][:11],
-            marker="None",
-            linestyle=":",
-            color="lightseagreen",
-        )
-        plt.title("chi_sq_fit " + str(i) + " = " + str(chi_sq_fit_list[i]))
-        plt.legend()
-        plt.xscale("symlog")
-        plt.savefig("./chi_sq_fit " + str(i) + " ligand dr")
-
-        plt.figure()
-        plt.plot(
-            x[11:],
-            exp_data[11:],
-            marker="o",
-            linestyle="None",
-            color="dimgrey",
-            label="exp data original",
-        )
-        plt.plot(
-            x[11:],
-            exp_data_noise[11:],
-            marker="^",
-            linestyle="None",
-            color="lightseagreen",
-            label="exp data noise",
-        )
-        plt.plot(
-            x[11:],
-            df_optimization_results["Simulation results"].iloc[i][11:],
-            marker="None",
-            linestyle=":",
-            color="lightseagreen",
-        )
-        plt.title("chi_sq_fit " + str(i) + " = " + str(chi_sq_fit_list[i]))
-        plt.legend()
-        plt.xscale("linear")
-        plt.savefig("./chi_sq_fit " + str(i) + " dbd dr")
 
     return chi_sq_fit_list
 
@@ -334,11 +220,8 @@ def calculate_threshold_chi_sq(
         norm_solutions_ref
     )
 
-    print("chi_sq_ref_list: " + str(chi_sq_ref_list))
-
     print("Calculating chi_sq_fit...")
     chi_sq_fit_list = calculate_chi_sq_fit(calibrated_parameters, exp_data_noise_list)
-    print("chi_sq_fit_list: " + str(chi_sq_ref_list))
 
     # Calculate threshold chi_sq
     chi_sq_distribution = []
@@ -352,7 +235,12 @@ def calculate_threshold_chi_sq(
     save_chi_sq_distribution(threshold_chi_sq, calibrated_parameters, calibrated_chi_sq)
 
     print("******************")
-    threshold_chi_sq_rounded = np.round(threshold_chi_sq, 1)
+    if settings["modelID"] == 'synTF':
+        round_val = 8
+    else:
+        round_val = 1
+    print(threshold_chi_sq)
+    threshold_chi_sq_rounded = np.round(threshold_chi_sq, round_val)
     print(
         "chi_sq threshold for "
         + str(len(settings["free_parameters"]))

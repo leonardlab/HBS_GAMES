@@ -22,6 +22,6 @@
   "default_max_step_fraction_ppl" : 0.2,
   "non_default_max_step_fraction_ppl" : {"m" : [1, 0.6]},
   "default_max_number_steps_ppl": 50,
-  "non_default_number_steps_ppl" : {"m" : [1 , 100]}
+  "non_default_max_number_steps_ppl" : {"m" : [1 , 100]}
   
 }

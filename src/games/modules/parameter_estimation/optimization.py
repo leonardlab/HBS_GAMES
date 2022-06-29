@@ -67,7 +67,8 @@ def define_best_optimization_results(
         df containing the results of all optimization runs
 
     run_type
-        a string defining the run_type ('default' or 'PPL' or 'PEM evaluation)
+        a string defining the run_type ('default' or 'ppl'
+        or 'ppl threshold' or 'PEM evaluation)
 
     Returns
     -------
@@ -92,7 +93,8 @@ def define_best_optimization_results(
     r_sq_opt = round(df_optimization_results["r_sq"].iloc[0], 3)
     chi_sq_opt_min = round(df_optimization_results["chi_sq"].iloc[0], 3)
 
-    if run_type != "ppl" or "ppl threshold":
+
+    if run_type != "ppl" and  run_type != "ppl threshold":
         filename = "best fit to training data"
         model.plot_training_data(
             df_optimization_results["x"].iloc[0],
@@ -233,7 +235,7 @@ def define_parameters_for_opt(
     -------
     vary_list
         a list of booleans defining whether each parameter is allowed to vary
-        in the optimziation run
+        in the optimization run
 
     params_for_opt
         an object defining the parameters and bounds for optimization
@@ -340,13 +342,14 @@ def define_results_row(
         results_row_labels.append(label)
 
     # Define other conditions and result metrics and add to result_row for saving
-    # Results.redchi is the chi2 value directly from LMFit and should match the
-    # chi2 calculated in this code if the same cost function as LMFit is used
+    # Results.redchi_sq is the chi2 value directly from LMFit.
+    # Results.redchi_sq * the number of data points should match the
+    # chi_sq calculated in this code
     items = [chi_sq, r_sq, results.redchi, results.success, model, chi_sq_list, solutions_norm]
     item_labels = [
         "chi_sq",
         "r_sq",
-        "redchi2",
+        "redchi_sq",
         "success",
         "model",
         "chi_sq_list",
@@ -417,7 +420,7 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
 
     if settings["weight_by_error"] == "no":
         weights_ = [1] * len(exp_error)
-    else:
+    elif settings["weight_by_error"] == "yes":
         weights_ = [1 / i for i in exp_error]
 
     results = model_lmfit.fit(

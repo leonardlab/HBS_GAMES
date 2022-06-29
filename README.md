@@ -1,23 +1,139 @@
-# GAMES code
+Supporting code for the article:
+
+> KE Dray, JJ Muldoon, N Mangan, NBagheri\*, JN Leonard\*. GAMES: A dynamic model development workflow for rigorous characterization of synthetic genetic systems. ACS Synthetic Biology 2022, 11(2): 1009-1029. \*co-corresponding authorship.
+
+## Summary of README contents
+
++ [Repository overview](#repository-overview) 
++ [Release overview](#release-overview)
++ [Installation and running instructions](#installation-and-running-instructions)
++ [Workflow summary](#workflow-summary)
++ [Notes on running the GAMES code](#notes-on-running-and-expanding-the-GAMES-code)
+  - [Extending the code to a new model](#extending-the-code-to-a-new-model)
+  - [Changing run settings](#changing-run-settings)
+  - [Running GAMES with the command line](#running-GAMES-with-the-command-line)
+  - [Unit tests](#unit-tests)
+  - [Functional tests](#functional-tests)
+  - [Description of settings ](#description-of-settings) 
++ [Python project tools](#python-project-tools)
+
+
+## Repository overview
+The docs directory includes documentation for the code. 
+
+The src directory includes the source code.
+
+Within src/games, the results directory includes the results for 2 different examples using 2 different models.
+The synTF-chem example is the same example as Model D in the GAMES paper.
+The synTF example is a new example that is not mentioned in the GAMES paper, but is included here as an example of how to integrate multiple different models in the GAMES workflow. 
+In addition, the synTF example is a more practical example than the synTF-Chem example, as it is not based on a reference parameter set. 
+
+The tests directory includes unit and functional tests. 
+
+
+## Release overview
 
 v2.0.0 is a refactored version of the GAMES code used in Dray et al. 2022. 
 This version includes a variety of Python tools for type annotation, linting, testing, and documentation, along with a new, improved, and more user-friendly code stucture that is more amenable to extention to different models, data sets, and simulation conditions. 
 Information on how to install and run each Python tool is included below.
- 
 
-## Extending the code to a new model 
+## Installation and running instructions
+
+1. To clone the repository, navigate to the location on your computer where you would like this repository stored and run the following command:
+
+```
+$ git clone https://github.com/leonardlab/GAMES.git
+```
+
+2. This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file in GAMES/. See the Python project tools section for more information.
+
+3. All code is executable using run.py. See the section on running GAMES from the command line for more information.
+
+
+## Workflow summary
+
+The src/games folder contains all of the code necessary to run each module in the GAMES workflow. 
+
+src/games/
+|___config/
+|___models/
+|___modules/
+|___plots/
+|___results/
+|___utilities/
+|___run.py
+|___paper.mplstyle.py
+
+The code is executed by running run.py, which then calls functions necessary to run the given module(s). 
+
+paper.mpstyle.py is a matploblib style file that includes settings for figures. 
+
+config/ includes the following files:
+- config.json, which defines the user-specified settings for the given run
+- a number of .csv files (ex: training_data_ligand dose response.csv) that include experimental (training) data for different models and data sets
+- experimental_data.py, which imports and normalizes the experimental (training) data
+- settings.py, which includes code for importing and restructuring config.json 
+
+models/ includes the following files:
+- synTF.py, which includes the synTF model class and all relevant methods
+- synTF_chem.py, which includes the synTF_chem model class and all relevant methods
+
+modules/ includes the following folders:
+src/games/modules
+|___parameter_estimation/
+|___parameter_estimation_method_evaluation/
+|___parameter_profile_likelihood/
+
+modules/parameter_estimation/ includes the following files:
+- run_parameter_estimation.py, which includes code that calls functions from the other 2 files to complete an entire parameter estimation run (global search, then optimization)
+- global_search.py, which includes code for generating parameter sets using Latin Hypercube Sampling (LHS) and running a global search
+- optimization.py, which includes code for running and analyzing a multi-start optimization algorithm
+
+modules/parameter_estimation_method_evaluation/ includes the following files:
+- run_parameter_estimation_method_evaluation.py, which includes code that calls functions from the other 2 files to complete an entire parameter estimation evaluation run (generation of pem evaluation data, then evaluation of parameter estimation method)
+- generate_pem_evaluation_data.py, which includes code for generating pem evaluation data using a global search
+- evaluate_parameter_estimation_method.py, which includes code for evaluating the parameter estimation method by using the pem evaluation data sets as training data and analyzing the results
+
+modules/parameter_profile_likelihood/ includes the following files:
+- run_parameter_profile_likelihood.py, which includes code that calls functions from the other 2 files to complete an entire parameter_profile_likelihood run (calculation of threshold, then evaluation of parameter profile likelihood)
+- calculate_threshold.py, which includes code for calculating the parameter profile likelihood threshold
+- calculate_parameter_profile_likelihood.py, which includes code for calculating the parameter profile likelihood threshold using a binary step algorithm
+
+plots/ includes the following files:
+- plots_parameter_estimation.py, which includes code to generate plots to analyze parameter estimation results
+- plots_parameter_profile_likelihood.py, which includes code to generate plots to analyze parameter profile likelihood results
+- plots_pem_evaluation.py, which includes code to generate plots to analyze parameter estimation method evaluation results
+- plots_timecourses.py, which includes code to generate timecourse plots of internal model states
+- plots_training_data.py, which includes code to generate plots of the training data
+
+results/ includes the following folders:
+
+src/games/results
+|___synTF_chem example model D/
+|___synTF example/
+
+Each folder contains the results of modules 1-3 for the given example. 
+
+utilities/ includes the following files:
+- saving.py, which includes code for saving results and creating folders
+- metrics.py, which includes code for calculating metrics used to compare training and simulated data (chi_sq, R_sq)
+
+## Notes on running and expanding the GAMES code
+
+### Extending the code to a new model 
 
 To add a new model, the user must only add a new file in the models directory and a new .csv with the experimental data file.
 The model file should include a class with the model name and should include the same general functions at the example shown here (synTF_chem, synTF).
-Note that the model synTF is not mentioned in the GAMES paper, but is included her as an example of how to integrate multiple different models in the GAMES workflow. The experimental data file should have a similar structure to the examples provided.  
+The experimental data file should have a similar structure to the examples provided.
+There are also some plotting functions (such as plot_internal_states_along_ppl in src/games/plots/plots_parameter_profile_likelihood.py) that must be updated for a new example. 
+If the data should be normalized with a different method than a standard maximum-value normalization, this normalization strategy must be specified in src/games/config/experimental_data.py
 
-
-## Changing run settings 
+### Changing run settings 
 
 To change run settings, the user can edit the "config.json" file and change each item as needed (for example, parameter estimation method hyperparameters or free parameters). 
 The user must change the "context" value to the path to the GAMES directory on their own machine.  
 
-## Running GAMES with the command line 
+### Running GAMES with the command line 
 
 To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), use the command line to run the following, where x is the module number: 
 
@@ -31,12 +147,16 @@ Mutiple modules can be run in series. For example,  the following command will r
 $ run --modules='23' 
 ```
 
-##Unit tests
+### Unit tests
 
 We provide a small number of unit tests here as a learning tool and proof-of-principle for the testing architecture. 
 The user may want to use the examples shown here to write more unit tests or functional tests based on their own needs.  
 
-##Settings 
+### Functional tests
+
+Functional tests are included using the synTF example, which is a much simpler and less computationally expensive example than the synTF-Chem model used in the GAMES paper.
+
+### Description of settings 
 
 Descriptions of all settings in config.json
 
@@ -109,25 +229,20 @@ The other tools will be installed by Poetry.
 ## Getting started
 
 1. Clone the repo.
-2. Initialize the repository (if you already have a `pyproject.toml` file, you can skip this step):
 
-```bash
-$ poetry init
-```
-
-3. Activate the environment (this is all you need for day-to-day development):
+2. Activate the environment (this is all you need for day-to-day development):
 
 ```bash
 $ poetry shell
 ```
 
-4. Install dependencies.
+3. Install dependencies.
 
 ```bash
 $ poetry install
 ```
 
-5. Run a test with the CLI.
+4. Run a test with the CLI.
 
 ```bash
 $ run --modules='0' 

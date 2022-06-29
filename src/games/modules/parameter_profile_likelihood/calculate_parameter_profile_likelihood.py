@@ -26,7 +26,7 @@ def set_ppl_settings(
     default_values: List[Union[float, int]],
     non_default_min_step_fraction_ppl: dict,
     non_default_max_step_fraction_ppl: dict,
-    non_default_number_steps_ppl: dict,
+    non_default_max_number_steps_ppl: dict,
 ) -> Tuple[float, float, int]:
     """Defines ppl settings for the given parameter if non_default settings values are specified
 
@@ -54,7 +54,7 @@ def set_ppl_settings(
     non_default_max_step_fraction_ppl
         same as above but setting = max step fraction
 
-    non_default_number_steps_ppl
+    non_default_max_number_steps_ppl
         same as above but setting = max number steps fraction
 
     Returns
@@ -69,25 +69,34 @@ def set_ppl_settings(
        an integer defining the maximum number of allowable steps
     """
     # Min step value
-    for key, values in non_default_min_step_fraction_ppl.items():
-        if key == parameter_label and values[0] == direction:
-            min_step_fraction = values[1]
-        else:
-            min_step_fraction = default_values[0]
+    if non_default_min_step_fraction_ppl:
+        for key, values in non_default_min_step_fraction_ppl.items():
+            if key == parameter_label and values[0] == direction:
+                min_step_fraction = values[1]
+            else:
+                min_step_fraction = default_values[0]
+    else:
+        min_step_fraction = default_values[0]
 
     # Max step value
-    for key, values in non_default_max_step_fraction_ppl.items():
-        if key == parameter_label and values[0] == direction:
-            max_step_fraction = values[1]
-        else:
-            max_step_fraction = default_values[1]
+    if non_default_max_step_fraction_ppl:
+        for key, values in non_default_max_step_fraction_ppl.items():
+            if key == parameter_label and values[0] == direction:
+                max_step_fraction = values[1]
+            else:
+                max_step_fraction = default_values[1]
+    else:
+        max_step_fraction = default_values[1]
 
     # Max number of steps
-    for key, values in non_default_number_steps_ppl.items():
-        if key == parameter_label and values[0] == direction:
-            max_steps = values[1]
-        else:
-            max_steps = default_values[2]
+    if non_default_max_number_steps_ppl:
+        for key, values in non_default_max_number_steps_ppl.items():
+            if key == parameter_label and values[0] == direction:
+                max_steps = values[1]
+            else:
+                max_steps = default_values[2]
+    else:
+        max_steps = default_values[2]
 
     return min_step_fraction, max_step_fraction, max_steps
 
@@ -233,11 +242,11 @@ def calculate_ppl(
             [
                 settings["default_min_step_fraction_ppl"],
                 settings["default_max_step_fraction_ppl"],
-                settings["default_number_steps_ppl"],
+                settings["default_max_number_steps_ppl"],
             ],
             settings["non_default_min_step_fraction_ppl"],
             settings["non_default_max_step_fraction_ppl"],
-            settings["non_default_number_steps_ppl"],
+            settings["non_default_max_number_steps_ppl"],
         )
 
         min_step = min_step_fraction * calibrated_parameter_values[fixed_index]
@@ -676,6 +685,7 @@ def calculate_ppl(
     )
 
     plot_parameter_relationships(df_ppl, parameter_label)
-    plot_internal_states_along_ppl(df_ppl, parameter_label)
+    if settings["modelID"] == 'synTF_chem':
+        plot_internal_states_along_ppl(df_ppl, parameter_label)
 
     return elapsed_time_total

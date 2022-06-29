@@ -67,7 +67,7 @@ def plot_parameter_relationships(df_results: pd.DataFrame, parameter_label: str)
     plt.ylabel("other parameters")
     plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.25), fancybox=True, shadow=False, ncol=3)
 
-    plt.savefig("paramter relationships along " + parameter_label + ".svg", dpi=600)
+    plt.savefig("parameter relationships along " + parameter_label + ".svg", dpi=600)
 
 
 def plot_chi_sq_distribution(chi_sq_distribution: list, threshold_chi_sq: float) -> None:
@@ -163,7 +163,7 @@ def plot_parameter_profile_likelihood(
     plt.xlabel(parameter_label)
     plt.ylabel("chi_sq")
 
-    # Plot the calbrated value in blue
+    # Plot the calibrated value in blue
     x = [calibrated_parameter_value_log]
     y = [calibrated_chi_sq]
     plt.scatter(x, y, s=16, marker="o", color="dodgerblue", zorder=2)
