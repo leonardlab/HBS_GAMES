@@ -9,16 +9,16 @@ Supporting code for the article:
 + [Installation and running instructions](#installation-and-running-instructions)
 + [Workflow summary](#workflow-summary)
 + [Notes on running the GAMES code](#notes-on-running-and-expanding-the-GAMES-code)
-  - [Extending the code to a new model](#extending-the-code-to-a-new-model)
   - [Changing run settings](#changing-run-settings)
-  - [Running GAMES with the command line](#running-GAMES-with-the-command-line)
+  - [Description of settings ](#description-of-settings) 
+  - [Extending the code to a new model](#extending-the-code-to-a-new-model)
   - [Unit tests](#unit-tests)
   - [Functional tests](#functional-tests)
-  - [Description of settings ](#description-of-settings) 
 + [Python project tools](#python-project-tools)
 
 
 ## Repository overview
+
 The docs directory includes documentation for the code. 
 
 The src directory includes the source code.
@@ -47,13 +47,25 @@ $ git clone https://github.com/leonardlab/GAMES.git
 
 2. This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file in GAMES/. See the Python project tools section for more information.
 
-3. All code is executable using run.py. See the section on running GAMES from the command line for more information.
+3. All code is executable using run.py using the command line
 
+To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), use the command line to run the following, where x is the module number: 
+
+```
+$ run --modules='x' 
+```
+
+Mutiple modules can be run in series. For example, the following command will run modules 2 and 3.  
+
+```
+$ run --modules='23' 
+```
 
 ## Workflow summary
 
-The src/games folder contains all of the code necessary to run each module in the GAMES workflow. 
+The src/games folder contains all of the code necessary to run each module in the GAMES workflow. "
 
+```
 src/games/
 |___config/
 |___models/
@@ -63,6 +75,7 @@ src/games/
 |___utilities/
 |___run.py
 |___paper.mplstyle.py
+```
 
 The code is executed by running run.py, which then calls functions necessary to run the given module(s). 
 
@@ -79,10 +92,13 @@ models/ includes the following files:
 - synTF_chem.py, which includes the synTF_chem model class and all relevant methods
 
 modules/ includes the following folders:
+
+```
 src/games/modules
 |___parameter_estimation/
 |___parameter_estimation_method_evaluation/
 |___parameter_profile_likelihood/
+```
 
 modules/parameter_estimation/ includes the following files:
 - run_parameter_estimation.py, which includes code that calls functions from the other 2 files to complete an entire parameter estimation run (global search, then optimization)
@@ -108,9 +124,11 @@ plots/ includes the following files:
 
 results/ includes the following folders:
 
+```
 src/games/results
 |___synTF_chem example model D/
 |___synTF example/
+```
 
 Each folder contains the results of modules 1-3 for the given example. 
 
@@ -119,42 +137,6 @@ utilities/ includes the following files:
 - metrics.py, which includes code for calculating metrics used to compare training and simulated data (chi_sq, R_sq)
 
 ## Notes on running and expanding the GAMES code
-
-### Extending the code to a new model 
-
-To add a new model, the user must only add a new file in the models directory and a new .csv with the experimental data file.
-The model file should include a class with the model name and should include the same general functions at the example shown here (synTF_chem, synTF).
-The experimental data file should have a similar structure to the examples provided.
-There are also some plotting functions (such as plot_internal_states_along_ppl in src/games/plots/plots_parameter_profile_likelihood.py) that must be updated for a new example. 
-If the data should be normalized with a different method than a standard maximum-value normalization, this normalization strategy must be specified in src/games/config/experimental_data.py
-
-### Changing run settings 
-
-To change run settings, the user can edit the "config.json" file and change each item as needed (for example, parameter estimation method hyperparameters or free parameters). 
-The user must change the "context" value to the path to the GAMES directory on their own machine.  
-
-### Running GAMES with the command line 
-
-To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), use the command line to run the following, where x is the module number: 
-
-```
-$ run --modules='x' 
-```
-
-Mutiple modules can be run in series. For example,  the following command will run modules 2 and 3.  
-
-```
-$ run --modules='23' 
-```
-
-### Unit tests
-
-We provide a small number of unit tests here as a learning tool and proof-of-principle for the testing architecture. 
-The user may want to use the examples shown here to write more unit tests or functional tests based on their own needs.  
-
-### Functional tests
-
-Functional tests are included using the synTF example, which is a much simpler and less computationally expensive example than the synTF-Chem model used in the GAMES paper.
 
 ### Description of settings 
 
@@ -210,7 +192,28 @@ Descriptions of all settings in config.json
 
   - non_default_number_steps_ppl : a dictionary defining non-default maximum number of PPL steps – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and number of steps as the second value 
 
+### Changing run settings 
+
+To change run settings, the user can edit the "config.json" file and change each item as needed (for example, parameter estimation method hyperparameters or free parameters). 
+The user must change the "context" value to the path to the GAMES directory on their own machine.  
  
+### Extending the code to a new model 
+
+To add a new model, the user must only add a new file in the models directory and a new .csv with the experimental data file.
+The model file should include a class with the model name and should include the same general functions at the example shown here (synTF_chem, synTF).
+The experimental data file should have a similar structure to the examples provided.
+There are also some plotting functions (such as plot_internal_states_along_ppl in src/games/plots/plots_parameter_profile_likelihood.py) that must be updated for a new example. 
+If the data should be normalized with a different method than a standard maximum-value normalization, this normalization strategy must be specified in src/games/config/experimental_data.py
+
+### Unit tests
+
+We provide a small number of unit tests here as a learning tool and proof-of-principle for the testing architecture. 
+The user may want to use the examples shown here to write more unit tests or functional tests based on their own needs.  
+
+### Functional tests
+
+Functional tests are included using the synTF example, which is a much simpler and less computationally expensive example than the synTF-Chem model used in the GAMES paper.
+
 
 # Python project tools
 
