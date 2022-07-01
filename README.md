@@ -54,7 +54,9 @@ The synTF example is a new example that is not mentioned in the GAMES paper, but
 In addition, the synTF example is a more practical example than the synTF_chem example, as it is not based on a reference parameter set.
 The synTF example is similar to the synTF_chem example, but includes a constitutively expressed (rather than chemically responsive) synTF and also has a slightly different promoter activation mechanism. 
 Therefore, for PPL calculations, the calibrated parameter set is used as the reference parameter set. Then, the simulated data generated with the calibrated parameters are used as the starting point for generating the noise realizations used to calculate the PPL threshold. Note that noise must be added to the simulated data generated with the calibrated parameters before  generating the noise realizations.
+
 To make the code amenable to both situations where the reference parameters are known (such as the proof-of-principle synTF_chem example in the GAMES paper) and more practical situations in which the reference parameters are unknown (such as our additional synTF example), there is an if/else statement in src/games/modules/parameter_profile_likelihood/calculate_threshold.py in the function calculate_threshold_chi_sq().
+
 If the modelID is anything except for "synTF_chem," it is assumed that reference parameters are unknown.
 **As an installation test, we suggest that the user runs all modules for the synTF example, which is signficantly less computationally expensive than the synTF_chem example.
 To run the synTF example, simply replace the config.json file in src/games/config/ with the synTF config.json file located in src/games/synTF_example and change the "context" variable (See Installation and running instructions, step 3 for more information).**
