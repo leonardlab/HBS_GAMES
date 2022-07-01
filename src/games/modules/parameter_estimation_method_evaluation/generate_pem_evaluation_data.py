@@ -13,11 +13,10 @@ from games.models.set_model import model
 from games.modules.solve_single import solve_single_parameter_set
 from games.utilities.metrics import calc_chi_sq, calc_r_sq
 from games.config.settings import settings
-from games.config.experimental_data import normalize_data_by_maximum_value
 from games.utilities.saving import save_pem_evaluation_data
 
 
-def add_noise(solutions_norm_raw: List[float], noise: List[float], dataID: str):
+def add_noise(solutions_norm_raw: List[float], noise: List[float], dataID: str) -> List[float]:
     """
     Adds noise to a set of simulated data
 
@@ -45,11 +44,12 @@ def add_noise(solutions_norm_raw: List[float], noise: List[float], dataID: str):
         new_val = max(new_val, 0.0)
         solutions_noise.append(new_val)
 
-    solutions_norm_noise, _ = normalize_data_by_maximum_value(solutions_noise, dataID)
+    solutions_norm_noise = model.normalize_data(solutions_noise, dataID)
 
     return solutions_norm_noise
 
-def generate_noise_pem_evaluation(exp_error: List[float], count: int, modelID: str) -> List[float]:
+
+def generate_noise_pem_evaluation(exp_error: List[float], count: int, modelID: str) -> np.ndarray:
     """Generates noise values to add to a set of simulated data
 
     NOTE: This function has been refactored to generate noise values in a more modular way.
@@ -80,12 +80,12 @@ def generate_noise_pem_evaluation(exp_error: List[float], count: int, modelID: s
     Returns
     -------
     noise
-        a list of floats containing noise values to be added to each data point
+        an array containing noise values to be added to each data point
     """
 
     # Define mean for error distribution
     mu = 0
-    if modelID == 'synTF_chem':
+    if modelID == "synTF_chem":
         # Define seeds for random number generation
         seeds = [3457, 1234, 2456, 7984, 7306, 3869, 5760, 9057, 2859]
         if count > len(seeds):
@@ -103,21 +103,24 @@ def generate_noise_pem_evaluation(exp_error: List[float], count: int, modelID: s
         # Calculate standard error values (assuming triplicate measurements)
         sigma_values_standard_error = [i / sqrt(3) for i in exp_error]
 
-        #Set seed for this data set
+        # Set seed for this data set
         np.random.seed(starting_seed + count)
 
-        #Generate noise values for each sigma value
-        noise = []
+        # Generate noise values for each sigma value
+        noise_list = []
         for sigma_val in sigma_values_standard_error:
-            noise_value = np.random.normal(mu, sigma_val, 1)
-            noise.append(float(noise_value))
+            noise_value = float(np.random.normal(mu, sigma_val, 1))
+            noise_list.append(noise_value)
+
+        noise = np.array(noise_list)
 
     return noise
+
 
 def filter_global_search_results(
     df_global_search_results: pd.DataFrame, num_pem_evaluation_datasets: int
 ) -> pd.DataFrame:
-    """Filters data to choose parameter sets used to generate PEM evaluation data
+    """Filters data to choose parameter sets used to generate pem evaluation data
 
     Parameters
     ----------
@@ -230,7 +233,7 @@ def define_pem_evaluation_criterion(r_sq_list: list, chi_sq_list: list) -> float
 
     mean_chi_sq = np.round(np.mean(chi_sq_list), 4)
     max_chi_sq = np.round(max(chi_sq_list), 4)
-    if max_chi_sq == [0.]:
+    if max_chi_sq == [0.0]:
         max_chi_sq = 0.0
 
     print("Mean chi_sq between PEM evaluation data with and without noise: " + str(mean_chi_sq))
@@ -238,8 +241,8 @@ def define_pem_evaluation_criterion(r_sq_list: list, chi_sq_list: list) -> float
 
     # Save PEM evaluation criterion
     df = pd.DataFrame()
-    df['r_sq'] = list(r_sq_list)
-    df['chi_sq'] = list(chi_sq_list)
+    df["r_sq"] = list(r_sq_list)
+    df["chi_sq"] = list(chi_sq_list)
     df.to_csv("./PEM evaluation criterion.csv")
 
     return max_chi_sq

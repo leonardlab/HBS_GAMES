@@ -45,11 +45,10 @@ def set_ppl_settings(
 
     non_default_min_step_fraction_ppl
         a list of dictionaries defining the non-default values for each setting
-        each key is the parameter name and each value is a list where the
-        first item is the direction of ppl calculations
-        and the second item is the value for the given setting and
-        the given parameter/direction. For example, {"k": [1, 100]} means that
-        the value of the given setting should be 100 for parameter k in the positive direction
+        each key is a string with the parameter name followed by a space followed by the
+        direction of ppl calculations (-1 or 1). The value of the dictionary
+        is the value for the given setting. For example, {"k_bind -1" : 0.001}, means that
+        the value of the given setting should be 0.001 for parameter k_bind in the negative direction
 
     non_default_max_step_fraction_ppl
         same as above but setting = max step fraction
@@ -69,10 +68,12 @@ def set_ppl_settings(
        an integer defining the maximum number of allowable steps
     """
     # Min step value
+
     if non_default_min_step_fraction_ppl:
-        for key, values in non_default_min_step_fraction_ppl.items():
-            if key == parameter_label and values[0] == direction:
-                min_step_fraction = values[1]
+        for key, value in non_default_min_step_fraction_ppl.items():
+            key = key.split(" ")
+            if key[0] == parameter_label and key[1] == str(direction):
+                min_step_fraction = value
             else:
                 min_step_fraction = default_values[0]
     else:
@@ -80,9 +81,10 @@ def set_ppl_settings(
 
     # Max step value
     if non_default_max_step_fraction_ppl:
-        for key, values in non_default_max_step_fraction_ppl.items():
-            if key == parameter_label and values[0] == direction:
-                max_step_fraction = values[1]
+        for key, value in non_default_max_step_fraction_ppl.items():
+            key = key.split(" ")
+            if key[0] == parameter_label and key[1] == str(direction):
+                max_step_fraction = value
             else:
                 max_step_fraction = default_values[1]
     else:
@@ -90,9 +92,10 @@ def set_ppl_settings(
 
     # Max number of steps
     if non_default_max_number_steps_ppl:
-        for key, values in non_default_max_number_steps_ppl.items():
-            if key == parameter_label and values[0] == direction:
-                max_steps = values[1]
+        for key, value in non_default_max_number_steps_ppl.items():
+            key = key.split(" ")
+            if key[0] == parameter_label and key[1] == str(direction):
+                max_steps = value
             else:
                 max_steps = default_values[2]
     else:
@@ -685,7 +688,7 @@ def calculate_ppl(
     )
 
     plot_parameter_relationships(df_ppl, parameter_label)
-    if settings["modelID"] == 'synTF_chem':
+    if settings["modelID"] == "synTF_chem":
         plot_internal_states_along_ppl(df_ppl, parameter_label)
 
     return elapsed_time_total

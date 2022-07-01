@@ -31,19 +31,18 @@ def make_main_directory(settings: dict) -> str:
     try:
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-
     except FileExistsError:
         print("Directory already exists")
-
     os.chdir(folder_path)
+
     # save settings
-    with open("./settings.json", "w", encoding="utf-8") as outfile:
+    with open("./config.json", "w", encoding="utf-8") as outfile:
         json.dump(settings, outfile)
     return folder_path
 
 
 def create_folder(folder_path: str, sub_folder_name: str) -> str:
-    """Creates a new folder.
+    """Creates a new folder
 
     Parameters
     ----------

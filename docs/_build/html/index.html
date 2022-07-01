@@ -70,12 +70,16 @@
 </div>
 <p>Supporting code for the article:</p>
 <blockquote>
-<div><p>KE Dray, JJ Muldoon, N Mangan, NBagheri*, JN Leonard*. GAMES: A dynamic model development workflow for rigorous characterization of synthetic genetic systems. ACS Synthetic Biology 2022, 11(2): 1009-1029. <a href="#id1"><span class="problematic" id="id2">*</span></a>co-corresponding authorship.</p>
+<div><p>KE Dray, JJ Muldoon, N Mangan, N Bagheri*, JN Leonard*. GAMES: A dynamic model development workflow for rigorous characterization of synthetic genetic systems. ACS Synthetic Biology 2022, 11(2): 1009-1029. <a href="#id1"><span class="problematic" id="id2">*</span></a>co-corresponding authorship.</p>
 </div></blockquote>
 <section id="summary-of-readme-contents">
 <h1>Summary of README contents<a class="headerlink" href="#summary-of-readme-contents" title="Permalink to this headline"></a></h1>
 <ul class="simple">
-<li><p><span class="xref std std-ref">Repository overview</span></p></li>
+<li><p><span class="xref std std-ref">Repository overview</span></p>
+<ul>
+<li><p><span class="xref std std-ref">Examples</span></p></li>
+</ul>
+</li>
 <li><p><span class="xref std std-ref">Release overview</span></p></li>
 <li><p><span class="xref std std-ref">Installation and running instructions</span></p></li>
 <li><p><span class="xref std std-ref">Workflow summary</span></p></li>
@@ -83,23 +87,53 @@
 <ul>
 <li><p><span class="xref std std-ref">Changing run settings</span></p></li>
 <li><p><span class="xref std std-ref">Description of settings</span></p></li>
-<li><p><span class="xref std std-ref">Extending the code to a new model</span></p></li>
+<li><p><span class="xref std std-ref">Setting fixed parameters</span></p></li>
 <li><p><span class="xref std std-ref">Unit tests</span></p></li>
 <li><p><span class="xref std std-ref">Functional tests</span></p></li>
 </ul>
 </li>
-<li><p><span class="xref std std-ref">Python project tools</span></p></li>
+<li><p><span class="xref std std-ref">Extending the code to a new model</span></p>
+<ul>
+<li><p><span class="xref std std-ref">Model class</span></p></li>
+<li><p><span class="xref std std-ref">Training data</span></p></li>
+<li><p><span class="xref std std-ref">Other considerations</span></p></li>
+</ul>
+</li>
+<li><p><span class="xref std std-ref">Python project tools</span></p>
+<ul>
+<li><p><span class="xref std std-ref">Getting started</span></p></li>
+<li><p><span class="xref std std-ref">Makefile commands</span></p></li>
+<li><p><span class="xref std std-ref">Repository tools</span></p></li>
+</ul>
+</li>
 </ul>
 </section>
 <section id="repository-overview">
 <h1>Repository overview<a class="headerlink" href="#repository-overview" title="Permalink to this headline"></a></h1>
-<p>The docs directory includes documentation for the code.</p>
-<p>The src directory includes the source code.</p>
-<p>Within src/games, the results directory includes the results for 2 different examples using 2 different models.
-The synTF-chem example is the same example as Model D in the GAMES paper.
-The synTF example is a new example that is not mentioned in the GAMES paper, but is included here as an example of how to integrate multiple different models in the GAMES workflow.
-In addition, the synTF example is a more practical example than the synTF-Chem example, as it is not based on a reference parameter set.</p>
-<p>The tests directory includes unit and functional tests.</p>
+<p>The /docs directory includes documentation for the code.</p>
+<p>The /src directory includes the source code.</p>
+<p>The /tests directory includes unit and functional tests.</p>
+<p>Note that the GAMES source code is all included in the src directory. All additional files are related to the Python project tools, which are described in the relevant sections below.</p>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h2>
+<p>Within src/games, the /results directory includes the results for 2 different examples using 2 different models.</p>
+<section id="syntf-chem">
+<h3>SynTF_chem<a class="headerlink" href="#syntf-chem" title="Permalink to this headline"></a></h3>
+<p>The synTF_chem example is the same example as Model D in the GAMES paper.
+The config.json file in src/games/config/ can be used to run this example.</p>
+</section>
+<section id="syntf">
+<h3>SynTF<a class="headerlink" href="#syntf" title="Permalink to this headline"></a></h3>
+<p>The synTF example is a new example that is not mentioned in the GAMES paper, but is included here as an additional example of how to integrate multiple different models in the GAMES workflow.
+In addition, the synTF example is a more practical example than the synTF_chem example, as it is not based on a reference parameter set.
+The synTF example is similar to the synTF_chem example, but includes a constitutively expressed (rather than chemically responsive) synTF and also has a slightly different promoter activation mechanism.
+Therefore, for PPL calculations, the calibrated parameter set is used as the reference parameter set. Then, the simulated data generated with the calibrated parameters are used as the starting point for generating the noise realizations used to calculate the PPL threshold. Note that noise must be added to the simulated data generated with the calibrated parameters before  generating the noise realizations.
+To make the code amenable to both situations where the reference parameters are known (such as the proof-of-principle synTF_chem example in the GAMES paper) and more practical situations in which the reference parameters are unknown (such as our additional synTF example), there is an if/else statement in src/games/modules/parameter_profile_likelihood/calculate_threshold.py in the function calculate_threshold_chi_sq().
+If the modelID is anything except for “synTF_chem,” it is assumed that reference parameters are unknown.
+<strong>As an installation test, we suggest that the user runs all modules for the synTF example, which is signficantly less computationally expensive than the synTF_chem example.
+To run the synTF example, simply replace the config.json file in src/games/config/ with the synTF config.json file located in src/games/synTF_example and change the “context” variable (See Installation and running instructions, step 3 for more information).</strong></p>
+</section>
+</section>
 </section>
 <section id="release-overview">
 <h1>Release overview<a class="headerlink" href="#release-overview" title="Permalink to this headline"></a></h1>
@@ -112,25 +146,26 @@ Information on how to install and run each Python tool is included below.</p>
 <ol class="arabic simple">
 <li><p>To clone the repository, navigate to the location on your computer where you would like this repository stored and run the following command:</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/leonardlab/GAMES.git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/leonardlab/GAMES.git
 </pre></div>
 </div>
 <ol class="arabic simple">
-<li><p>This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file in GAMES/. See the Python project tools section for more information.</p></li>
-<li><p>All code is executable using run.py using the command line</p></li>
+<li><p>This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file. See the Python project tools section for more information.</p></li>
+<li><p>Run settings are set using the config.json file in src/games/config/. The “context” variable must be set to the absolute path to the user’s src/games/ folder.</p></li>
+<li><p>All code is executable using the command line</p></li>
 </ol>
 <p>To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), use the command line to run the following, where x is the module number:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ run --modules=&#39;x&#39;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ run --modules<span class="o">=</span><span class="s1">&#39;x&#39;</span>
 </pre></div>
 </div>
 <p>Mutiple modules can be run in series. For example, the following command will run modules 2 and 3.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ run --modules=&#39;23&#39;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ run --modules<span class="o">=</span><span class="s1">&#39;23&#39;</span>
 </pre></div>
 </div>
 </section>
 <section id="workflow-summary">
 <h1>Workflow summary<a class="headerlink" href="#workflow-summary" title="Permalink to this headline"></a></h1>
-<p>The src/games folder contains all of the code necessary to run each module in the GAMES workflow. “</p>
+<p>The src/games folder contains the code necessary to run each module in the GAMES workflow. “</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">src</span><span class="o">/</span><span class="n">games</span><span class="o">/</span>
 <span class="o">|</span><span class="n">___config</span><span class="o">/</span>
 <span class="o">|</span><span class="n">___models</span><span class="o">/</span>
@@ -209,9 +244,9 @@ Information on how to install and run each Python tool is included below.</p>
 <p>Descriptions of all settings in config.json</p>
 <ul class="simple">
 <li><p>folder_name: a string defining the name of folder to save results to</p></li>
-<li><p>modelID:  sa tring defining the model to use, should be same name as the relevant class</p></li>
+<li><p>modelID:  a string defining the model to use, should be same name as the relevant class</p></li>
 <li><p>dataID: a string defining the data to use, .csv defining the data should be named “<a href="#id8"><span class="problematic" id="id9">training_data_</span></a>” + dataID, name of dataID is user-defined</p></li>
-<li><p>mechanismID: a string defining the identify of the mechanism to use, if there is only one version of a given model, this variable is unnecessary</p></li>
+<li><p>mechanismID: a string defining the identity of the mechanism to use, if there is only one version of a given model, this variable is unnecessary</p></li>
 <li><p>context: a string defining the absolute path to GAMES/src/games in the given context (computer) where the code will be run</p></li>
 <li><p>parameters: a list of integers defining the starting values for each parameter. If a given parameter is not free in this run, the parameter fill be fixed at the value in this list</p></li>
 <li><p>parameters_reference: a list of integers defining the reference values for each parameter, only necessary for proof-of-principle demonstrations such that the parameter used to define the training data are known</p></li>
@@ -228,25 +263,24 @@ Information on how to install and run each Python tool is included below.</p>
 <li><p>num_noise_realizations: an integer defining the number of noise realizations to use to define the PPL threshold</p></li>
 <li><p>parameter_labels_for_ppl: a list of strings defining the parameter labels for which the PPL should be calculated</p></li>
 <li><p>default_min_step_fraction_ppl: a float defining the default fraction of the calibrated value to set the minimum step for PPL</p></li>
-<li><p>non_default_min_step_fraction_ppl: a dictionary defining non-default min step values for PPL – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and fraction as the second value</p></li>
-<li><p>default_max_step_fraction_ppl: a floatdefining the default fraction of the calibrated value to set the maximum step for PPL</p></li>
-<li><p>non_default_max_step_fraction_ppl: a dictionary defining non-default max step values for PPL – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and fraction as the second value</p></li>
+<li><p>non_default_min_step_fraction_ppl: a dictionary defining non-default minimum step fraction values for PPL – each key is a string with the parameter name followed by a space followed by the direction of ppl calculations (-1 or 1) and value is a float defining the non-default minimum step fraction for ppl</p></li>
+<li><p>default_max_step_fraction_ppl: a float defining the default fraction of the calibrated value to set the maximum step for PPL</p></li>
+<li><p>non_default_max_step_fraction_ppl: a dictionary defining non-default maximum step fraction values for PPL – each key is a string with the parameter name followed by a space followed by the direction of ppl calculations (-1 or 1) and value is a float defining the non-default maximum step fraction for ppl</p></li>
 <li><p>default_max_number_steps_ppl: an integer defining the default maximum number of PPL steps in each direction</p></li>
-<li><p>non_default_number_steps_ppl: a dictionary defining non-default maximum number of PPL steps – key is the parameter label and value is a list with the direction (-1 or 1) as the first item and number of steps as the second value</p></li>
+<li><p>non_default_number_steps_ppl: a dictionary defining non-default maximum number of PPL steps – each key is a string with the parameter name followed by a space followed by the direction of ppl calculations (-1 or 1) and value is a float defining the non-default maximum number of PPL steps</p></li>
 </ul>
+</section>
+<section id="setting-fixed-parameters">
+<h2>Setting fixed parameters<a class="headerlink" href="#setting-fixed-parameters" title="Permalink to this headline"></a></h2>
+<p>GAMES includes 2 methods for defining fixed parameters.</p>
+<p>Fixed parameters than are not anticipated to be free can be set in the gradient() method of the relevant model class (ex: k_txn for models synTF_chem or synTF).</p>
+<p>Fixed parameters than may be fixed in some runs, but free for others (for example, k_bind in synTF_chem is free in models A, B, and C in the GAMES examples, but is fixed in model D), can be included in the parameters list in config.py.
+Then, if the parameter is free in a given run, it can be included in the free_parameter_labels variable in config.py and if the parameter is fixed in a given run, it can be omitted from the free_parameter_labels variable in config.py.</p>
 </section>
 <section id="changing-run-settings">
 <h2>Changing run settings<a class="headerlink" href="#changing-run-settings" title="Permalink to this headline"></a></h2>
 <p>To change run settings, the user can edit the “config.json” file and change each item as needed (for example, parameter estimation method hyperparameters or free parameters).
 The user must change the “context” value to the path to the GAMES directory on their own machine.</p>
-</section>
-<section id="extending-the-code-to-a-new-model">
-<h2>Extending the code to a new model<a class="headerlink" href="#extending-the-code-to-a-new-model" title="Permalink to this headline"></a></h2>
-<p>To add a new model, the user must only add a new file in the models directory and a new .csv with the experimental data file.
-The model file should include a class with the model name and should include the same general functions at the example shown here (synTF_chem, synTF).
-The experimental data file should have a similar structure to the examples provided.
-There are also some plotting functions (such as plot_internal_states_along_ppl in src/games/plots/plots_parameter_profile_likelihood.py) that must be updated for a new example.
-If the data should be normalized with a different method than a standard maximum-value normalization, this normalization strategy must be specified in src/games/config/experimental_data.py</p>
 </section>
 <section id="unit-tests">
 <h2>Unit tests<a class="headerlink" href="#unit-tests" title="Permalink to this headline"></a></h2>
@@ -255,10 +289,44 @@ The user may want to use the examples shown here to write more unit tests or fun
 </section>
 <section id="functional-tests">
 <h2>Functional tests<a class="headerlink" href="#functional-tests" title="Permalink to this headline"></a></h2>
-<p>Functional tests are included for the synTF example, which is a simpler and less computationally expensive example than the synTF-Chem model used in the GAMES paper.</p>
-<section id="python-project-tools">
-<h3>Python project tools<a class="headerlink" href="#python-project-tools" title="Permalink to this headline"></a></h3>
-<p>This repositor uses the GitHub Actions and the following tools:</p>
+<p>Explicit functional tests are not included in this repository, but the infrastructure for functional testing with pytest is included.
+Simply add functional tests to the src/games/tests/functional/games/ folder and tests will automatically run with tox.</p>
+</section>
+</section>
+<section id="extending-the-code-to-a-new-model">
+<h1>Extending the code to a new model<a class="headerlink" href="#extending-the-code-to-a-new-model" title="Permalink to this headline"></a></h1>
+<p>To add a new model, the user must only add a new file in the models directory and a new .csv with the experimental data file.
+There are also some plotting functions (such as plot_internal_states_along_ppl in src/games/plots/plots_parameter_profile_likelihood.py and plot_training_data_fits() in src/games/plots/plots_parameter_estimation.py and  plot_timecourses() in src/games/plots/plots_timecourses.py) that must be updated for a new example. These are visualization functions that are not integral to the alogorithm itself.</p>
+<section id="model-class">
+<h2>Model Class<a class="headerlink" href="#model-class" title="Permalink to this headline"></a></h2>
+<p>The model file should include a class with the model name and should include the same general functions as the examples (synTF_chem, synTF).
+The model class must also be included in src/games/models/set_model.py, which defines the model class for the given run using the modelID.
+Then, other files can simply import the “model” variable and run the model-specific methods (ex: model.solve_experiment())
+Below is a description of each method that each model class must have.</p>
+<ul class="simple">
+<li><p>init() initializes the class and sets attributes such as the state labels and sets default input and parameter values</p></li>
+<li><p>solve_single() solves the ODEs for a single set of parameters and inputs</p></li>
+<li><p>gradient() defines the ODEs</p></li>
+<li><p>solve_experiment() iterates over solve_single() for a set of inputs (or other independent variables). For example, for a ligand dose response, solve_experiment() includes a for loop to call solve_single() for a range of different input ligand values. More than 1 type of experiment can be included in solve_experiment using if statements for different dataIDs</p></li>
+<li><p>normalize_data() normalizes the simulated data. The normalization strategy must be analagous to the normalization strategy used for the experimental data. Use if/else statements if the normalization strategy differs based on different the dataID</p></li>
+<li><p>plot_training_data() plots the training data along with the simulated data. Use if/else statements if the type of plot differs based on different the dataID</p></li>
+</ul>
+</section>
+<section id="training-data">
+<h2>Training data<a class="headerlink" href="#training-data" title="Permalink to this headline"></a></h2>
+<p>The experimental data file should have a similar structure to the examples provided, with the following columns</p>
+<ul class="simple">
+<li><p>x (independent variable)</p></li>
+<li><p>y (normalized dependent variable)</p></li>
+<li><p>y_err (normalized standard deviation for the dependent variable).</p></li>
+</ul>
+<p>The normalization strategy used for the experimental data should also be included in the model class in the “normalize” method.
+Experimental and simulated data must be normalized in the same way.</p>
+</section>
+<section id="other-considerations">
+<h2>Other considerations<a class="headerlink" href="#other-considerations" title="Permalink to this headline"></a></h2>
+<p>The GAMES code can currently be used for up to 10 parameters (length of the parameters variable in config.json). To expand the code for more than 10 parameters, the user can simply modify solve_for_opt() in src/games/modules/parameter_estimation/optimization.py by providing more parameters as arguments for this function and unpacking the parameteters accordingly in the first line of the function.</p>
+<p>This repository uses GitHub Actions and the following tools:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://python-poetry.org/">Poetry</a> for packaging and dependency management</p></li>
 <li><p><a class="reference external" href="https://tox.readthedocs.io/en/latest/">Tox</a> for automated testing</p></li>
@@ -271,11 +339,10 @@ The user may want to use the examples shown here to write more unit tests or fun
 The other tools will be installed by Poetry.</p>
 </section>
 </section>
-</section>
 <section id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h1>
 <ol class="arabic simple">
-<li><p>Clone the repo.</p></li>
+<li><p>Clone the repo (see Installation and running instructions for details)</p></li>
 <li><p>Activate the environment (this is all you need for day-to-day development):</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ poetry shell
@@ -320,21 +387,16 @@ You can also add dependencies directly to the file.</p>
 <section id="github-actions">
 <h2>GitHub Actions<a class="headerlink" href="#github-actions" title="Permalink to this headline"></a></h2>
 <p>Tests are run on each push.
-For projects that should be tested on multiple Python versions, make sure to update the matrix with additional versions in <code class="docutils literal notranslate"><span class="pre">.github/workflows/build.yml</span></code>.</p>
-<p>Documentation is automatically generated by <code class="docutils literal notranslate"><span class="pre">.github/workflows/documentation.yml</span></code> on pushes to the main branch.
-The documentation files are deployed on a separate branch called <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code>.
-You can host the documentation using GitHub Pages (Settings &gt; Pages) from this branch.</p>
-<p>Linting is performed on each push.
+Linting is performed on each push.
 This workflow <code class="docutils literal notranslate"><span class="pre">.github/workflows/lint.yml</span></code> lints code using Pylint (fails when score is &lt; 7.0), checks formatting with Black (fails if files would be reformatted), and performs type checking with MyPy (fails if code has type errors).
 Note that this type checking is not the same as the type checking done by Tox, which additionally checks for missing types.</p>
 </section>
 <section id="id4">
 <h2>Tox<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h2>
-<p>Tox aims to automate and standardize testing.
-You can use tox to automatically run tests on different python versions, as well as things like linting and type checking.</p>
+<p>Running tox will automatically perform unit and functional tests, linting, formatting, and type checking.</p>
 <p>Tox can be configured in <code class="docutils literal notranslate"><span class="pre">tox.ini</span></code> for additional python versions or testing environments.</p>
 <p>You can run tox by simply running</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ tox
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ tox
 </pre></div>
 </div>
 </section>
@@ -351,15 +413,12 @@ Most recommendations from Pylint are good, but it is not perfect; make sure to b
 </section>
 <section id="id7">
 <h2>Sphinx<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
-<p>We used Sphinx to automatically generate documenation using Numpy style docstrings - <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">Numpy style docstrings</a>. Documentation for each module can be found in ‘GAMES/docs/<a href="#id10"><span class="problematic" id="id11">build_</span></a>’.</p>
-<section id="indices-and-tables">
-<h3>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline"></a></h3>
+<p>We used Sphinx to automatically generate documentation using Numpy style docstrings - <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">Numpy style docstrings</a>. Documentation for each module can be found in ‘GAMES/docs/<a href="#id10"><span class="problematic" id="id11">build_</span></a>’.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-</section>
 </section>
 </section>
 

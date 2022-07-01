@@ -12,8 +12,7 @@ from games.config.settings import settings
 
 
 def calc_r_sq(data_x: List[float], data_y: List[float]) -> float:
-
-    """Calculate correlation coefficient, r_sq, between 2 datasets
+    """Calculates correlation coefficient, r_sq, between 2 datasets
 
     Parameters
     ----------
@@ -46,24 +45,23 @@ def calc_r_sq(data_x: List[float], data_y: List[float]) -> float:
 
 
 def calc_chi_sq(exp_: List[float], sim: List[float], std: List[float]) -> float:
-
-    """Calculate chi2 between 2 datasets with measurement error described by std
+    """Calculates chi2 between 2 datasets with measurement error described by std
 
     Parameters
     ----------
     exp_
-        experimental data (list of floats, length = # datapoints)
+        a list of floats defining the experimental data
 
     sim
-        simulated data (list of floats, length = # datapoints)
+        a list of floats defining the simulated data
 
     std
-        measurement error for exp data (list of floats, length = # datapoints)
+        a list of floats defining the measurement error for the experimental data
 
     Returns
     -------
     chi_sq
-        chi2 value (float)
+        a float defining the chi_sq value
 
     '"""
 

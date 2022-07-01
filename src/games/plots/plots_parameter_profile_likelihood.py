@@ -6,6 +6,7 @@ Created on Thu May 26 09:48:43 2022
 @author: kate
 """
 from math import log10
+from typing import List
 import cycler
 import pandas as pd
 import numpy as np
@@ -32,10 +33,6 @@ def plot_parameter_relationships(df_results: pd.DataFrame, parameter_label: str)
     -------
     None
 
-    Figures
-    -------
-        'parameter relationships along ' +  parameter_label + '.svg'
-
     """
     # Define indices of free parameters
     indices = []
@@ -43,7 +40,7 @@ def plot_parameter_relationships(df_results: pd.DataFrame, parameter_label: str)
         if label in settings["free_parameter_labels"]:
             indices.append(i)
 
-    # Grab data fromdf_results and take log of x values
+    # Grab data from df_results and take log of x values
     x = list(df_results["fixed " + parameter_label])
     x = [log10(val) for val in x]
     y = list(df_results["fixed " + parameter_label + " all parameters"])
@@ -70,13 +67,13 @@ def plot_parameter_relationships(df_results: pd.DataFrame, parameter_label: str)
     plt.savefig("parameter relationships along " + parameter_label + ".svg", dpi=600)
 
 
-def plot_chi_sq_distribution(chi_sq_distribution: list, threshold_chi_sq: float) -> None:
+def plot_chi_sq_distribution(chi_sq_distribution: List[float], threshold_chi_sq: float) -> None:
     """Plots threshold chi_sq value for PPL calculations
 
     Parameters
     ----------
     chi_sq_distribution
-        a list of floats defining the chi_sq distribution used to calcualte the threshold
+        a list of floats defining the chi_sq distribution used to calculate the threshold
 
     threshold_chi_sq
         a float defining the threshold chi_sq value
@@ -105,8 +102,8 @@ def plot_chi_sq_distribution(chi_sq_distribution: list, threshold_chi_sq: float)
 def plot_parameter_profile_likelihood(
     parameter_label: str,
     calibrated_parameter_value: float,
-    fixed_parameter_values_both_directions: list,
-    chi_sq_ppl_list_both_directions: list,
+    fixed_parameter_values_both_directions: List[float],
+    chi_sq_ppl_list_both_directions: List[float],
     calibrated_chi_sq: float,
     threshold_chi_sq: float,
 ) -> None:
@@ -192,9 +189,6 @@ def plot_internal_states_along_ppl(df_results: pd.DataFrame, parameter_label: st
     -------
     None
 
-    Figures
-    -------
-        'internal states along ' +  parameter_label + '.svg'
     """
     y = list(df_results["fixed " + parameter_label + " all parameters"])
     n = len(y)

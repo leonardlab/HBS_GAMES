@@ -13,7 +13,7 @@ from games.utilities.saving import create_folder
 from games.utilities.metrics import calc_chi_sq, calc_r_sq
 from games.plots.plots_timecourses import plot_timecourses
 from games.config.settings import settings, folder_path
-from games.config.experimental_data import define_experimental_data, normalize_data_by_maximum_value
+from games.config.experimental_data import define_experimental_data
 
 
 def solve_single_parameter_set(
@@ -48,7 +48,7 @@ def solve_single_parameter_set(
     """
 
     solutions = model.solve_experiment(x, settings["dataID"])
-    solutions_norm, _ = normalize_data_by_maximum_value(solutions, settings["dataID"])
+    solutions_norm = model.normalize_data(solutions, settings["dataID"])
     chi_sq = calc_chi_sq(exp_data, solutions_norm, exp_error)
     r_sq = calc_r_sq(exp_data, solutions_norm)
 

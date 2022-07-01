@@ -55,10 +55,6 @@ def plot_training_data_fits(df_opt: pd.DataFrame) -> None:
     -------
     None
 
-    Figures
-    -------
-    './FITS r_sq ABOVE 0.99.svg' (plot of training data and simulated data for
-         parameter sets with r_sq > = 0.99)
     """
 
     # Only keep rows for which r_sq >= .99
@@ -116,13 +112,8 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     Returns
     -------
     None
-
-    Figures
-    -------
-    'OPTIMIZED PARAMETER DISTRIBUTIONS.svg' (plot of parameter distributions for
-         parameter sets with r_sq > = 0.99)
-
     """
+
     # Only keep rows for which r_sq >= .99
     df_opt = df_opt[df_opt["r_sq"] >= 0.99]
     if len(df_opt.index) == 0:

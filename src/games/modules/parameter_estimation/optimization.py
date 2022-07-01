@@ -93,8 +93,7 @@ def define_best_optimization_results(
     r_sq_opt = round(df_optimization_results["r_sq"].iloc[0], 3)
     chi_sq_opt_min = round(df_optimization_results["chi_sq"].iloc[0], 3)
 
-
-    if run_type != "ppl" and  run_type != "ppl threshold":
+    if run_type not in ("ppl", "ppl threshold"):
         filename = "best fit to training data"
         model.plot_training_data(
             df_optimization_results["x"].iloc[0],
@@ -229,7 +228,6 @@ def define_parameters_for_opt(
 
     parameter_labels
         a lists of strings containing the labels for all parameters
-
 
     Returns
     -------

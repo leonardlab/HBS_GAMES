@@ -1,4 +1,4 @@
-{ "folder_name": "test", 
+{ "folder_name": "synTF_chem example 123", 
   "modelID" : "synTF_chem",
   "dataID" : "ligand dose response and DBD dose response",
   "mechanismID" : "D",
@@ -18,10 +18,10 @@
   "num_noise_realizations" : 1000,
   "parameter_labels_for_ppl" : ["e", "m", "km", "n"],
   "default_min_step_fraction_ppl" : 0.01,
-  "non_default_min_step_fraction_ppl" : {"k_bind" : [-1, 0.001], "m" : [-1, 0.001]},
+  "non_default_min_step_fraction_ppl" : {"k_bind -1": 0.001, "m -1" :  0.001},
   "default_max_step_fraction_ppl" : 0.2,
-  "non_default_max_step_fraction_ppl" : {"m" : [1, 0.6]},
+  "non_default_max_step_fraction_ppl" : {"m 1" : 0.6},
   "default_max_number_steps_ppl": 50,
-  "non_default_max_number_steps_ppl" : {"m" : [1 , 100]}
+  "non_default_max_number_steps_ppl" : {"m 1" : 100}
   
 }

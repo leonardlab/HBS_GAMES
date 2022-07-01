@@ -58,7 +58,7 @@ class synTF_chem:
         self.parameters = parameters
         self.inputs = inputs
         self.input_ligand = input_ligand
-        number_of_states = 8
+        number_of_states = len(self.state_labels)
         y_init = np.zeros(number_of_states)
         self.initial_conditions = y_init
 
@@ -128,17 +128,23 @@ class synTF_chem:
 
         Parameters
         ----------
+        y
+            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+
+        t
+            an array defining the time (necessary parameter to use ODEint to solve gradient)
+
         parameters
-            List of floats defining the parameters
+            a list of floats defining the parameters
 
         inputs
-            List of floats defining the inputs
+            a list of floats defining the inputs
 
 
         Returns
         -------
         dydt
-            An list of floats corresponding to the gradient of each model state at time t
+            a list of floats corresponding to the gradient of each model state at time t
 
         """
 
@@ -218,16 +224,52 @@ class synTF_chem:
         return solutions
 
     @staticmethod
+    def normalize_data(solutions_raw: List[float], dataID: str) -> List[float]:
+        """Normalizes data by maximum value
+
+        Parameters
+        ----------
+        solutions_raw
+            a list of floats defining the solutions before normalization
+
+        dataID
+            a string defining the dataID
+
+        Returns
+        -------
+        solutions_norm
+            a list of floats defining the dependent variable for the given
+            dataset (after normalization)
+
+        """
+
+        if dataID == "ligand dose response and DBD dose response":
+            # normalize ligand dose response
+            solutions_norm_1 = [i / max(solutions_raw[:11]) for i in solutions_raw[:11]]
+
+            # normalize DBD dose response
+            solutions_norm_2 = [i / max(solutions_raw[11:]) for i in solutions_raw[11:]]
+
+            # combine solutions
+            solutions_norm = solutions_norm_1 + solutions_norm_2
+
+        elif dataID == "ligand dose response":
+            # normalize ligand dose response
+            solutions_norm = [i / max(solutions_raw) for i in solutions_raw]
+
+        return solutions_norm
+
+    @staticmethod
     def plot_training_data(
         x: list,
-        solutions_norm: list,
-        exp_data: list,
-        exp_error: list,
+        solutions_norm: List[float],
+        exp_data: List[float],
+        exp_error: List[float],
         filename: str,
         run_type: str,
     ) -> None:
         """
-        Plots training data and simulated training data
+        Plots training data and simulated training data for a single parameter set
 
         Parameters
         ----------
@@ -252,10 +294,31 @@ class synTF_chem:
         Returns
         -------
         None"""
+
+        # define plot settings
+        if run_type == "default":
+            plot_color = "black"
+            marker_type = "o"
+
+        elif run_type == "PEM evaluation":
+            plot_color = "dimgrey"
+            marker_type = "^"
+
         if settings["dataID"] == "ligand dose response":
-            plot_training_data_2d(x, solutions_norm, exp_data, exp_error, filename, run_type)
+            y_label = "Rep. protein (au)"
+            x_label = "Ligand (nM)"
+            x_scale = "symlog"
+            plot_settings = x_label, y_label, x_scale, plot_color, marker_type
+            plot_training_data_2d(x, solutions_norm, exp_data, exp_error, filename, plot_settings)
 
         elif settings["dataID"] == "ligand dose response and DBD dose response":
+            # Define plot settings for ligand dose response
+            y_label = "Rep. protein (au)"
+            x_label = "Ligand (nM)"
+            x_scale = "symlog"
+            plot_settings = x_label, y_label, x_scale, plot_color, marker_type
+
+            # plot ligand dose response
             filename_1 = filename + "ligand dose response"
             plot_training_data_2d(
                 x[:11],
@@ -263,10 +326,16 @@ class synTF_chem:
                 exp_data[:11],
                 exp_error[:11],
                 filename_1,
-                run_type,
-                "ligand",
+                plot_settings,
             )
 
+            # Define plot settings for DBD dose response
+            y_label = "Rep. protein (au)"
+            x_label = "DBD plasmid dose (ng)"
+            x_scale = "linear"
+            plot_settings = x_label, y_label, x_scale, plot_color, marker_type
+
+            # Plot DBD dose response @ 20ng AD
             filename_2 = filename + "DBD dose response 20ng AD"
             plot_training_data_2d(
                 x[11:19],
@@ -274,10 +343,10 @@ class synTF_chem:
                 exp_data[11:19],
                 exp_error[11:19],
                 filename_2,
-                run_type,
-                "DBD",
+                plot_settings,
             )
 
+            # Plot DBD dose response @ 10ng AD
             filename_3 = filename + "DBD dose response 10ng AD"
             plot_training_data_2d(
                 x[19:],
@@ -285,6 +354,5 @@ class synTF_chem:
                 exp_data[19:],
                 exp_error[19:],
                 filename_3,
-                run_type,
-                "DBD",
+                plot_settings,
             )

@@ -30,14 +30,6 @@ def plot_pem_evaluation(
     Returns
     -------
     None
-
-    Figures:
-    -------
-    'PEM EVALUATION CRITERION ALL OPT.svg'
-        (plot of ALL optimized chi_sq values for each PEM evaluation dataset)
-
-    'PEM EVALUATION CRITERION.svg'
-        (plot of the best optimized chi_sq values for each PEM evaluation dataset)
     """
     run: List[int] = []
     chi_sq_list: List[float] = []

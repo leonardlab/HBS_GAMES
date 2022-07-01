@@ -19,16 +19,16 @@ class TestDefinePPLSettings(unittest.TestCase):
         directions_test = [1, -1, -1]
         default_values_test = [[0.01, 0.2, 100], [0.05, 0.1, 50], [0.1, 0.25, 75]]
         non_default_min_step_fraction_ppl = [
-            {"k2": [1, 0.02]},
-            {"k2": [-1, 0.02]},
-            {"k2": [1, 0.02]},
+            {"k2 -1": 0.02},
+            {"k2 -1": 0.02},
+            {"k2 1": 0.02},
         ]
         non_default_max_step_fraction_ppl = [
-            {"k3": [-1, 0.5]},
-            {"k3": [-1, 0.5]},
-            {"k3": [-1, 0.5]},
+            {"k3 -1": 0.5},
+            {"k3 -1": 0.5},
+            {"k3 -1": 0.5},
         ]
-        non_default_number_steps_ppl = [{"k3": [-1, 50]}, {"k3": [-1, 50]}, {"k3": [-1, 50]}]
+        non_default_number_steps_ppl = [{"k3 -1": 50}, {"k3 -1": 50}, {"k3 -1": 50}]
 
         expected_min_step_fractions = [0.01, 0.02, 0.1]
         expected_max_step_fractions = [0.2, 0.1, 0.5]

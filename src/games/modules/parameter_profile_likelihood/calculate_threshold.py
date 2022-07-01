@@ -13,15 +13,16 @@ from games.models.set_model import model
 from games.modules.parameter_estimation.optimization import optimize_all
 from games.modules.solve_single import solve_single_parameter_set
 from games.config.settings import settings
-from games.config.experimental_data import define_experimental_data, normalize_data_by_maximum_value
+from games.config.experimental_data import define_experimental_data
 from games.utilities.metrics import calc_chi_sq
 from games.utilities.saving import save_chi_sq_distribution
 from games.plots.plots_parameter_profile_likelihood import plot_chi_sq_distribution
-from games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data import add_noise
+from games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data import (
+    add_noise,
+)
 
 
-def define_noise_array(
-    exp_error: List[float], num_data_sets: int, modelID: str) -> np.ndarray:
+def define_noise_array(exp_error: List[float], num_data_sets: int, modelID: str) -> np.ndarray:
     """Generates noise values to add to original experimental data
 
     NOTE: This function has been refactored to generate noise values in a more modular way.
@@ -90,14 +91,24 @@ def define_noise_array(
 
 
 def generate_noise_realizations_and_calc_chi_sq_ref(
+    exp_data_to_generate_noise_realizations: List[float],
     norm_solutions_ref: List[float],
+    exp_error: List[float],
 ) -> Tuple[List[list], List[float]]:
     """Generates noise realizations and calculates chi_sq_ref
 
     Parameters
     ----------
+    exp_data_to_generate_noise_realizations
+        a list of floats defining the experimental data used to generate noise realizations
+        these data are the starting points upon which noise is added
+
     norm_solutions_ref
         a list of floats containing the solutions generated with the reference parameters
+
+    exp_error
+        a list of floats containing standard deviation for
+        each data point in the data set
 
     Returns
     -------
@@ -111,7 +122,6 @@ def generate_noise_realizations_and_calc_chi_sq_ref(
 
     """
     # Generate noise realizations and calculate chi_sq_ref for each noise realization
-    _, exp_data_original, exp_error = define_experimental_data()
     exp_data_noise_list = []
     chi_sq_ref_list = []
 
@@ -121,7 +131,9 @@ def generate_noise_realizations_and_calc_chi_sq_ref(
     )
 
     for i in range(0, settings["num_noise_realizations"]):
-        exp_data_noise_norm = add_noise(norm_solutions_ref, list(noise_array[i, :]), settings["dataID"])
+        exp_data_noise_norm = add_noise(
+            exp_data_to_generate_noise_realizations, list(noise_array[i, :]), settings["dataID"]
+        )
         exp_data_noise_list.append(exp_data_noise_norm)
 
         # Calculate chi_sq_ref using noise realization i
@@ -157,7 +169,7 @@ def calculate_chi_sq_fit(
     for i, parameter_label in enumerate(settings["parameter_labels"]):
         df_noise[parameter_label] = [calibrated_parameters[i]] * settings["num_noise_realizations"]
 
-    x, exp_data, exp_error = define_experimental_data()
+    x, _, exp_error = define_experimental_data()
     df_noise["x"] = [x] * len(df_noise.index)
     df_noise["exp_data"] = exp_data_noise_list
     df_noise["exp_error"] = [exp_error] * len(df_noise.index)
@@ -205,19 +217,38 @@ def calculate_threshold_chi_sq(
         a float defining the threshold chi_sq value
 
     """
-    if settings["modelID"] == 'synTF_chem':
+
+    if settings["modelID"] == "synTF_chem":
         model.parameters = settings["parameters_reference"]
+        x, exp_data, exp_error = define_experimental_data()
+        norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set(x, exp_data, exp_error)
+        print("chi_sq reference with training data: " + str(round(chi_sq_ref, 4)))
+        exp_data_to_generate_noise_realizations = exp_data
 
     else:
+        # solve model with calibrated parameters
         model.parameters = calibrated_parameters
+        x, exp_data, exp_error = define_experimental_data()
+        norm_solutions_cal, _, _ = solve_single_parameter_set(x, exp_data, exp_error)
 
-    x, exp_data, exp_error = define_experimental_data()
-    norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set(x, exp_data, exp_error)
-    print("chi_sq reference with training data: " + str(round(chi_sq_ref, 4)))
+        # add noise to simulated data generated with calibrated parameters - analagous to how
+        # reference data are generated
+        noise_array = define_noise_array(exp_error, 1, settings["modelID"])
+        exp_data_to_generate_noise_realizations = add_noise(
+            norm_solutions_cal, list(noise_array[0, :]), settings["dataID"]
+        )
+
+        # Determine chi_sq_ref by calculating the chi_sq between the new reference data,
+        # defined as exp_data_to_generate_noise_realizations
+        # (simulated data generated with calibrated parameters + added noise) and
+        # the simulated data with the reference parameters (in this case, the calibrated parameters)
+        norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set(
+            x, exp_data_to_generate_noise_realizations, exp_error
+        )
 
     print("Generating noise realizations and calculating chi_sq_ref...")
     exp_data_noise_list, chi_sq_ref_list = generate_noise_realizations_and_calc_chi_sq_ref(
-        norm_solutions_ref
+        exp_data_to_generate_noise_realizations, norm_solutions_ref, exp_error
     )
 
     print("Calculating chi_sq_fit...")
@@ -235,12 +266,7 @@ def calculate_threshold_chi_sq(
     save_chi_sq_distribution(threshold_chi_sq, calibrated_parameters, calibrated_chi_sq)
 
     print("******************")
-    if settings["modelID"] == 'synTF':
-        round_val = 8
-    else:
-        round_val = 1
-    print(threshold_chi_sq)
-    threshold_chi_sq_rounded = np.round(threshold_chi_sq, round_val)
+    threshold_chi_sq_rounded = np.round(threshold_chi_sq, 1)
     print(
         "chi_sq threshold for "
         + str(len(settings["free_parameters"]))

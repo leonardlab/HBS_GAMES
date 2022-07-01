@@ -21,10 +21,6 @@ def plot_timecourses() -> None:
     -------
     None
 
-    Files
-    -------
-    'timcourses of internal model states.svg'
-
     """
     fig, axs = plt.subplots(
         nrows=2, ncols=int(len(model.state_labels) / 2), sharex=True, sharey=False, figsize=(8, 4)
@@ -78,4 +74,4 @@ def plot_timecourses() -> None:
                 axs[i].set_xlabel("Time (hours)", fontsize=8)
             axs[i].set_title(label[i], fontweight="bold", fontsize=8)
 
-    plt.savefig("timcourses of internal model states.svg", dpi=600)
+    plt.savefig("timecourses of internal model states.svg", dpi=600)

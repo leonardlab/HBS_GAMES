@@ -7,17 +7,18 @@ Created on Wed May 25 15:26:19 2022
 """
 
 import unittest
-from games.models.synTF_chem import synTF_chem
+from games.models.synTF import synTF
 
 
 class TestSolveExperiment(unittest.TestCase):
-    def test_solve_experiment_synTF_chem(self):
-        model = synTF_chem(parameters=[1] * 6)
-        tests = [([1] * 10)]
+    def test_solve_experiment_synTF(self):
+        model = synTF(parameters=[1] * 3)
         tests = [
-            (([1] * 11, "ligand dose response"), 11),
-            (([1] * 27, "ligand dose response and DBD dose response"), 27),
+            (([1] * 11, "synTF dose response"), 11),
+            (([1] * 12, "synTF dose response"), 12),
+            (([1] * 12, "undefined experiment"), 0),
         ]
+
         for (given_1, given_2), expected in tests:
             solution = model.solve_experiment(given_1, given_2)
             found = len(solution)

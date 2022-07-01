@@ -34,7 +34,8 @@ def run(modules: str) -> None:
     Parameters
     ----------
     modules
-        a string defining the module(s) to run
+        a string defining the module(s) to run (can be modules 0, 1, 2, or 3)
+        ex: "1" or "12" or "123"
 
     Returns
     -------

@@ -22,8 +22,8 @@ class synTF:
 
         Parameters
         ----------
-        free_parameters
-            List of floats defining the free parameters
+        parameters
+            List of floats defining the parameters
 
         inputs
             List of floats defining the inputs
@@ -36,7 +36,7 @@ class synTF:
         self.state_labels = ["ZFa mRNA", "ZFa protein", "Rep RNA", "Rep protein"]
         self.parameters = parameters
         self.inputs = inputs
-        number_of_states = 4
+        number_of_states = len(self.state_labels)
         y_init = np.zeros(number_of_states)
         self.initial_conditions = y_init
 
@@ -81,6 +81,12 @@ class synTF:
 
         Parameters
         ----------
+        y
+            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+
+        t
+            an array defining the time (necessary parameter to use ODEint to solve gradient)
+
         parameters
             List of floats defining the parameters
 
@@ -90,7 +96,7 @@ class synTF:
         Returns
         -------
         dydt
-            An list of floats corresponding to the gradient of each model state at time t
+            An array corresponding to the gradient of each model state at time t
 
         """
 
@@ -144,6 +150,30 @@ class synTF:
         return solutions
 
     @staticmethod
+    def normalize_data(solutions_raw: List[float], dataID: str) -> List[float]:
+        """Normalizes data by maximum value
+
+        Parameters
+        ----------
+        solutions_raw
+            a list of floats defining the solutions before normalization
+
+        dataID
+            a string defining the dataID
+
+        Returns
+        -------
+        solutions_norm
+            a list of floats defining the dependent variable for the given
+            dataset (after normalization)
+
+        """
+        if dataID == "synTF dose response":
+            solutions_norm = [i / max(solutions_raw) for i in solutions_raw]
+
+        return solutions_norm
+
+    @staticmethod
     def plot_training_data(
         x: List[float],
         solutions_norm: List[float],
@@ -153,30 +183,45 @@ class synTF:
         run_type: str,
     ) -> None:
         """
-        Plots training data and simulated training data
+        Plots training data and simulated training data for a single parameter set
 
         Parameters
         ----------
         x
-            list of floats defining the independent variable
+            a list of floats defining the independent variable
 
         solutions_norm
-            list of floats defining the simulated dependent variable
+            a list of floats defining the simulated dependent variable
 
         exp_data
-            list of floats defining the experimental dependent variable
+            a list of floats defining the experimental dependent variable
 
         exp_error
-            list of floats defining the experimental error for the dependent variable
+            a list of floats defining the experimental error for the dependent variable
 
         filename
-           string defining the filename used to save the plot
+            a string defining the filename used to save the plot
 
         run_type
             a string containing the data type ('PEM evaluation' or else)
 
         Returns
         -------
-        None"""
+        None
+        """
+        # define plot settings
+        x_label = "synTF (ng)"
+        x_scale = "linear"
+        y_label = "Rep. protein (au)"
 
-        plot_training_data_2d(x, solutions_norm, exp_data, exp_error, filename, run_type)
+        if run_type == "default":
+            plot_color = "black"
+            marker_type = "o"
+        elif run_type == "PEM evaluation":
+            plot_color = "dimgrey"
+            marker_type = "^"
+
+        plot_settings = x_label, y_label, x_scale, plot_color, marker_type
+
+        # make plot
+        plot_training_data_2d(x, solutions_norm, exp_data, exp_error, filename, plot_settings)

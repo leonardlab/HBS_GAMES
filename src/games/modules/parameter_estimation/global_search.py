@@ -59,7 +59,7 @@ def replace_parameter_values_for_sweep(
 def create_default_df(
     n_search: int, all_parameter_labels: List[str], all_parameters: List[float]
 ) -> pd.DataFrame:
-    """Generate df with default values for all parameters, before the global search
+    """Generates df with default values for all parameters, before the global search
 
     Parameters
     ----------
@@ -121,7 +121,7 @@ def generate_parameter_sets(
     problem_global_search: dict, all_parameters: List[float] = settings["parameters"]
 ) -> pd.DataFrame:
     """
-    Generate parameter sets for global search
+    Generates parameter sets for global search
 
     Parameters
     ----------
@@ -131,7 +131,6 @@ def generate_parameter_sets(
     all_parameters
         a list of floats containing all initial parameter values,
         including fixed and free parameters
-
 
     Returns
     -------
