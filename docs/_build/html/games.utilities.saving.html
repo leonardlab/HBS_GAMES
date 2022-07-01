@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>games.utilities.saving module &mdash; GAMES VERSION NUMBER 2.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="games.paper module" href="games.paper.html" />
+    <link rel="prev" title="games.utilities.metrics module" href="games.utilities.metrics.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> GAMES
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Package modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="games.html">games package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="games.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="games.config.html">games.config package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="games.models.html">games.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="games.modules.html">games.modules package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="games.plots.html">games.plots package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="games.utilities.html">games.utilities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="games.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GAMES</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">games</a> &raquo;</li>
+          <li><a href="games.html">games package</a> &raquo;</li>
+          <li><a href="games.utilities.html">games.utilities package</a> &raquo;</li>
+      <li>games.utilities.saving module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/games.utilities.saving.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-games.utilities.saving">
+<span id="games-utilities-saving-module"></span><h1>games.utilities.saving module<a class="headerlink" href="#module-games.utilities.saving" title="Permalink to this headline"></a></h1>
+<p>Created on Tue Jun 14 13:47:26 2022
+&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.utilities.saving.make_main_directory">
+<span class="sig-name descname"><span class="pre">make_main_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/games/utilities/saving.html#make_main_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.utilities.saving.make_main_directory" title="Permalink to this definition"></a></dt>
+<dd><p>Makes main results folder</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>settings</strong> – a dictionary of settings</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>path leading to main results folder</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>folder_path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.utilities.saving.create_folder">
+<span class="sig-name descname"><span class="pre">create_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_folder_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/games/utilities/saving.html#create_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.utilities.saving.create_folder" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a new folder</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folder_path</strong> – string defining the path to the results folder</p></li>
+<li><p><strong>sub_folder_name</strong> – string defining the name of the folder to make</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>path leading to new folder</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.utilities.saving.save_chi_sq_distribution">
+<span class="sig-name descname"><span class="pre">save_chi_sq_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold_chi_sq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibrated_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibrated_chi_sq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/games/utilities/saving.html#save_chi_sq_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.utilities.saving.save_chi_sq_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Saves threshold chi_sq value for PPL calculations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>threshold_chi_sq</strong> – a float defining the threshold chi_sq value</p></li>
+<li><p><strong>calibrated_parameters</strong> – a list of floats containing the calibrated values for each parameter</p></li>
+<li><p><strong>calibrated_chi_sq</strong> – a float defining the chi_sq associated with the calibrated parameter set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.utilities.saving.save_pem_evaluation_data">
+<span class="sig-name descname"><span class="pre">save_pem_evaluation_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solutions_norm_noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/games/utilities/saving.html#save_pem_evaluation_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.utilities.saving.save_pem_evaluation_data" title="Permalink to this definition"></a></dt>
+<dd><p>Saves PEM evaluation data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>solutions_norm_raw</strong> – a list of lists containing the raw simulation results
+(length = # pem evaluation data sets)</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="games.utilities.metrics.html" class="btn btn-neutral float-left" title="games.utilities.metrics module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="games.paper.html" class="btn btn-neutral float-right" title="games.paper module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Dray_Kate.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

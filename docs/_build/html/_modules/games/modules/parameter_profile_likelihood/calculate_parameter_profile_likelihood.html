@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood &mdash; GAMES VERSION NUMBER 2.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> GAMES
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">Package modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GAMES</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed Jun 15 16:03:09 2022</span>
+
+<span class="sd">@author: kate</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">games.modules.parameter_estimation.optimization</span> <span class="kn">import</span> <span class="n">optimize_all</span>
+<span class="kn">from</span> <span class="nn">games.modules.parameter_estimation.global_search</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">generate_parameter_sets</span><span class="p">,</span>
+    <span class="n">solve_global_search</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">parameter_estimation_problem_definition</span>
+<span class="kn">from</span> <span class="nn">games.plots.plots_parameter_profile_likelihood</span> <span class="kn">import</span> <span class="n">plot_parameter_profile_likelihood</span>
+<span class="kn">from</span> <span class="nn">games.plots.plots_parameter_profile_likelihood</span> <span class="kn">import</span> <span class="n">plot_parameter_relationships</span>
+<span class="kn">from</span> <span class="nn">games.plots.plots_parameter_profile_likelihood</span> <span class="kn">import</span> <span class="n">plot_internal_states_along_ppl</span>
+<span class="kn">from</span> <span class="nn">games.config.experimental_data</span> <span class="kn">import</span> <span class="n">define_experimental_data</span>
+
+
+<div class="viewcode-block" id="set_ppl_settings"><a class="viewcode-back" href="../../../../games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.html#games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.set_ppl_settings">[docs]</a><span class="k">def</span> <span class="nf">set_ppl_settings</span><span class="p">(</span>
+    <span class="n">parameter_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">direction</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">default_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="n">non_default_min_step_fraction_ppl</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">non_default_max_step_fraction_ppl</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">non_default_max_number_steps_ppl</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Defines ppl settings for the given parameter if non_default settings values are specified</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameter_label</span>
+<span class="sd">       a string defining the given parameter</span>
+
+<span class="sd">    direction</span>
+<span class="sd">       an integer defining the direction</span>
+<span class="sd">       (-1 for negative direction, 1 for positive direction)</span>
+
+<span class="sd">    default_values</span>
+<span class="sd">        a list of floats or integers defining the default values for</span>
+<span class="sd">        [min_step_fraction, max_step_fraction, number_steps]</span>
+
+<span class="sd">    non_default_min_step_fraction_ppl</span>
+<span class="sd">        a list of dictionaries defining the non-default values for each setting</span>
+<span class="sd">        each key is the parameter name and each value is a list where the</span>
+<span class="sd">        first item is the direction of ppl calculations</span>
+<span class="sd">        and the second item is the value for the given setting and</span>
+<span class="sd">        the given parameter/direction. For example, {&quot;k&quot;: [1, 100]} means that</span>
+<span class="sd">        the value of the given setting should be 100 for parameter k in the positive direction</span>
+
+<span class="sd">    non_default_max_step_fraction_ppl</span>
+<span class="sd">        same as above but setting = max step fraction</span>
+
+<span class="sd">    non_default_max_number_steps_ppl</span>
+<span class="sd">        same as above but setting = max number steps fraction</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    min_step_fraction</span>
+<span class="sd">       a float defining the fraction of the calibrated parameter that defines the minimum step size</span>
+
+<span class="sd">    max_step_fraction</span>
+<span class="sd">       a float defining the fraction of the calibrated parameter that defines the maximum step size</span>
+
+<span class="sd">    max_steps</span>
+<span class="sd">       an integer defining the maximum number of allowable steps</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Min step value</span>
+    <span class="k">if</span> <span class="n">non_default_min_step_fraction_ppl</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">non_default_min_step_fraction_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">direction</span><span class="p">:</span>
+                <span class="n">min_step_fraction</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">min_step_fraction</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">min_step_fraction</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Max step value</span>
+    <span class="k">if</span> <span class="n">non_default_max_step_fraction_ppl</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">non_default_max_step_fraction_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">direction</span><span class="p">:</span>
+                <span class="n">max_step_fraction</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">max_step_fraction</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">max_step_fraction</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Max number of steps</span>
+    <span class="k">if</span> <span class="n">non_default_max_number_steps_ppl</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">non_default_max_number_steps_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">direction</span><span class="p">:</span>
+                <span class="n">max_steps</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">max_steps</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">max_steps</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">min_step_fraction</span><span class="p">,</span> <span class="n">max_step_fraction</span><span class="p">,</span> <span class="n">max_steps</span></div>
+
+
+<div class="viewcode-block" id="calculate_chi_sq_ppl_single_datapoint"><a class="viewcode-back" href="../../../../games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.html#games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.calculate_chi_sq_ppl_single_datapoint">[docs]</a><span class="k">def</span> <span class="nf">calculate_chi_sq_ppl_single_datapoint</span><span class="p">(</span>
+    <span class="n">fixed_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">fixed_index_in_free_parameter_list</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">list</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates chi_sq_ppl for a single datapoint on the profile likelihood</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fixed_val</span>
+<span class="sd">        a float defining the value that the fixed index should be fixed at</span>
+
+<span class="sd">    fixed_index_in_free_parameter_list</span>
+<span class="sd">        an integer defining the index in the list of FREE parameters</span>
+<span class="sd">        (settings[&quot;free_parameters&quot;]) that should be fixed for this calculation</span>
+
+<span class="sd">    parameters</span>
+<span class="sd">        a list of floats of the initial parameter values (fixed and free)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fixed_val</span>
+<span class="sd">        a float defining the value that the fixed index should be fixed at</span>
+<span class="sd">        (x-axis value of the datapoint for ppl plots)</span>
+
+<span class="sd">    calibrated_chi_sq</span>
+<span class="sd">        a float defining the minimum chi_sq attainable for the parameter</span>
+<span class="sd">        estimation problem (x-axis value of the datapoint for ppl plots)</span>
+
+<span class="sd">    calibrated_parameters</span>
+<span class="sd">        a list of floats defining the parameter set for which the min_chi_sq</span>
+<span class="sd">        was obtained</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Define the parameter estimation problem</span>
+    <span class="n">problem_ppl</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;num_vars&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;names&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;bounds&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+    <span class="c1"># Fix given parameter at fixed index and let other parameters vary</span>
+    <span class="n">problem_ppl</span><span class="p">[</span><span class="s2">&quot;num_vars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;free_parameters&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">problem_ppl</span><span class="p">[</span><span class="s2">&quot;names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">x</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_estimation_problem_definition</span><span class="p">[</span><span class="s2">&quot;names&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">fixed_index_in_free_parameter_list</span>
+    <span class="p">]</span>
+    <span class="n">problem_ppl</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">x</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_estimation_problem_definition</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">fixed_index_in_free_parameter_list</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Run PEM</span>
+    <span class="n">df_parameters</span> <span class="o">=</span> <span class="n">generate_parameter_sets</span><span class="p">(</span><span class="n">problem_ppl</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span> <span class="o">=</span> <span class="n">define_experimental_data</span><span class="p">()</span>
+    <span class="n">df_global_search_results</span> <span class="o">=</span> <span class="n">solve_global_search</span><span class="p">(</span><span class="n">df_parameters</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">calibrated_chi_sq</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">calibrated_parameters</span> <span class="o">=</span> <span class="n">optimize_all</span><span class="p">(</span>
+        <span class="n">df_global_search_results</span><span class="p">,</span> <span class="n">run_type</span><span class="o">=</span><span class="s2">&quot;ppl&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">=</span><span class="n">problem_ppl</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fixed_val</span><span class="p">,</span> <span class="n">calibrated_chi_sq</span><span class="p">,</span> <span class="n">calibrated_parameters</span></div>
+
+
+<div class="viewcode-block" id="calculate_ppl"><a class="viewcode-back" href="../../../../games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.html#games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.calculate_ppl">[docs]</a><span class="k">def</span> <span class="nf">calculate_ppl</span><span class="p">(</span>
+    <span class="n">parameter_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">calibrated_parameter_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">calibrated_chi_sq</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">threshold_chi_sq</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the ppl for the given parameter</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameter_label</span>
+<span class="sd">        a string defining the parameter label</span>
+
+<span class="sd">    calibrated_parameter_values</span>
+<span class="sd">        a list of floats containing the calibrated values for each parameter</span>
+
+<span class="sd">    calibrated_chi_sq</span>
+<span class="sd">        a float defining the chi_sq associated with the calibrated parameter set</span>
+
+<span class="sd">    threshold_chi_sq</span>
+<span class="sd">        a float defining the threshold chi_sq value</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    elapsed_time_total</span>
+<span class="sd">        a float defining the time to calculate the ppl for the given parameter (in minutes)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>  <span class="c1"># Record the start time</span>
+
+    <span class="c1"># Determine index for ppl based on parameter_label</span>
+    <span class="c1"># These are the indices of the free parameters in the list settings[&quot;parameter_labels&quot;]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="n">parameter_label</span><span class="p">:</span>
+            <span class="n">fixed_index</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="c1"># Determine the index in settings[&quot;free_parameter_labels&quot;] that corresponds</span>
+    <span class="c1"># to the index in settings[&quot;parameter_labels&quot;]</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;free_parameter_labels&quot;</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="n">parameter_label</span><span class="p">:</span>
+            <span class="n">fixed_index_in_free_parameter_list</span> <span class="o">=</span> <span class="n">j</span>
+
+    <span class="c1"># Set the target value for PPL difference between steps</span>
+    <span class="c1"># and acceptable range</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">target_val</span> <span class="o">=</span> <span class="n">threshold_chi_sq</span> <span class="o">*</span> <span class="n">q</span>
+    <span class="n">min_threshold_limit</span> <span class="o">=</span> <span class="n">target_val</span> <span class="o">*</span> <span class="mf">0.1</span>
+    <span class="n">max_threshold_limit</span> <span class="o">=</span> <span class="n">target_val</span> <span class="o">*</span> <span class="mi">2</span>
+
+    <span class="c1"># Set min and max flags to default values</span>
+    <span class="n">min_flag</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">max_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">num_evals</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># number of evaluations (full PEM runs)</span>
+
+    <span class="c1"># Define the min and max bounds of the fixed parameter, convert to linear scale</span>
+    <span class="n">pem_prob</span> <span class="o">=</span> <span class="n">parameter_estimation_problem_definition</span>
+    <span class="n">min_bound_log</span> <span class="o">=</span> <span class="n">pem_prob</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">][</span><span class="n">fixed_index_in_free_parameter_list</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">max_bound_log</span> <span class="o">=</span> <span class="n">pem_prob</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">][</span><span class="n">fixed_index_in_free_parameter_list</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">min_bound</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="n">min_bound_log</span>
+    <span class="n">max_bound</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="n">max_bound_log</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;******************&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting profile likelihood calculations for &quot;</span> <span class="o">+</span> <span class="n">parameter_label</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;negative direction&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;positive direction&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Define ppl hyperparameters for given parameter and direction</span>
+        <span class="n">min_step_fraction</span><span class="p">,</span> <span class="n">max_step_fraction</span><span class="p">,</span> <span class="n">max_steps</span> <span class="o">=</span> <span class="n">set_ppl_settings</span><span class="p">(</span>
+            <span class="n">parameter_label</span><span class="p">,</span>
+            <span class="n">direction</span><span class="p">,</span>
+            <span class="p">[</span>
+                <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;default_min_step_fraction_ppl&quot;</span><span class="p">],</span>
+                <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;default_max_step_fraction_ppl&quot;</span><span class="p">],</span>
+                <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;default_max_number_steps_ppl&quot;</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;non_default_min_step_fraction_ppl&quot;</span><span class="p">],</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;non_default_max_step_fraction_ppl&quot;</span><span class="p">],</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;non_default_max_number_steps_ppl&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">min_step</span> <span class="o">=</span> <span class="n">min_step_fraction</span> <span class="o">*</span> <span class="n">calibrated_parameter_values</span><span class="p">[</span><span class="n">fixed_index</span><span class="p">]</span>
+        <span class="n">max_step</span> <span class="o">=</span> <span class="n">max_step_fraction</span> <span class="o">*</span> <span class="n">calibrated_parameter_values</span><span class="p">[</span><span class="n">fixed_index</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;min step value: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_step</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;max step value: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_step</span><span class="p">))</span>
+
+        <span class="c1"># Initialize lists to hold results for this ppl only</span>
+        <span class="n">chi_sq_ppl_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># chi_sq_ppl values</span>
+        <span class="n">fixed_parameter_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># fixed parameter values, linear scale</span>
+        <span class="n">all_parameter_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># lists of all parameter values</span>
+
+        <span class="c1"># Initialize counters and values</span>
+        <span class="n">step_number</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">attempt_number</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">step_val</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">chi_sq_ppl_val</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">param_val</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">param_vals</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">while</span> <span class="n">step_number</span> <span class="o">&lt;</span> <span class="n">max_steps</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;******************&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;step_number: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">step_number</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;attempt_number: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">attempt_number</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="c1"># If this is the first step</span>
+            <span class="k">if</span> <span class="n">step_number</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+                <span class="c1"># Set the fixed value as the calibrated value</span>
+                <span class="n">fixed_val</span> <span class="o">=</span> <span class="n">calibrated_parameter_values</span><span class="p">[</span><span class="n">fixed_index</span><span class="p">]</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;starting val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fixed_val</span><span class="p">))</span>
+
+                <span class="c1"># Set the min_ for the binary step to 0 and the max_ to the max_step</span>
+                <span class="n">min_</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="n">max_</span> <span class="o">=</span> <span class="n">max_step</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;min_binary_step: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;max_binary_step: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_</span><span class="p">))</span>
+
+                <span class="c1"># Set the min and max flags to false</span>
+                <span class="n">min_flag</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">max_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># If this is not the first step</span>
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="c1"># If the step value is more than or equal to the max_step,</span>
+                <span class="c1"># then replace the step with #the max step and set max_flag to True</span>
+                <span class="k">if</span> <span class="n">step_val</span> <span class="o">&gt;=</span> <span class="n">max_step</span><span class="p">:</span>
+                    <span class="n">step_val</span> <span class="o">=</span> <span class="n">max_step</span>
+                    <span class="n">max_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;step replaced with max step&quot;</span><span class="p">)</span>
+
+                <span class="c1"># If the step value is less than or equal to the min_step,</span>
+                <span class="c1"># then replace the step with the min step and set min_flag to True</span>
+                <span class="k">elif</span> <span class="n">step_val</span> <span class="o">&lt;=</span> <span class="n">min_step</span><span class="p">:</span>
+                    <span class="n">step_val</span> <span class="o">=</span> <span class="n">min_step</span>
+                    <span class="n">min_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;step replaced with min step&quot;</span><span class="p">)</span>
+
+                <span class="c1"># If the step is between the min and max step limits, set flags to</span>
+                <span class="c1"># False and continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">min_flag</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">max_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="c1"># Determine the next fixed value</span>
+                <span class="n">fixed_val</span> <span class="o">=</span> <span class="n">fixed_parameter_values</span><span class="p">[</span><span class="n">step_number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">direction</span> <span class="o">*</span> <span class="n">step_val</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;previous val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">fixed_parameter_values</span><span class="p">[</span><span class="n">step_number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">8</span><span class="p">)))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;step val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">step_val</span><span class="p">,</span> <span class="mi">8</span><span class="p">)))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fixed val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">fixed_val</span><span class="p">)))</span>
+
+                <span class="k">if</span> <span class="n">fixed_val</span> <span class="o">&lt;=</span> <span class="n">min_bound</span><span class="p">:</span>  <span class="c1"># if fixed val is negative or less than the</span>
+                    <span class="c1"># min bound of the parameter</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fixed val is negative&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># if this is the minimum step, break (cannot take a smaller step</span>
+                    <span class="c1"># to reach a &gt; 0 fixed value)</span>
+                    <span class="k">if</span> <span class="n">min_flag</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;negative or zero fixed value reached - break&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>  <span class="c1"># out of top level while loop and start next direction/parameter</span>
+
+                    <span class="c1"># if this is not the minimum step, try with half the last step</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">while</span> <span class="n">fixed_val</span> <span class="o">&lt;=</span> <span class="n">min_bound</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;try again&quot;</span><span class="p">)</span>
+                            <span class="c1"># reset the max step to be half what it was before</span>
+                            <span class="n">max_step</span> <span class="o">=</span> <span class="n">max_step</span> <span class="o">/</span> <span class="mi">2</span>
+
+                            <span class="c1"># try a step val half the size as the previous step</span>
+                            <span class="n">step_val</span> <span class="o">=</span> <span class="n">step_val</span> <span class="o">/</span> <span class="mi">2</span>
+
+                            <span class="c1"># determine fixed value</span>
+                            <span class="n">added_val</span> <span class="o">=</span> <span class="n">direction</span> <span class="o">*</span> <span class="n">step_val</span>
+                            <span class="n">fixed_val</span> <span class="o">=</span> <span class="n">fixed_parameter_values</span><span class="p">[</span><span class="n">step_number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">added_val</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fixed val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fixed_val</span><span class="p">))</span>
+
+                            <span class="k">if</span> <span class="n">step_val</span> <span class="o">&lt;=</span> <span class="n">min_step</span><span class="p">:</span>
+                                <span class="n">step_val</span> <span class="o">=</span> <span class="n">min_step</span>
+                                <span class="n">fixed_val</span> <span class="o">=</span> <span class="n">fixed_parameter_values</span><span class="p">[</span><span class="n">step_number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">added_val</span>
+                                <span class="n">min_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;step replaced with min step&quot;</span><span class="p">)</span>
+                                <span class="k">break</span>  <span class="c1"># break out of this while loop</span>
+
+                <span class="k">if</span> <span class="n">fixed_val</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;negative or zero fixed value reached - break&quot;</span><span class="p">)</span>
+                    <span class="k">break</span>  <span class="c1"># out of top level while loop and start next direction/parameter</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">fixed_val</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>  <span class="c1"># linear</span>
+
+                <span class="n">parameters_single_datapoint</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">all_parameter_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                    <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">]</span>
+                <span class="p">):</span>  <span class="c1"># for each parameter in p_all</span>
+                    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">free_parameter_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                        <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;free_parameter_labels&quot;</span><span class="p">]</span>
+                    <span class="p">):</span>  <span class="c1"># for each free parameter</span>
+                        <span class="c1"># if parameter is a free parameter, replace with calibrated</span>
+                        <span class="k">if</span> <span class="n">all_parameter_label</span> <span class="o">==</span> <span class="n">free_parameter_label</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">fixed_index</span><span class="p">:</span>
+                                <span class="n">parameters_single_datapoint</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixed_val</span>  <span class="c1"># replace with fixed val</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">parameters_single_datapoint</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">calibrated_parameter_values</span><span class="p">[</span>
+                                    <span class="n">i</span>
+                                <span class="p">]</span>  <span class="c1"># Replace with cal val</span>
+
+                <span class="n">param_val</span><span class="p">,</span> <span class="n">chi_sq_ppl_val</span><span class="p">,</span> <span class="n">param_vals</span> <span class="o">=</span> <span class="n">calculate_chi_sq_ppl_single_datapoint</span><span class="p">(</span>
+                    <span class="n">fixed_val</span><span class="p">,</span> <span class="n">fixed_index_in_free_parameter_list</span><span class="p">,</span> <span class="n">parameters_single_datapoint</span>
+                <span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;chi_sq_ppl: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+                <span class="n">num_evals</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;calibrated parameters: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">param_vals</span><span class="p">))</span>
+
+            <span class="c1"># Determine whether to accept step or try again with new step size</span>
+
+            <span class="c1"># if this is not the first step (calibrated parameter value)</span>
+            <span class="k">if</span> <span class="n">step_number</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+
+                <span class="c1"># Calculate difference in PL between current value and previous value</span>
+                <span class="n">ppl_difference</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span> <span class="o">-</span> <span class="n">chi_sq_ppl_list</span><span class="p">[</span><span class="n">step_number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ppl_difference: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">ppl_difference</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+                <span class="c1"># if ppl_difference is in between the min and max limits for PL difference</span>
+                <span class="k">if</span> <span class="n">ppl_difference</span> <span class="o">&lt;=</span> <span class="n">max_threshold_limit</span> <span class="ow">and</span> <span class="n">ppl_difference</span> <span class="o">&gt;=</span> <span class="n">min_threshold_limit</span><span class="p">:</span>
+
+                    <span class="c1"># if the PL value is greater than or equal to the threshold value, but less</span>
+                    <span class="c1"># than 1.1 * the threshold value</span>
+                    <span class="n">allowed_val</span> <span class="o">=</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="n">threshold_chi_sq</span>
+                    <span class="k">if</span> <span class="n">chi_sq_ppl_val</span> <span class="o">&gt;=</span> <span class="n">threshold_chi_sq</span> <span class="ow">and</span> <span class="n">chi_sq_ppl_val</span> <span class="o">&lt;=</span> <span class="n">allowed_val</span><span class="p">:</span>
+
+                        <span class="c1"># Record values and break loop</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;break - Threshold chi_sq reached&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                    <span class="c1"># otherwise, if the PL value is greater than 1.1 * the threshold value,</span>
+                    <span class="c1"># then the step is too large</span>
+                    <span class="k">elif</span> <span class="n">chi_sq_ppl_val</span> <span class="o">&gt;</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="n">threshold_chi_sq</span><span class="p">:</span>
+
+                        <span class="c1"># If this is the minimum step, then a smaller step cannot be taken</span>
+                        <span class="k">if</span> <span class="n">min_flag</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+
+                            <span class="c1"># Record values and break loop</span>
+                            <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                            <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                            <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;break - Threshold chi_sq reached&quot;</span><span class="p">)</span>
+                            <span class="k">break</span>
+
+                        <span class="c1"># If this is not the minimum step, then a smaller step should be used</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># Set the max bound for the binary step to be equal to</span>
+                            <span class="c1"># the current step</span>
+                            <span class="n">max_</span> <span class="o">=</span> <span class="n">step_val</span>
+
+                            <span class="c1"># Calculate the next step value (binary step algorithm)</span>
+                            <span class="n">step_val</span> <span class="o">=</span> <span class="p">(</span><span class="n">min_</span> <span class="o">+</span> <span class="n">max_</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+                            <span class="c1"># increase the attempt number</span>
+                            <span class="n">attempt_number</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*step rejected - too large&quot;</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new step&quot;</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;min_binary_step: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_</span><span class="p">))</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;max_binary_step: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_</span><span class="p">))</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new step val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">step_val</span><span class="p">))</span>
+
+                    <span class="c1"># Otherwise, if the fixed parameter hits the min or max bound</span>
+                    <span class="k">elif</span> <span class="n">param_val</span> <span class="o">&gt;</span> <span class="n">max_bound</span> <span class="ow">or</span> <span class="n">param_val</span> <span class="o">&lt;</span> <span class="n">min_bound</span><span class="p">:</span>
+
+                        <span class="c1"># Record values and break loop</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;break - Parameter bound reached&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                    <span class="c1"># Otherwise, accept the step and record the results</span>
+                    <span class="c1"># (the parameter is not above the threshold and does not</span>
+                    <span class="c1"># reach the parameter bound)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*step accepted&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># Record results</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+
+                        <span class="c1"># increase the step number</span>
+                        <span class="n">step_number</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                        <span class="c1"># Reset the attempt counter</span>
+                        <span class="n">attempt_number</span> <span class="o">=</span> <span class="mi">0</span>
+
+                        <span class="c1"># Set min_ bound back to 0 (no step from the previously recorded value)</span>
+                        <span class="n">min_</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+                <span class="c1"># if the step size is the maximum step and the PL difference is still too low</span>
+                <span class="k">elif</span> <span class="n">max_flag</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">ppl_difference</span> <span class="o">&lt;</span> <span class="n">min_threshold_limit</span><span class="p">:</span>
+
+                    <span class="c1"># If the parameter value is above the max bound or below the min bound</span>
+                    <span class="k">if</span> <span class="n">fixed_val</span> <span class="o">&gt;</span> <span class="n">max_bound</span> <span class="ow">or</span> <span class="n">fixed_val</span> <span class="o">&lt;</span> <span class="n">min_bound</span><span class="p">:</span>
+
+                        <span class="c1"># Record results and break loop</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;break - Parameter bound reached&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                    <span class="c1"># if the PL value is more than or equal to the threshold value and is less</span>
+                    <span class="c1"># than 1.1 * the threshold value</span>
+                    <span class="k">elif</span> <span class="p">(</span>
+                        <span class="n">chi_sq_ppl_val</span> <span class="o">&gt;=</span> <span class="n">threshold_chi_sq</span>
+                        <span class="ow">and</span> <span class="n">chi_sq_ppl_val</span> <span class="o">&lt;=</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="n">threshold_chi_sq</span>
+                    <span class="p">):</span>
+                        <span class="c1"># Record results and break loop</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;break - Threshold chi_sq reached&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                    <span class="c1"># otherwise, if the step size is the maximum step AND the PL difference</span>
+                    <span class="c1"># is still too low AND the threshold value is not met AND and the</span>
+                    <span class="c1"># parameter bounds are not reached, then accept the step by default</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Record results</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+
+                        <span class="c1"># Increase the step counter</span>
+                        <span class="n">step_number</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                        <span class="c1"># Reset the attempt counter</span>
+                        <span class="n">attempt_number</span> <span class="o">=</span> <span class="mi">0</span>
+
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*step accepted by default - max step value reached&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># Set min_ bound for step size calculations equal 0 (no step)</span>
+                        <span class="n">min_</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+                        <span class="c1"># Keep the step value at the maximum step value</span>
+                        <span class="n">step_val</span> <span class="o">=</span> <span class="n">max_step</span>
+
+                <span class="c1"># if the parameter reaches the min step, but the PL difference is still too high</span>
+                <span class="k">elif</span> <span class="n">min_flag</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">ppl_difference</span> <span class="o">&gt;</span> <span class="n">max_threshold_limit</span><span class="p">:</span>
+
+                    <span class="c1"># if the PL value is more than or equal to the threshold value and is</span>
+                    <span class="c1"># less than 1.1 * the threshold value</span>
+                    <span class="k">if</span> <span class="n">chi_sq_ppl_val</span> <span class="o">&gt;=</span> <span class="n">threshold_chi_sq</span><span class="p">:</span>
+
+                        <span class="c1"># Record results and break loop</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;break - Threshold chi_sq reached&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                    <span class="c1"># if parameter hits bound</span>
+                    <span class="k">elif</span> <span class="n">fixed_val</span> <span class="o">&gt;</span> <span class="n">max_bound</span> <span class="ow">or</span> <span class="n">fixed_val</span> <span class="o">&lt;</span> <span class="n">min_bound</span><span class="p">:</span>
+
+                        <span class="c1"># Record results and break loop</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;break - Parameter bound reached&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                    <span class="c1"># if parameter is not above the threshold or the parameter bound,</span>
+                    <span class="c1"># accept the step and record the results by default</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Record results</span>
+                        <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">)</span>
+                        <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_val</span><span class="p">)</span>
+                        <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_vals</span><span class="p">)</span>
+
+                        <span class="c1"># Add 1 to the step counter</span>
+                        <span class="n">step_number</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                        <span class="c1"># Reset the attempt counter</span>
+                        <span class="n">attempt_number</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*step accepted by default - min step value reached&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># Set min_ bound for step size calculations equal to the current step val</span>
+                        <span class="n">min_</span> <span class="o">=</span> <span class="mf">0.0</span>
+                        <span class="n">step_val</span> <span class="o">=</span> <span class="n">min_step</span>
+
+                <span class="c1"># if conditions are not met because PL difference is too large,</span>
+                <span class="c1"># try again with a smaller step size (or if a differenence is negative,</span>
+                <span class="c1"># then step is too large and need to try a smaller one if possible)</span>
+                <span class="k">elif</span> <span class="n">ppl_difference</span> <span class="o">&gt;</span> <span class="n">max_threshold_limit</span> <span class="ow">or</span> <span class="n">ppl_difference</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+
+                    <span class="c1"># Set the max bound for the next step to be equal to the current step</span>
+                    <span class="n">max_</span> <span class="o">=</span> <span class="n">step_val</span>
+
+                    <span class="c1"># Calculate the next step value</span>
+                    <span class="n">step_val</span> <span class="o">=</span> <span class="p">(</span><span class="n">min_</span> <span class="o">+</span> <span class="n">max_</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+                    <span class="c1"># If min and max for binary step calculations are equal, then set the step</span>
+                    <span class="c1"># val to default to the min step</span>
+                    <span class="k">if</span> <span class="n">min_</span> <span class="o">==</span> <span class="n">max_</span><span class="p">:</span>
+                        <span class="n">step_val</span> <span class="o">=</span> <span class="n">min_step</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;step replaced with min step&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># add 1 to the attempt number</span>
+                    <span class="n">attempt_number</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*step rejected - too large&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new step&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;min_binary_step: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;max_binary_step: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new step val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">step_val</span><span class="p">))</span>
+
+                <span class="c1"># if conditions are not met because PL difference is too small, try again with a</span>
+                <span class="c1"># larger step size</span>
+                <span class="k">elif</span> <span class="n">ppl_difference</span> <span class="o">&lt;</span> <span class="n">min_threshold_limit</span><span class="p">:</span>
+                    <span class="c1"># Set the min bound for the next step to be equal to the current step</span>
+                    <span class="n">min_</span> <span class="o">=</span> <span class="n">step_val</span>
+
+                    <span class="c1"># Calculate the next step value</span>
+                    <span class="n">step_val</span> <span class="o">=</span> <span class="p">(</span><span class="n">min_</span> <span class="o">+</span> <span class="n">max_</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+                    <span class="c1"># If min and max for binary step calculations are equal, then set the</span>
+                    <span class="c1"># step val to default to half of the max step</span>
+                    <span class="k">if</span> <span class="n">min_</span> <span class="o">==</span> <span class="n">max_</span><span class="p">:</span>
+                        <span class="n">step_val</span> <span class="o">=</span> <span class="n">max_step</span> <span class="o">/</span> <span class="mi">2</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;step replaced with max step&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Increase the attempt number</span>
+                    <span class="n">attempt_number</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*step rejected - too small&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new step&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;min_binary_step: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;max_binary_step: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new step val: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">step_val</span><span class="p">))</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;else&quot;</span><span class="p">)</span>
+
+            <span class="c1"># if is the calibrated param (0th step), record results by default and start with the</span>
+            <span class="c1"># max step value</span>
+            <span class="k">elif</span> <span class="n">step_number</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+                <span class="c1"># Set next step to max step value</span>
+                <span class="n">step_val</span> <span class="o">=</span> <span class="n">max_step</span>
+
+                <span class="c1"># Record results</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*step accepted - calibrated parameter (Step 0)&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">calibrated_chi_sq</span><span class="p">)</span>
+                <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calibrated_chi_sq</span><span class="p">)</span>
+                <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calibrated_parameter_values</span><span class="p">[</span><span class="n">fixed_index</span><span class="p">])</span>
+                <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calibrated_parameter_values</span><span class="p">)</span>
+
+                <span class="n">step_number</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">attempt_number</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Prepare lists for plotting (reverse the negative direction (left), then append the</span>
+        <span class="c1"># positive direction (right))</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">chi_sq_ppl_list</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+            <span class="n">ppl_left</span> <span class="o">=</span> <span class="n">chi_sq_ppl_list</span>
+            <span class="n">fixed_parameter_values</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+            <span class="n">params_left</span> <span class="o">=</span> <span class="n">fixed_parameter_values</span>
+            <span class="n">all_parameter_values</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+            <span class="n">param_vals_left</span> <span class="o">=</span> <span class="n">all_parameter_values</span>
+
+        <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ppl_right</span> <span class="o">=</span> <span class="n">chi_sq_ppl_list</span>
+            <span class="n">params_right</span> <span class="o">=</span> <span class="n">fixed_parameter_values</span>
+            <span class="n">param_vals_right</span> <span class="o">=</span> <span class="n">all_parameter_values</span>
+
+    <span class="c1"># combine LHS and RHS of the ppl</span>
+    <span class="n">chi_sq_ppl_list_both_directions</span> <span class="o">=</span> <span class="n">ppl_left</span> <span class="o">+</span> <span class="n">ppl_right</span>
+    <span class="n">fixed_parameter_values_both_directions</span> <span class="o">=</span> <span class="n">params_left</span> <span class="o">+</span> <span class="n">params_right</span>
+    <span class="n">all_parameter_values_both_directions</span> <span class="o">=</span> <span class="n">param_vals_left</span> <span class="o">+</span> <span class="n">param_vals_right</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;***&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ppl for &quot;</span> <span class="o">+</span> <span class="n">parameter_label</span> <span class="o">+</span> <span class="s2">&quot; complete&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of PEM evaluations: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_evals</span><span class="p">))</span>
+
+    <span class="c1"># Record stop time</span>
+    <span class="n">stop_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">stop_time</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="n">elapsed_time_total</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">elapsed_time</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">elapsed_time_total</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">elapsed_time_total</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Time (hours): &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">elapsed_time_total</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;***&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Structure and save results</span>
+    <span class="n">df_ppl</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_ppl</span><span class="p">[</span><span class="s2">&quot;fixed &quot;</span> <span class="o">+</span> <span class="n">parameter_label</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixed_parameter_values_both_directions</span>
+    <span class="n">df_ppl</span><span class="p">[</span><span class="s2">&quot;fixed &quot;</span> <span class="o">+</span> <span class="n">parameter_label</span> <span class="o">+</span> <span class="s2">&quot; ppl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chi_sq_ppl_list_both_directions</span>
+    <span class="n">df_ppl</span><span class="p">[</span><span class="s2">&quot;fixed &quot;</span> <span class="o">+</span> <span class="n">parameter_label</span> <span class="o">+</span> <span class="s2">&quot; all parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_parameter_values_both_directions</span>
+    <span class="n">df_ppl</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;./PROFILE LIKELIHOOD RESULTS &quot;</span> <span class="o">+</span> <span class="n">parameter_label</span> <span class="o">+</span> <span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Plots</span>
+    <span class="n">plot_parameter_profile_likelihood</span><span class="p">(</span>
+        <span class="n">parameter_label</span><span class="p">,</span>
+        <span class="n">calibrated_parameter_values</span><span class="p">[</span><span class="n">fixed_index</span><span class="p">],</span>
+        <span class="n">fixed_parameter_values_both_directions</span><span class="p">,</span>
+        <span class="n">chi_sq_ppl_list_both_directions</span><span class="p">,</span>
+        <span class="n">calibrated_chi_sq</span><span class="p">,</span>
+        <span class="n">threshold_chi_sq</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">plot_parameter_relationships</span><span class="p">(</span><span class="n">df_ppl</span><span class="p">,</span> <span class="n">parameter_label</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modelID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;synTF_chem&#39;</span><span class="p">:</span>
+        <span class="n">plot_internal_states_along_ppl</span><span class="p">(</span><span class="n">df_ppl</span><span class="p">,</span> <span class="n">parameter_label</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">elapsed_time_total</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Dray_Kate.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>games.config.settings &mdash; GAMES VERSION NUMBER 2.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> GAMES
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">Package modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GAMES</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>games.config.settings</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for games.config.settings</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log10</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">games.utilities.saving</span> <span class="kn">import</span> <span class="n">make_main_directory</span>
+
+
+<div class="viewcode-block" id="define_free_parameter_indices"><a class="viewcode-back" href="../../../games.config.settings.html#games.config.settings.define_free_parameter_indices">[docs]</a><span class="k">def</span> <span class="nf">define_free_parameter_indices</span><span class="p">(</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">parameter_labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">free_parameter_labels</span><span class="p">:</span> <span class="nb">list</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Defines the indices of the free parameters in the full parameters list</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameters</span>
+<span class="sd">       a list of floats containing the initial values for all parameters</span>
+
+<span class="sd">    parameter_labels</span>
+<span class="sd">        a list of strings containing the names of all parameters</span>
+
+<span class="sd">    free_parameter_labels</span>
+<span class="sd">        a list of strings containing the names of free parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    free_parameters</span>
+<span class="sd">        a list of floats containing the initial values of free parameters</span>
+
+<span class="sd">    free_parameter_indices</span>
+<span class="sd">        a list of integers containing the indices of the free parameters in the parameters list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">free_parameters</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">free_parameter_indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">parameter_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">free_parameter_labels</span><span class="p">:</span>
+            <span class="n">free_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">free_parameter_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">free_parameters</span><span class="p">,</span> <span class="n">free_parameter_indices</span></div>
+
+
+<div class="viewcode-block" id="set_default_parameter_bounds"><a class="viewcode-back" href="../../../games.config.settings.html#games.config.settings.set_default_parameter_bounds">[docs]</a><span class="k">def</span> <span class="nf">set_default_parameter_bounds</span><span class="p">(</span><span class="n">bounds_orders_of_magnitude</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">free_parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Defines the default parameter bounds</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bounds_orders_of_magnitude</span>
+<span class="sd">       an int defining the number of orders of magnitude in each</span>
+<span class="sd">       direction that each parameter is allowed to vary</span>
+
+<span class="sd">    free_parameters</span>
+<span class="sd">        a list of floats containing the initial values of free parameters in linear scale</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bounds_log_default</span>
+<span class="sd">        a list of lists containing the default bounds for all free parameters in log scale</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">num_free_params</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">free_parameters</span><span class="p">)</span>
+    <span class="n">bounds_log_default</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_free_params</span><span class="p">):</span>
+        <span class="n">min_bound</span> <span class="o">=</span> <span class="n">log10</span><span class="p">(</span><span class="n">free_parameters</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">-</span> <span class="n">bounds_orders_of_magnitude</span>
+        <span class="n">max_bound</span> <span class="o">=</span> <span class="n">log10</span><span class="p">(</span><span class="n">free_parameters</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="n">bounds_orders_of_magnitude</span>
+        <span class="n">bounds_log_default</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">min_bound</span><span class="p">,</span> <span class="n">max_bound</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">bounds_log_default</span></div>
+
+
+<div class="viewcode-block" id="set_non_default_parameter_bounds"><a class="viewcode-back" href="../../../games.config.settings.html#games.config.settings.set_non_default_parameter_bounds">[docs]</a><span class="k">def</span> <span class="nf">set_non_default_parameter_bounds</span><span class="p">(</span>
+    <span class="n">bounds_log</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">non_default_bounds</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">free_parameter_labels</span><span class="p">:</span> <span class="nb">list</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Replaces default bounds with user-specified bounds, when necessary</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bounds_log</span>
+<span class="sd">        a list of lists containing the default bounds for all free parameters in log scale</span>
+
+<span class="sd">    non_default_bounds</span>
+<span class="sd">        a dictionary with parameter labels and non-default bounds to replace in bounds_log_default</span>
+
+<span class="sd">    free_parameter_labels</span>
+<span class="sd">        a list of strings containing the names of free parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bounds_log</span>
+<span class="sd">        a list of lists containing the specified bounds for all free parameters in log scale</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_default_bounds</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">non_default_bounds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">parameter_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">free_parameter_labels</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">parameter_label</span><span class="p">:</span>
+                    <span class="n">bounds_log</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+
+    <span class="k">return</span> <span class="n">bounds_log</span></div>
+
+
+<div class="viewcode-block" id="define_settings"><a class="viewcode-back" href="../../../games.config.settings.html#games.config.settings.define_settings">[docs]</a><span class="k">def</span> <span class="nf">define_settings</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Defines settings dictionary</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    settings_import</span>
+<span class="sd">        a dictionary containing all settings for the run</span>
+
+<span class="sd">    folder_path</span>
+<span class="sd">        a string defining the path to the main results directory for the run</span>
+
+<span class="sd">    parameter_estimation_problem_definition</span>
+<span class="sd">        a dictionary defining the parameter estimation problem</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/home/kate/Documents/Code/GitHub/GAMES/src/games/config/config.json&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">settings_import</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="c1"># Define free parameter indices and add to settings dictionary</span>
+    <span class="n">free_parameters</span><span class="p">,</span> <span class="n">free_parameter_indices</span> <span class="o">=</span> <span class="n">define_free_parameter_indices</span><span class="p">(</span>
+        <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">],</span>
+        <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">],</span>
+        <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;free_parameter_labels&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;free_parameter_indices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">free_parameter_indices</span>
+    <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;free_parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">free_parameters</span>
+
+    <span class="c1"># Define bounds for free parameters</span>
+    <span class="n">bounds_log_default</span> <span class="o">=</span> <span class="n">set_default_parameter_bounds</span><span class="p">(</span>
+        <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;bounds_orders_of_magnitude&quot;</span><span class="p">],</span> <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;free_parameters&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">bounds_log</span> <span class="o">=</span> <span class="n">set_non_default_parameter_bounds</span><span class="p">(</span>
+        <span class="n">bounds_log_default</span><span class="p">,</span>
+        <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;non_default_bounds&quot;</span><span class="p">],</span>
+        <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;free_parameter_labels&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;bounds_log&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bounds_log</span>
+
+    <span class="c1"># Define parameter estimation problem</span>
+    <span class="n">parameter_estimation_problem_definition_</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;num_vars&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">free_parameters</span><span class="p">),</span>
+        <span class="s2">&quot;names&quot;</span><span class="p">:</span> <span class="n">settings_import</span><span class="p">[</span><span class="s2">&quot;free_parameter_labels&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;bounds&quot;</span><span class="p">:</span> <span class="n">bounds_log</span><span class="p">,</span>  <span class="c1">#</span>
+    <span class="p">}</span>
+    <span class="c1"># Make main results directory and define path</span>
+    <span class="n">folder_path_</span> <span class="o">=</span> <span class="n">make_main_directory</span><span class="p">(</span><span class="n">settings_import</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">settings_import</span><span class="p">,</span> <span class="n">folder_path_</span><span class="p">,</span> <span class="n">parameter_estimation_problem_definition_</span></div>
+
+
+<span class="n">settings</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">,</span> <span class="n">parameter_estimation_problem_definition</span> <span class="o">=</span> <span class="n">define_settings</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Dray_Kate.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

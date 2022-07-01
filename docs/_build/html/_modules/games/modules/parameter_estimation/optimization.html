@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>games.modules.parameter_estimation.optimization &mdash; GAMES VERSION NUMBER 2.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> GAMES
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">Package modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GAMES</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>games.modules.parameter_estimation.optimization</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for games.modules.parameter_estimation.optimization</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Fri Jun  3 15:25:37 2022</span>
+
+<span class="sd">@author: kate</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">lmfit</span>
+<span class="kn">from</span> <span class="nn">lmfit</span> <span class="kn">import</span> <span class="n">Model</span> <span class="k">as</span> <span class="n">Model_lmfit</span>
+<span class="kn">from</span> <span class="nn">lmfit</span> <span class="kn">import</span> <span class="n">Parameters</span> <span class="k">as</span> <span class="n">Parameters_lmfit</span>
+<span class="kn">from</span> <span class="nn">games.models.set_model</span> <span class="kn">import</span> <span class="n">model</span>
+<span class="kn">from</span> <span class="nn">games.modules.solve_single</span> <span class="kn">import</span> <span class="n">solve_single_parameter_set</span>
+<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">parameter_estimation_problem_definition</span>
+<span class="kn">from</span> <span class="nn">games.plots.plots_parameter_estimation</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">plot_parameter_distributions_after_optimization</span><span class="p">,</span>
+    <span class="n">plot_chi_sq_trajectory</span><span class="p">,</span>
+    <span class="n">plot_training_data_fits</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="generalize_parameter_labels"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.optimization.html#games.modules.parameter_estimation.optimization.generalize_parameter_labels">[docs]</a><span class="k">def</span> <span class="nf">generalize_parameter_labels</span><span class="p">(</span>
+    <span class="n">parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">free_parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Generates generalized parameter labels (p_1, p_2, etc.) for use in optimization functions</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameter_labels</span>
+<span class="sd">        a lists of strings containing the labels for all parameters</span>
+
+<span class="sd">    free_parameter_labels</span>
+<span class="sd">        a lists of strings containing the labels for the free parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    general_parameter_labels</span>
+<span class="sd">        list of floats defining the generalized parameter labels</span>
+
+<span class="sd">    general_parameter_labels_free</span>
+<span class="sd">        list of floats defining which of the generalized parameter labels are free</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">free_parameter_indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_labels</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">free_parameter_labels</span><span class="p">:</span>
+            <span class="n">free_parameter_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="n">general_parameter_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;p_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_labels</span><span class="p">))]</span>
+    <span class="n">general_parameter_labels_free</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;p_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">free_parameter_indices</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">general_parameter_labels</span><span class="p">,</span> <span class="n">general_parameter_labels_free</span></div>
+
+
+<div class="viewcode-block" id="define_best_optimization_results"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.optimization.html#games.modules.parameter_estimation.optimization.define_best_optimization_results">[docs]</a><span class="k">def</span> <span class="nf">define_best_optimization_results</span><span class="p">(</span>
+    <span class="n">df_optimization_results</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">run_type</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Prints best parameter set from optimization to</span>
+<span class="sd">    console and plots the best fit to training data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df_optimization_results</span>
+<span class="sd">        df containing the results of all optimization runs</span>
+
+<span class="sd">    run_type</span>
+<span class="sd">        a string defining the run_type (&#39;default&#39; or &#39;ppl&#39;</span>
+<span class="sd">        or &#39;ppl threshold&#39; or &#39;PEM evaluation)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    r_sq_opt</span>
+<span class="sd">        a float defining the best case r_sq value</span>
+
+<span class="sd">    chi_sq_opt_min</span>
+<span class="sd">        a float defining the best case chi2_sq value</span>
+
+<span class="sd">    best_case_parameters</span>
+<span class="sd">        a list of floats defining the best case parameters</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">best_case_parameters</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">])):</span>
+        <span class="n">col_name</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;*&quot;</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">df_optimization_results</span><span class="p">[</span><span class="n">col_name</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">best_case_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+    <span class="n">best_case_parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">best_case_parameters</span><span class="p">]</span>
+    <span class="n">solutions_norm</span> <span class="o">=</span> <span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;Simulation results&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">r_sq_opt</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;r_sq&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">chi_sq_opt_min</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;chi_sq&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">run_type</span> <span class="o">!=</span> <span class="s2">&quot;ppl&quot;</span> <span class="ow">and</span>  <span class="n">run_type</span> <span class="o">!=</span> <span class="s2">&quot;ppl threshold&quot;</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;best fit to training data&quot;</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">plot_training_data</span><span class="p">(</span>
+            <span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">solutions_norm</span><span class="p">,</span>
+            <span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;exp_data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;exp_error&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">filename</span><span class="p">,</span>
+            <span class="n">run_type</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plot_chi_sq_trajectory</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;chi_sq_list&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*************************&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Calibrated parameters: &quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">]):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">label</span> <span class="o">+</span> <span class="s2">&quot; = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">best_case_parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Metrics:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;R_sq = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">r_sq_opt</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;chi_sq = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">chi_sq_opt_min</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*************************&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">r_sq_opt</span><span class="p">,</span> <span class="n">chi_sq_opt_min</span><span class="p">,</span> <span class="n">best_case_parameters</span></div>
+
+
+<div class="viewcode-block" id="optimize_all"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.optimization.html#games.modules.parameter_estimation.optimization.optimize_all">[docs]</a><span class="k">def</span> <span class="nf">optimize_all</span><span class="p">(</span>
+    <span class="n">df_global_search_results</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">run_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">problem</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">parameter_estimation_problem_definition</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+
+    <span class="sd">&quot;&quot;&quot;Runs optimization for each initial guess and saves results</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df_global_search_results</span>
+<span class="sd">        df containing the results of the global search</span>
+
+<span class="sd">    run_type</span>
+<span class="sd">        a string defining the run_type (&#39;default&#39; or &#39;ppl&#39; or &#39;ppl threshold&#39;)</span>
+
+<span class="sd">    problem</span>
+<span class="sd">        a dictionary containing the parameter estimation problem -</span>
+<span class="sd">        must be provided for PPL simulations only, in which the free parameters</span>
+<span class="sd">        change depending on which parameter&#39;s PPL is being calculated</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    r_sq_opt</span>
+<span class="sd">        a float defining the best case r_sq value</span>
+
+<span class="sd">    chi_sq_opt_min</span>
+<span class="sd">        a float defining the  best case chi2_sq value</span>
+
+<span class="sd">    df_optimization_results</span>
+<span class="sd">        a dataframe containing the optimization results</span>
+
+<span class="sd">    best_case_parameters</span>
+<span class="sd">        a list of floats defining the best case parameters</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;problem&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">problem</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_global_search_results</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">run_type</span> <span class="o">!=</span> <span class="s2">&quot;ppl threshold&quot;</span><span class="p">:</span>
+        <span class="n">df_global_search_results</span> <span class="o">=</span> <span class="n">df_global_search_results</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;chi_sq&quot;</span><span class="p">])</span>
+        <span class="n">df_global_search_results</span> <span class="o">=</span> <span class="n">df_global_search_results</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df_global_search_results</span> <span class="o">=</span> <span class="n">df_global_search_results</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+            <span class="n">df_global_search_results</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;num_parameter_sets_optimization&quot;</span><span class="p">]</span> <span class="p">:]</span>
+        <span class="p">)</span>
+
+    <span class="n">all_opt_results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parallelization&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df_global_search_results</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">results_row</span><span class="p">,</span> <span class="n">results_row_labels</span> <span class="o">=</span> <span class="n">optimize_single_initial_guess</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="n">all_opt_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results_row</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parallelization&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;num_cores&quot;</span><span class="p">])</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span>
+                <span class="n">optimize_single_initial_guess</span><span class="p">,</span>
+                <span class="n">df_global_search_results</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+            <span class="n">all_opt_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">results_row_labels</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimization complete.&quot;</span><span class="p">)</span>
+    <span class="n">df_optimization_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">all_opt_results</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">results_row_labels</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">run_type</span> <span class="o">!=</span> <span class="s2">&quot;ppl threshold&quot;</span><span class="p">:</span>
+        <span class="n">df_optimization_results</span> <span class="o">=</span> <span class="n">df_optimization_results</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;chi_sq&quot;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df_optimization_results</span> <span class="o">=</span> <span class="n">df_optimization_results</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Add experimental data to results</span>
+    <span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+    <span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;exp_data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;exp_data&quot;</span><span class="p">]</span>
+    <span class="n">df_optimization_results</span><span class="p">[</span><span class="s2">&quot;exp_error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;exp_error&quot;</span><span class="p">]</span>
+
+    <span class="n">r_sq_opt</span><span class="p">,</span> <span class="n">chi_sq_opt_min</span><span class="p">,</span> <span class="n">best_case_parameters</span> <span class="o">=</span> <span class="n">define_best_optimization_results</span><span class="p">(</span>
+        <span class="n">df_optimization_results</span><span class="p">,</span> <span class="n">run_type</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span>
+        <span class="n">plot_parameter_distributions_after_optimization</span><span class="p">(</span><span class="n">df_optimization_results</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modelID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;synTF_chem&quot;</span> <span class="ow">and</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response&quot;</span><span class="p">:</span>
+            <span class="n">plot_training_data_fits</span><span class="p">(</span><span class="n">df_optimization_results</span><span class="p">)</span>
+
+    <span class="n">df_optimization_results</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;optimization results.csv&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">r_sq_opt</span><span class="p">,</span> <span class="n">chi_sq_opt_min</span><span class="p">,</span> <span class="n">df_optimization_results</span><span class="p">,</span> <span class="n">best_case_parameters</span></div>
+
+
+<div class="viewcode-block" id="define_parameters_for_opt"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.optimization.html#games.modules.parameter_estimation.optimization.define_parameters_for_opt">[docs]</a><span class="k">def</span> <span class="nf">define_parameters_for_opt</span><span class="p">(</span>
+    <span class="n">initial_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">free_parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">free_parameter_bounds</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span>
+    <span class="n">parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">Type</span><span class="p">[</span><span class="n">Parameters_lmfit</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Defines parameters for optimization with structure necessary for LMFit optimization code</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    initial_parameters</span>
+<span class="sd">        a list of floats containing the initial guesses for each parameter</span>
+
+<span class="sd">    free_parameter_labels</span>
+<span class="sd">        a lists of strings containing the bounds for the free parameters</span>
+
+<span class="sd">    free_parameter_bounds</span>
+<span class="sd">        a lists of lists containing the bounds for the free parameters</span>
+
+<span class="sd">    parameter_labels</span>
+<span class="sd">        a lists of strings containing the labels for all parameters</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    vary_list</span>
+<span class="sd">        a list of booleans defining whether each parameter is allowed to vary</span>
+<span class="sd">        in the optimization run</span>
+
+<span class="sd">    params_for_opt</span>
+<span class="sd">        an object defining the parameters and bounds for optimization</span>
+<span class="sd">        (in structure necessary for LMFit optimization code)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span>
+        <span class="n">general_parameter_labels</span><span class="p">,</span>
+        <span class="n">general_parameter_labels_free</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">generalize_parameter_labels</span><span class="p">(</span><span class="n">parameter_labels</span><span class="p">,</span> <span class="n">free_parameter_labels</span><span class="p">)</span>
+
+    <span class="c1"># Set default values</span>
+    <span class="n">num_parameters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_labels</span><span class="p">)</span>
+    <span class="n">bound_min_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_parameters</span>
+    <span class="n">bound_max_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_parameters</span>
+    <span class="n">vary_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_parameters</span>
+
+    <span class="c1"># Set min and max bounds and vary_index by comparing free parameters</span>
+    <span class="c1"># lists with list of all parameters</span>
+    <span class="k">for</span> <span class="n">param_index</span><span class="p">,</span> <span class="n">param_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">general_parameter_labels</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">free_param_index</span><span class="p">,</span> <span class="n">free_param_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">general_parameter_labels_free</span><span class="p">):</span>
+
+            <span class="c1"># if param is free param, change vary to True and update bounds</span>
+            <span class="k">if</span> <span class="n">param_label</span> <span class="o">==</span> <span class="n">free_param_label</span><span class="p">:</span>
+                <span class="n">vary_list</span><span class="p">[</span><span class="n">param_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">bound_min_list</span><span class="p">[</span><span class="n">param_index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">free_parameter_bounds</span><span class="p">[</span><span class="n">free_param_index</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">bound_max_list</span><span class="p">[</span><span class="n">param_index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">free_parameter_bounds</span><span class="p">[</span><span class="n">free_param_index</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Add parameters to the parameters class</span>
+    <span class="n">params_for_opt</span> <span class="o">=</span> <span class="n">Parameters_lmfit</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">index_param</span><span class="p">,</span> <span class="n">param_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">general_parameter_labels</span><span class="p">):</span>
+        <span class="n">params_for_opt</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">param_label</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">initial_parameters</span><span class="p">[</span><span class="n">index_param</span><span class="p">],</span>
+            <span class="n">vary</span><span class="o">=</span><span class="n">vary_list</span><span class="p">[</span><span class="n">index_param</span><span class="p">],</span>
+            <span class="nb">min</span><span class="o">=</span><span class="n">bound_min_list</span><span class="p">[</span><span class="n">index_param</span><span class="p">],</span>
+            <span class="nb">max</span><span class="o">=</span><span class="n">bound_max_list</span><span class="p">[</span><span class="n">index_param</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">null_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">general_parameter_labels</span><span class="p">),</span> <span class="mi">10</span><span class="p">):</span>
+        <span class="n">params_for_opt</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;p_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">null_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">vary_list</span><span class="p">,</span> <span class="n">params_for_opt</span></div>
+
+
+<div class="viewcode-block" id="define_results_row"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.optimization.html#games.modules.parameter_estimation.optimization.define_results_row">[docs]</a><span class="k">def</span> <span class="nf">define_results_row</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">:</span> <span class="n">lmfit</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ModelResult</span><span class="p">,</span>
+    <span class="n">initial_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">chi_sq_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">data_information</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Defines results for each optimization run</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    results</span>
+<span class="sd">        a results class containing results of the given optimization run</span>
+
+<span class="sd">    initial_parameters</span>
+<span class="sd">        a list of floats containing the initial guesses for each parameter</span>
+
+<span class="sd">    chi_sq_list</span>
+<span class="sd">        a list of floats containing the chi_sq values for each function evaluation</span>
+
+<span class="sd">    data_information</span>
+<span class="sd">        a list of lists containing x, exp_data, and exp_error</span>
+
+<span class="sd">    x</span>
+<span class="sd">        a list of floats containing the values of the independent variable</span>
+
+<span class="sd">    exp_data</span>
+<span class="sd">        a list of floats containing the values of the dependent variable</span>
+
+<span class="sd">    exp_error</span>
+<span class="sd">        a list of floats containing the values of the measurement error</span>
+<span class="sd">        for the dependent variable</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    results_row</span>
+<span class="sd">        a list of floats and lists containing the results for the given optimization run</span>
+
+<span class="sd">    results_row_labels</span>
+<span class="sd">        a list of strings defining the labels for each item in results_row</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># add initial parameters to row for saving</span>
+    <span class="n">results_row</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">results_row_labels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">initial_parameters</span><span class="p">):</span>
+        <span class="n">results_row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">results_row_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="c1"># Solve ODEs with final optimized parameters</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">valuesdict</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">())[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">initial_parameters</span><span class="p">)]</span>
+    <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_information</span>
+    <span class="n">solutions_norm</span><span class="p">,</span> <span class="n">chi_sq</span><span class="p">,</span> <span class="n">r_sq</span> <span class="o">=</span> <span class="n">solve_single_parameter_set</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+
+    <span class="c1"># append best fit parameters to results_row for saving</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">best_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">):</span>
+        <span class="n">results_row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_val</span><span class="p">)</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">][</span><span class="n">index</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;*&quot;</span>
+        <span class="n">results_row_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+    <span class="c1"># Define other conditions and result metrics and add to result_row for saving</span>
+    <span class="c1"># Results.redchi_sq is the chi2 value directly from LMFit.</span>
+    <span class="c1"># Results.redchi_sq * the number of data points should match the</span>
+    <span class="c1"># chi_sq calculated in this code</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">chi_sq</span><span class="p">,</span> <span class="n">r_sq</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">redchi</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">success</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">chi_sq_list</span><span class="p">,</span> <span class="n">solutions_norm</span><span class="p">]</span>
+    <span class="n">item_labels</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;chi_sq&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;r_sq&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;redchi_sq&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chi_sq_list&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Simulation results&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+        <span class="n">results_row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">results_row_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item_labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">results_row</span><span class="p">,</span> <span class="n">results_row_labels</span></div>
+
+
+<div class="viewcode-block" id="optimize_single_initial_guess"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.optimization.html#games.modules.parameter_estimation.optimization.optimize_single_initial_guess">[docs]</a><span class="k">def</span> <span class="nf">optimize_single_initial_guess</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Runs optimization for a single initial guess</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    row</span>
+<span class="sd">        a tuple of floats containing the initial guesses for each parameter</span>
+<span class="sd">        (represents a row of the global search results)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    results_row</span>
+<span class="sd">        a list of floats and lists containing the results for the given optimization run</span>
+
+<span class="sd">    results_row_labels</span>
+<span class="sd">        a list of strings defining the labels for each item in results_row&quot;&quot;&quot;</span>
+
+    <span class="n">initial_parameters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">exp_data</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">exp_error</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">free_parameter_bounds</span> <span class="o">=</span> <span class="n">problem</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">]</span>
+    <span class="n">free_parameter_labels</span> <span class="o">=</span> <span class="n">problem</span><span class="p">[</span><span class="s2">&quot;names&quot;</span><span class="p">]</span>
+
+    <span class="n">chi_sq_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">solve_for_opt</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">p_1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_3</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_4</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_5</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_6</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_7</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_8</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_9</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">p_10</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">p_opt</span> <span class="o">=</span> <span class="p">[</span><span class="n">p_1</span><span class="p">,</span> <span class="n">p_2</span><span class="p">,</span> <span class="n">p_3</span><span class="p">,</span> <span class="n">p_4</span><span class="p">,</span> <span class="n">p_5</span><span class="p">,</span> <span class="n">p_6</span><span class="p">,</span> <span class="n">p_7</span><span class="p">,</span> <span class="n">p_8</span><span class="p">,</span> <span class="n">p_9</span><span class="p">,</span> <span class="n">p_10</span><span class="p">]</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">p_opt</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">])]</span>
+        <span class="n">solutions_norm</span><span class="p">,</span> <span class="n">chi_sq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">solve_single_parameter_set</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+        <span class="n">chi_sq_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chi_sq</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">solutions_norm</span><span class="p">)</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">params_for_opt</span> <span class="o">=</span> <span class="n">define_parameters_for_opt</span><span class="p">(</span>
+        <span class="n">initial_parameters</span><span class="p">,</span>
+        <span class="n">free_parameter_labels</span><span class="p">,</span>
+        <span class="n">free_parameter_bounds</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">model_lmfit</span> <span class="o">=</span> <span class="n">Model_lmfit</span><span class="p">(</span><span class="n">solve_for_opt</span><span class="p">,</span> <span class="n">nan_policy</span><span class="o">=</span><span class="s2">&quot;propagate&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;weight_by_error&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
+        <span class="n">weights_</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">exp_error</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;weight_by_error&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+        <span class="n">weights_</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exp_error</span><span class="p">]</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">model_lmfit</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">exp_data</span><span class="p">,</span>
+        <span class="n">params_for_opt</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;leastsq&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="n">weights_</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">results_row</span><span class="p">,</span> <span class="n">results_row_labels</span> <span class="o">=</span> <span class="n">define_results_row</span><span class="p">(</span>
+        <span class="n">results</span><span class="p">,</span> <span class="n">initial_parameters</span><span class="p">,</span> <span class="n">chi_sq_list</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">free_parameter_labels</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;free_parameter_labels&quot;</span><span class="p">]):</span>  <span class="c1"># if not a ppl run</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimization run &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; complete&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results_row</span><span class="p">,</span> <span class="n">results_row_labels</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Dray_Kate.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
