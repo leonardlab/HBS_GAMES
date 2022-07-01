@@ -62,7 +62,7 @@ To run the synTF example, simply replace the config.json file in src/games/confi
 ## Release overview
 
 v2.0.0 is a refactored version of the GAMES code used in Dray et al. 2022. 
-This version includes a variety of Python tools for type annotation, linting, testing, and documentation, along with a new, improved, and more user-friendly code stucture that is more amenable to extention to different models, data sets, and simulation conditions. 
+This version includes a variety of Python tools for package dependencies and environment management, type annotation, linting, testing, and documentation, along with a new, improved, and more user-friendly code structure that is more amenable to extension to different models, data sets, and simulation conditions. 
 Information on how to install and run each Python tool is included below.
 
 ## Installation and running instructions
