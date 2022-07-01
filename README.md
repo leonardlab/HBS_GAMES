@@ -6,8 +6,8 @@ Supporting code for the article:
 
 + [Repository overview](#repository-overview) 
   - [Examples](#examples)
-     -[SynTF_chem](#SynTF-chem)
-     -[SynTF](#SynTF)
+    -[SynTF_chem](#SynTF-chem)
+    -[SynTF](#SynTF)
 + [Release overview](#release-overview)
 + [Installation and running instructions](#installation-and-running-instructions)
 + [Workflow summary](#workflow-summary)
