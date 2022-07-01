@@ -65,7 +65,8 @@ To run the synTF example, simply replace the config.json file in src/games/confi
 
 v2.0.0 is a refactored version of the GAMES code used in Dray et al. 2022. 
 This version includes a variety of Python tools for package dependencies and environment management, type annotation, linting, testing, and documentation, along with a new, improved, and more user-friendly code structure that is more amenable to extension to different models, data sets, and simulation conditions. 
-Information on how to install and run each Python tool is included below.
+Information on how to install and run each Python tool is included below. 
+Python 3.10 is required.
 
 ## Installation and running instructions
 
@@ -75,7 +76,7 @@ Information on how to install and run each Python tool is included below.
 $ git clone https://github.com/leonardlab/GAMES.git
 ```
 
-2. This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file. See the Python project tools section for more information.
+2. This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file. See the Python project tools - getting started section for more information.
 
 3. Run settings are set using the config.json file in src/games/config/. The "context" variable must be set to the absolute path to the user's src/games/ folder. 
  
