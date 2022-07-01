@@ -341,14 +341,6 @@ You can additionally specify version constraints (e.g. `<dependency>@<version co
 Use `-D` to indicate development dependencies.
 You can also add dependencies directly to the file.
 
-
-### GitHub Actions
-
-Tests are run on each push.
-Linting is performed on each push.
-This workflow `.github/workflows/lint.yml` lints code using Pylint (fails when score is < 7.0), checks formatting with Black (fails if files would be reformatted), and performs type checking with MyPy (fails if code has type errors).
-Note that this type checking is not the same as the type checking done by Tox, which additionally checks for missing types.
-
 ### Tox
 
 Running tox will automatically perform unit and functional tests, linting, formatting, and type checking. 
