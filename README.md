@@ -299,7 +299,7 @@ The other tools will be installed by Poetry.
 
 1. Clone the repo (see Installation and running instructions for details)
 
-2. Activate the environment (this is all you need for day-to-day development):
+2. Activate the environment using poetry (this is all you need for day-to-day development). You will need the package pyenv installed, with Python 3.10 available.
 
 ```bash
 $ poetry shell
