@@ -1,4 +1,4 @@
-{ "folder_name": "synTF m1 only", 
+{ "folder_name": "synTF example", 
   "modelID" : "synTF",
   "dataID" : "synTF dose response",
   "mechanismID" : "A",
