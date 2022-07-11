@@ -80,16 +80,16 @@ $ git clone https://github.com/leonardlab/GAMES.git
  
 4. All code is executable using the command line
 
-To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), use the command line to run the following, where x is the module number: 
+To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), navigate to src/games/ and then use the command line to run the following, where x is the module number: 
 
 ```bash
-$ run --modules='x' 
+$ python run.py --modules='x' 
 ```
 
 Mutiple modules can be run in series. For example, the following command will run modules 2 and 3.  
 
 ```bash
-$ run --modules='23' 
+$ python run.py --modules='23' 
 ```
 
 ## Workflow summary
@@ -311,10 +311,10 @@ $ poetry shell
 $ poetry install
 ```
 
-4. Run a test with the command line interface (CLI).
+4. Run a test with the command line interface (CLI). If the --modules option is not specified, the default module (0) will run. Before running the test, navigate to the src/games/ folder.
 
 ```bash
-$ run --modules='0' 
+$ python run.py
 ```
 
 ## Makefile commands
