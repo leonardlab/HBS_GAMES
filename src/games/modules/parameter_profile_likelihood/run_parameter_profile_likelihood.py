@@ -8,7 +8,6 @@ Created on Mon Jun 13 14:24:39 2022
 from typing import List
 import os
 import numpy as np
-from games.config.settings import settings, folder_path
 from games.utilities.saving import create_folder
 from games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood import (
     calculate_ppl,
@@ -19,13 +18,26 @@ from games.modules.parameter_profile_likelihood.calculate_threshold import (
 
 
 def run_parameter_profile_likelihood(
-    calibrated_chi_sq: float, calibrated_parameters: List[float]
+    settings: dict,
+    folder_path: str,
+    parameter_estimation_problem_definition: dict,
+    calibrated_chi_sq: float,
+    calibrated_parameters: List[float],
 ) -> None:
     """Calculates parameter profile likelihood
 
     Parameters
     ----------
-    calibrated_chi_sq
+    settings
+        a dictionary defining the run settings
+
+    folder_path
+        a string defining the path to the main results folder
+
+    parameter_estimation_problem_definition
+        a dictionary containing the parameter estimation problem
+
+    calibrated_chi_sQ
         a float defining the chi_sq associated with the calibrated parameter set
 
     calibrated_parameters
@@ -39,12 +51,19 @@ def run_parameter_profile_likelihood(
     path = create_folder(folder_path, sub_folder_name)
     os.chdir(path)
 
-    threshold_chi_sq = calculate_threshold_chi_sq(calibrated_parameters, calibrated_chi_sq)
+    threshold_chi_sq = calculate_threshold_chi_sq(
+        settings, parameter_estimation_problem_definition, calibrated_parameters, calibrated_chi_sq
+    )
 
     time_list = []
     for parameter_label in settings["parameter_labels_for_ppl"]:
         time = calculate_ppl(
-            parameter_label, calibrated_parameters, calibrated_chi_sq, threshold_chi_sq
+            parameter_label,
+            calibrated_parameters,
+            calibrated_chi_sq,
+            threshold_chi_sq,
+            settings,
+            parameter_estimation_problem_definition,
         )
         time_list.append(time)
 

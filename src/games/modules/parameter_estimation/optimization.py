@@ -14,7 +14,6 @@ from lmfit import Model as Model_lmfit
 from lmfit import Parameters as Parameters_lmfit
 from games.models.set_model import model
 from games.modules.solve_single import solve_single_parameter_set
-from games.config.settings import settings, parameter_estimation_problem_definition
 from games.plots.plots_parameter_estimation import (
     plot_parameter_distributions_after_optimization,
     plot_chi_sq_trajectory,
@@ -56,7 +55,7 @@ def generalize_parameter_labels(
 
 
 def define_best_optimization_results(
-    df_optimization_results: pd.DataFrame, run_type: str
+    df_optimization_results: pd.DataFrame, run_type: str, settings: dict
 ) -> Tuple[float, float, List[float]]:
     """Prints best parameter set from optimization to
     console and plots the best fit to training data
@@ -69,6 +68,9 @@ def define_best_optimization_results(
     run_type
         a string defining the run_type ('default' or 'ppl'
         or 'ppl threshold' or 'PEM evaluation)
+
+     settings
+        a dictionary of run settings
 
     Returns
     -------
@@ -102,6 +104,8 @@ def define_best_optimization_results(
             df_optimization_results["exp_error"].iloc[0],
             filename,
             run_type,
+            settings["context"],
+            settings["dataID"],
         )
         plot_chi_sq_trajectory(list(df_optimization_results["chi_sq_list"].iloc[0]))
 
@@ -120,9 +124,7 @@ def define_best_optimization_results(
 
 
 def optimize_all(
-    df_global_search_results: pd.DataFrame,
-    run_type: str = "default",
-    problem: dict = parameter_estimation_problem_definition,
+    df_global_search_results: pd.DataFrame, settings: dict, problem: dict, run_type: str = "default"
 ) -> Tuple[float, float, pd.DataFrame, List[float]]:
 
     """Runs optimization for each initial guess and saves results
@@ -132,13 +134,16 @@ def optimize_all(
     df_global_search_results
         df containing the results of the global search
 
-    run_type
-        a string defining the run_type ('default' or 'ppl' or 'ppl threshold')
+    settings
+        a dictionary of run settings
 
     problem
         a dictionary containing the parameter estimation problem -
         must be provided for PPL simulations only, in which the free parameters
         change depending on which parameter's PPL is being calculated
+
+    run_type
+        a string defining the run_type ('default' or 'ppl' or 'ppl threshold' or 'pem evaluation')
 
     Returns
     -------
@@ -163,6 +168,14 @@ def optimize_all(
         df_global_search_results = df_global_search_results.drop(
             df_global_search_results.index[settings["num_parameter_sets_optimization"] :]
         )
+        # add run_type settings to df
+        df_global_search_results["run_type"] = [run_type] * settings[
+            "num_parameter_sets_optimization"
+        ]
+
+    else:
+        # add run_type settings to df
+        df_global_search_results["run_type"] = [run_type] * settings["num_noise_realizations"]
 
     all_opt_results = []
     if settings["parallelization"] == "no":
@@ -195,10 +208,12 @@ def optimize_all(
     df_optimization_results["exp_error"] = df_global_search_results["exp_error"]
 
     r_sq_opt, chi_sq_opt_min, best_case_parameters = define_best_optimization_results(
-        df_optimization_results, run_type
+        df_optimization_results, run_type, settings
     )
     if run_type == "default":
-        plot_parameter_distributions_after_optimization(df_optimization_results)
+        plot_parameter_distributions_after_optimization(
+            df_optimization_results, settings["parameter_labels"]
+        )
         if settings["modelID"] == "synTF_chem" and settings["dataID"] == "ligand dose response":
             plot_training_data_fits(df_optimization_results)
 
@@ -284,6 +299,7 @@ def define_results_row(
     initial_parameters: List[float],
     chi_sq_list: List[float],
     data_information: List[list],
+    results_row_settings: List,
 ) -> Tuple[List[Any], List[str]]:
     """Defines results for each optimization run
 
@@ -301,16 +317,24 @@ def define_results_row(
     data_information
         a list of lists containing x, exp_data, and exp_error
 
-    x
-        a list of floats containing the values of the independent variable
+        x
+            a list of floats containing the values of the independent variable
 
-    exp_data
-        a list of floats containing the values of the dependent variable
+        exp_data
+            a list of floats containing the values of the dependent variable
 
-    exp_error
-        a list of floats containing the values of the measurement error
-        for the dependent variable
+        exp_error
+            a list of floats containing the values of the measurement error
+            for the dependent variable
 
+    results_row_settings
+        a list of list and strings containing settings for the results row
+        parameter_labels
+            a list of strings defining the parameter labels
+        dataID
+            a string defining the dataID
+        weight_by_error
+            a string defining whether the cost function should be weighted by error or not
 
     Returns
     -------
@@ -321,22 +345,27 @@ def define_results_row(
         a list of strings defining the labels for each item in results_row
 
     """
+
+    [parameter_labels, dataID, weight_by_error] = results_row_settings
+
     # add initial parameters to row for saving
     results_row = []
     results_row_labels = []
     for i, val in enumerate(initial_parameters):
         results_row.append(val)
-        results_row_labels.append(settings["parameter_labels"][i])
+        results_row_labels.append(parameter_labels[i])
 
     # Solve ODEs with final optimized parameters
     model.parameters = list(results.params.valuesdict().values())[: len(initial_parameters)]
     [x, exp_data, exp_error] = data_information
-    solutions_norm, chi_sq, r_sq = solve_single_parameter_set(x, exp_data, exp_error)
+    solutions_norm, chi_sq, r_sq = solve_single_parameter_set(
+        x, exp_data, exp_error, dataID, weight_by_error, parameter_labels
+    )
 
     # append best fit parameters to results_row for saving
     for index, best_val in enumerate(model.parameters):
         results_row.append(best_val)
-        label = settings["parameter_labels"][index] + "*"
+        label = parameter_labels[index] + "*"
         results_row_labels.append(label)
 
     # Define other conditions and result metrics and add to result_row for saving
@@ -378,12 +407,20 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
     results_row_labels
         a list of strings defining the labels for each item in results_row"""
 
-    initial_parameters = list(row[1 : len(settings["parameters"]) + 1])
     count = row[0] + 1
-    x = row[-6]
-    exp_data = row[-5]
-    exp_error = row[-4]
-    problem = row[-1]
+    [
+        x,
+        exp_data,
+        exp_error,
+        dataID,
+        weight_by_error,
+        parameter_labels,
+        _,
+        _,
+        problem,
+        run_type,
+    ] = row[-10:]
+    initial_parameters = list(row[1 : len(parameter_labels) + 1])
     free_parameter_bounds = problem["bounds"]
     free_parameter_labels = problem["names"]
 
@@ -403,8 +440,10 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
         p_10: float = 0,
     ) -> np.ndarray:
         p_opt = [p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10]
-        model.parameters = p_opt[: len(settings["parameters"])]
-        solutions_norm, chi_sq, _ = solve_single_parameter_set(x, exp_data, exp_error)
+        model.parameters = p_opt[: len(parameter_labels)]
+        solutions_norm, chi_sq, _ = solve_single_parameter_set(
+            x, exp_data, exp_error, dataID, weight_by_error, parameter_labels
+        )
         chi_sq_list.append(chi_sq)
         return np.array(solutions_norm)
 
@@ -412,13 +451,13 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
         initial_parameters,
         free_parameter_labels,
         free_parameter_bounds,
-        settings["parameter_labels"],
+        parameter_labels,
     )
     model_lmfit = Model_lmfit(solve_for_opt, nan_policy="propagate")
 
-    if settings["weight_by_error"] == "no":
+    if weight_by_error == "no":
         weights_ = [1] * len(exp_error)
-    elif settings["weight_by_error"] == "yes":
+    elif weight_by_error == "yes":
         weights_ = [1 / i for i in exp_error]
 
     results = model_lmfit.fit(
@@ -430,9 +469,14 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
     )
 
     results_row, results_row_labels = define_results_row(
-        results, initial_parameters, chi_sq_list, [x, exp_data, exp_error]
+        results,
+        initial_parameters,
+        chi_sq_list,
+        [x, exp_data, exp_error],
+        [parameter_labels, dataID, weight_by_error],
     )
 
-    if len(free_parameter_labels) == len(settings["free_parameter_labels"]):  # if not a ppl run
+    if run_type != "ppl":
         print("Optimization run " + str(count) + " complete")
+
     return results_row, results_row_labels

@@ -9,7 +9,7 @@ from typing import List
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from games.config.settings import settings
+from games.models.set_model import settings
 
 plt.style.use(settings["context"] + "paper.mplstyle.py")
 

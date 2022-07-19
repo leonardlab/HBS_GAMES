@@ -7,7 +7,6 @@ Created on Tue Jun 14 12:39:44 2022
 """
 from typing import Tuple, List
 import os
-from games.config.settings import parameter_estimation_problem_definition, folder_path
 from games.config.experimental_data import define_experimental_data
 from games.utilities.saving import create_folder
 from games.modules.parameter_estimation.optimization import optimize_all
@@ -17,12 +16,21 @@ from games.modules.parameter_estimation.global_search import (
 )
 
 
-def run_parameter_estimation() -> Tuple[float, List[float]]:
+def run_parameter_estimation(
+    settings: dict, folder_path: str, parameter_estimation_problem_definition: dict
+) -> Tuple[float, List[float]]:
     """Runs parameter estimation method (multi-start optimization)
 
     Parameters
     ----------
-    None
+    settings
+        a dictionary of run settings
+
+    folder_path
+        a string defining the path to the main results folder
+
+    parameter_estimation_problem_definition
+        a dictionary containing the parameter estimation problem
 
     Returns
     -------
@@ -38,12 +46,16 @@ def run_parameter_estimation() -> Tuple[float, List[float]]:
     os.chdir(path)
 
     print("Starting global search...")
-    x, exp_data, exp_error = define_experimental_data()
-    df_parameters = generate_parameter_sets(parameter_estimation_problem_definition)
-    df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error)
+    x, exp_data, exp_error = define_experimental_data(settings)
+    df_parameters = generate_parameter_sets(
+        parameter_estimation_problem_definition, settings, settings["parameters"]
+    )
+    df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error, settings)
     print("Global search complete.")
 
     print("Starting optimization...")
-    _, calibrated_chi_sq, _, calibrated_parameters = optimize_all(df_global_search_results)
+    _, calibrated_chi_sq, _, calibrated_parameters = optimize_all(
+        df_global_search_results, settings, parameter_estimation_problem_definition
+    )
 
     return calibrated_chi_sq, calibrated_parameters

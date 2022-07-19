@@ -10,7 +10,7 @@ from math import log10
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from games.config.settings import settings
+from games.models.set_model import settings
 
 plt.style.use(settings["context"] + "paper.mplstyle.py")
 
@@ -100,7 +100,9 @@ def plot_training_data_fits(df_opt: pd.DataFrame) -> None:
     plt.savefig("./fits r_sq above 0.99.svg", bbox_inches="tight")
 
 
-def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> None:
+def plot_parameter_distributions_after_optimization(
+    df_opt: pd.DataFrame, parameter_labels: List[str]
+) -> None:
     """Plot parameter distributions across initial guesses
      following parameter estimation with training data
 
@@ -108,6 +110,9 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     ----------
     df_opt
         a dataframe containing the parameter estimation results after optimization
+
+    parameter_labels
+        a list of strings defining the parameter labels
 
     Returns
     -------
@@ -122,14 +127,14 @@ def plot_parameter_distributions_after_optimization(df_opt: pd.DataFrame) -> Non
     else:
         # Restructure dataframe
         df_opt_log = pd.DataFrame()
-        for label in settings["parameter_labels"]:
+        for label in parameter_labels:
             label_star = label + "*"
             new_list = [log10(i) for i in list(df_opt[label_star])]
             df_opt_log[label] = new_list
         df_opt_log["r_sq"] = df_opt["r_sq"]
 
         plt.subplots(1, 1, figsize=(4, 3), sharex=True)
-        df_opt_log = pd.melt(df_opt_log, id_vars=["r_sq"], value_vars=settings["parameter_labels"])
+        df_opt_log = pd.melt(df_opt_log, id_vars=["r_sq"], value_vars=parameter_labels)
         ax = sns.boxplot(x="variable", y="value", data=df_opt_log, color="dodgerblue")
         ax = sns.swarmplot(x="variable", y="value", data=df_opt_log, color="gray")
         ax.set(xlabel="Parameter", ylabel="log(value)")

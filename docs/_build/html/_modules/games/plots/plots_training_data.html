@@ -72,82 +72,18 @@
 
 <span class="sd">@author: kate</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;paper.mplstyle.py&quot;</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="define_training_data_plot_settings"><a class="viewcode-back" href="../../../games.plots.plots_training_data.html#games.plots.plots_training_data.define_training_data_plot_settings">[docs]</a><span class="k">def</span> <span class="nf">define_training_data_plot_settings</span><span class="p">(</span>
-    <span class="n">run_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">independent_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Defines plot settings based on the dataID and data_type</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    run_type</span>
-<span class="sd">        a string containing the data type (&#39;PEM evaluation&#39; or else)</span>
-
-<span class="sd">    independent_variable</span>
-<span class="sd">        a string containing the name of the independent variable</span>
-<span class="sd">        if the dataID has only a single dataset with a single independent variable,</span>
-<span class="sd">        then this argument is unnecessary</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    x_label</span>
-<span class="sd">        string defining the label for the independent variable</span>
-
-<span class="sd">    y_label</span>
-<span class="sd">        string defining the label for the dependent variable</span>
-
-<span class="sd">    x_scale</span>
-<span class="sd">        string defining the scale for the independent variable</span>
-
-<span class="sd">    plot_color</span>
-<span class="sd">        string defining the color for the plot</span>
-
-<span class="sd">    marker_type</span>
-<span class="sd">        string defining the marker type</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">y_label</span> <span class="o">=</span> <span class="s2">&quot;Rep. protein (au)&quot;</span>
-    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response&quot;</span><span class="p">:</span>
-        <span class="n">x_label</span> <span class="o">=</span> <span class="s2">&quot;Ligand (nM)&quot;</span>
-        <span class="n">x_scale</span> <span class="o">=</span> <span class="s2">&quot;symlog&quot;</span>
-
-    <span class="k">elif</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;synTF dose response&quot;</span><span class="p">:</span>
-        <span class="n">x_label</span> <span class="o">=</span> <span class="s2">&quot;synTF (ng)&quot;</span>
-        <span class="n">x_scale</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span>
-
-    <span class="k">elif</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response and DBD dose response&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">independent_variable</span> <span class="o">==</span> <span class="s2">&quot;ligand&quot;</span><span class="p">:</span>
-            <span class="n">x_label</span> <span class="o">=</span> <span class="s2">&quot;Ligand (nM)&quot;</span>
-            <span class="n">x_scale</span> <span class="o">=</span> <span class="s2">&quot;symlog&quot;</span>
-        <span class="k">elif</span> <span class="n">independent_variable</span> <span class="o">==</span> <span class="s2">&quot;DBD&quot;</span><span class="p">:</span>
-            <span class="n">x_label</span> <span class="o">=</span> <span class="s2">&quot;DBD (ng)&quot;</span>
-            <span class="n">x_scale</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span>
-
-    <span class="k">if</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s2">&quot;PEM evaluation&quot;</span><span class="p">:</span>
-        <span class="n">plot_color</span> <span class="o">=</span> <span class="s2">&quot;dimgrey&quot;</span>
-        <span class="n">marker_type</span> <span class="o">=</span> <span class="s2">&quot;^&quot;</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">plot_color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>
-        <span class="n">marker_type</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span>
-
-    <span class="k">return</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">plot_color</span><span class="p">,</span> <span class="n">marker_type</span></div>
 
 
 <div class="viewcode-block" id="plot_training_data_2d"><a class="viewcode-back" href="../../../games.plots.plots_training_data.html#games.plots.plots_training_data.plot_training_data_2d">[docs]</a><span class="k">def</span> <span class="nf">plot_training_data_2d</span><span class="p">(</span>
-    <span class="n">x_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
-    <span class="n">y_sim</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
-    <span class="n">y_exp</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
-    <span class="n">y_exp_error</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">x_values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">y_sim</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">y_exp</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">y_exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">run_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">independent_variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="n">plot_settings</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">context</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Plots a 2-dimensional figure.</span>
 
@@ -168,21 +104,18 @@
 <span class="sd">    filename</span>
 <span class="sd">       string defining the filename used to save the plot</span>
 
-<span class="sd">    run_type</span>
-<span class="sd">        a string containing the data type (&#39;PEM evaluation&#39; or else)</span>
+<span class="sd">    plot_settings</span>
+<span class="sd">        a list of strings defining the plot settings</span>
 
-<span class="sd">    independent_variable</span>
-<span class="sd">        a string containing the name of the independent variable</span>
-<span class="sd">        if the dataID has only a single dataset with a single independent variable,</span>
-<span class="sd">        then this argument is unnecessary</span>
+<span class="sd">    context</span>
+<span class="sd">        a string defining the absolute path to src/games</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">plot_color</span><span class="p">,</span> <span class="n">marker_type</span> <span class="o">=</span> <span class="n">define_training_data_plot_settings</span><span class="p">(</span>
-        <span class="n">run_type</span><span class="p">,</span> <span class="n">independent_variable</span>
-    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">context</span> <span class="o">+</span> <span class="s2">&quot;paper.mplstyle.py&quot;</span><span class="p">)</span>
+    <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">plot_color</span><span class="p">,</span> <span class="n">marker_type</span> <span class="o">=</span> <span class="n">plot_settings</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">y_sim</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dotted&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;sim&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">plot_color</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>

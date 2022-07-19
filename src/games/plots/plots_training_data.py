@@ -7,9 +7,6 @@ Created on Wed Jun 15 15:17:53 2022
 """
 from typing import List, Tuple
 import matplotlib.pyplot as plt
-from games.config.settings import settings
-
-plt.style.use(settings["context"] + "paper.mplstyle.py")
 
 
 def plot_training_data_2d(
@@ -19,6 +16,7 @@ def plot_training_data_2d(
     y_exp_error: List[float],
     filename: str,
     plot_settings: Tuple[str, str, str, str, str],
+    context: str,
 ) -> None:
     """Plots a 2-dimensional figure.
 
@@ -42,10 +40,14 @@ def plot_training_data_2d(
     plot_settings
         a list of strings defining the plot settings
 
+    context
+        a string defining the absolute path to src/games
+
     Returns
     -------
     None
     """
+    plt.style.use(context + "paper.mplstyle.py")
     x_label, y_label, x_scale, plot_color, marker_type = plot_settings
     plt.figure(figsize=(3, 3))
     plt.plot(x_values, y_sim, linestyle="dotted", marker="None", label="sim", color=plot_color)

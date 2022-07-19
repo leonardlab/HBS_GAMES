@@ -89,8 +89,8 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        free_parameters</span>
-<span class="sd">            List of floats defining the free parameters</span>
+<span class="sd">        parameters</span>
+<span class="sd">            List of floats defining the parameters</span>
 
 <span class="sd">        inputs</span>
 <span class="sd">            List of floats defining the inputs</span>
@@ -103,7 +103,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">state_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ZFa mRNA&quot;</span><span class="p">,</span> <span class="s2">&quot;ZFa protein&quot;</span><span class="p">,</span> <span class="s2">&quot;Rep RNA&quot;</span><span class="p">,</span> <span class="s2">&quot;Rep protein&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span>
-        <span class="n">number_of_states</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">number_of_states</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_labels</span><span class="p">)</span>
         <span class="n">y_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">number_of_states</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="n">y_init</span>
 
@@ -148,6 +148,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
+<span class="sd">        y</span>
+<span class="sd">            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)</span>
+
+<span class="sd">        t</span>
+<span class="sd">            an array defining the time (necessary parameter to use ODEint to solve gradient)</span>
+
 <span class="sd">        parameters</span>
 <span class="sd">            List of floats defining the parameters</span>
 
@@ -157,7 +163,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dydt</span>
-<span class="sd">            An list of floats corresponding to the gradient of each model state at time t</span>
+<span class="sd">            An array corresponding to the gradient of each model state at time t</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -183,7 +189,7 @@
 
         <span class="k">return</span> <span class="n">dydt</span></div>
 
-<div class="viewcode-block" id="synTF.solve_experiment"><a class="viewcode-back" href="../../../games.models.synTF.html#games.models.synTF.synTF.solve_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">solve_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="synTF.solve_experiment"><a class="viewcode-back" href="../../../games.models.synTF.html#games.models.synTF.synTF.solve_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">solve_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameter_labels</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Solve synTF model for a list of synTF values.</span>
 
 <span class="sd">        Parameters</span>
@@ -193,6 +199,11 @@
 
 <span class="sd">        dataID</span>
 <span class="sd">            a string defining the dataID</span>
+
+<span class="sd">        parameter_labels</span>
+<span class="sd">            a list of strings defining the parameter labels</span>
+<span class="sd">            (variable not necessary for synTF, but is necessary for synTF_chem,</span>
+<span class="sd">            so include default value here)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -210,6 +221,30 @@
 
         <span class="k">return</span> <span class="n">solutions</span></div>
 
+<div class="viewcode-block" id="synTF.normalize_data"><a class="viewcode-back" href="../../../games.models.synTF.html#games.models.synTF.synTF.normalize_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">normalize_data</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Normalizes data by maximum value</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        solutions_raw</span>
+<span class="sd">            a list of floats defining the solutions before normalization</span>
+
+<span class="sd">        dataID</span>
+<span class="sd">            a string defining the dataID</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        solutions_norm</span>
+<span class="sd">            a list of floats defining the dependent variable for the given</span>
+<span class="sd">            dataset (after normalization)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataID</span> <span class="o">==</span> <span class="s2">&quot;synTF dose response&quot;</span><span class="p">:</span>
+            <span class="n">solutions_norm</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">solutions_raw</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">solutions_norm</span></div>
+
 <div class="viewcode-block" id="synTF.plot_training_data"><a class="viewcode-back" href="../../../games.models.synTF.html#games.models.synTF.synTF.plot_training_data">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">plot_training_data</span><span class="p">(</span>
         <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
@@ -218,35 +253,61 @@
         <span class="n">exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
         <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">run_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Plots training data and simulated training data</span>
+<span class="sd">        Plots training data and simulated training data for a single parameter set</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        x</span>
-<span class="sd">            list of floats defining the independent variable</span>
+<span class="sd">            a list of floats defining the independent variable</span>
 
 <span class="sd">        solutions_norm</span>
-<span class="sd">            list of floats defining the simulated dependent variable</span>
+<span class="sd">            a list of floats defining the simulated dependent variable</span>
 
 <span class="sd">        exp_data</span>
-<span class="sd">            list of floats defining the experimental dependent variable</span>
+<span class="sd">            a list of floats defining the experimental dependent variable</span>
 
 <span class="sd">        exp_error</span>
-<span class="sd">            list of floats defining the experimental error for the dependent variable</span>
+<span class="sd">            a list of floats defining the experimental error for the dependent variable</span>
 
 <span class="sd">        filename</span>
-<span class="sd">           string defining the filename used to save the plot</span>
+<span class="sd">            a string defining the filename used to save the plot</span>
 
 <span class="sd">        run_type</span>
 <span class="sd">            a string containing the data type (&#39;PEM evaluation&#39; or else)</span>
 
+<span class="sd">        context</span>
+<span class="sd">            a string defining the absolute path to src/games</span>
+
+<span class="sd">        dataID</span>
+<span class="sd">            a string defining the data identity</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        None&quot;&quot;&quot;</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># define plot settings</span>
+        <span class="n">x_label</span> <span class="o">=</span> <span class="s2">&quot;synTF (ng)&quot;</span>
+        <span class="n">x_scale</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span>
+        <span class="n">y_label</span> <span class="o">=</span> <span class="s2">&quot;Rep. protein (au)&quot;</span>
 
-        <span class="n">plot_training_data_2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">solutions_norm</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">run_type</span><span class="p">)</span></div></div>
+        <span class="k">if</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span>
+            <span class="n">plot_color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>
+            <span class="n">marker_type</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span>
+        <span class="k">elif</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s2">&quot;PEM evaluation&quot;</span><span class="p">:</span>
+            <span class="n">plot_color</span> <span class="o">=</span> <span class="s2">&quot;dimgrey&quot;</span>
+            <span class="n">marker_type</span> <span class="o">=</span> <span class="s2">&quot;^&quot;</span>
+
+        <span class="n">plot_settings</span> <span class="o">=</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">plot_color</span><span class="p">,</span> <span class="n">marker_type</span>
+
+        <span class="c1"># make plot</span>
+        <span class="n">plot_training_data_2d</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">solutions_norm</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_settings</span><span class="p">,</span> <span class="n">context</span>
+        <span class="p">)</span></div></div>
 </pre></div>
 
            </div>

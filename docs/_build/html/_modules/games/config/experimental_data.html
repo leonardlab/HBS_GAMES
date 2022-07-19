@@ -74,120 +74,39 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span>
 
 
-<div class="viewcode-block" id="define_experimental_data"><a class="viewcode-back" href="../../../games.config.experimental_data.html#games.config.experimental_data.define_experimental_data">[docs]</a><span class="k">def</span> <span class="nf">define_experimental_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Imports, normalizes, and defines experimental data</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    None</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    x</span>
-<span class="sd">            a list of floats containing the values of the independent variable</span>
-
-<span class="sd">    exp_data</span>
-<span class="sd">            a list of floats containing the values of the dependent variable</span>
-
-<span class="sd">    exp_error</span>
-<span class="sd">            a list of floats containing the values of the measurement error</span>
-<span class="sd">            for the dependent variable</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">x</span><span class="p">,</span> <span class="n">exp_data_raw</span><span class="p">,</span> <span class="n">exp_error_raw</span> <span class="o">=</span> <span class="n">import_data</span><span class="p">()</span>
-    <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span> <span class="o">=</span> <span class="n">normalize_data_by_maximum_value</span><span class="p">(</span>
-        <span class="n">exp_data_raw</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">],</span> <span class="n">exp_error_raw</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span></div>
-
-
-<div class="viewcode-block" id="import_data"><a class="viewcode-back" href="../../../games.config.experimental_data.html#games.config.experimental_data.import_data">[docs]</a><span class="k">def</span> <span class="nf">import_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<div class="viewcode-block" id="define_experimental_data"><a class="viewcode-back" href="../../../games.config.experimental_data.html#games.config.experimental_data.define_experimental_data">[docs]</a><span class="k">def</span> <span class="nf">define_experimental_data</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Imports experimental data</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ---------</span>
-<span class="sd">    None</span>
+<span class="sd">    settings</span>
+<span class="sd">       a dictionary of run settings</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">     -------</span>
+<span class="sd">    -------</span>
 <span class="sd">    x</span>
 <span class="sd">       a list of floats defining the independent variable for the given dataset</span>
 
-<span class="sd">    exp_data_raw</span>
-<span class="sd">       a list of floats defining the dependent variable for the given</span>
-<span class="sd">       dataset (before normalization)</span>
+<span class="sd">    exp_data</span>
+<span class="sd">       a list of floats defining the normalized dependent variable for the given</span>
+<span class="sd">       dataset</span>
 
-<span class="sd">    exp_error_raw</span>
-<span class="sd">        a list of floats defining the measurement error for</span>
-<span class="sd">        the dependent variable for the given dataset (before normalization)</span>
+<span class="sd">    exp_error</span>
+<span class="sd">        a list of floats defining the normalized measurement error for</span>
+<span class="sd">        the dependent variable for the given dataset</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">path</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;config/&quot;</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;training_data_&quot;</span> <span class="o">+</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.csv&quot;</span>
     <span class="n">df_exp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
     <span class="n">x</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_exp</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
-    <span class="n">exp_data_raw</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_exp</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
-    <span class="n">exp_error_raw</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_exp</span><span class="p">[</span><span class="s2">&quot;y_err&quot;</span><span class="p">])</span>
+    <span class="n">exp_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_exp</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
+    <span class="n">exp_error</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_exp</span><span class="p">[</span><span class="s2">&quot;y_err&quot;</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">exp_data_raw</span><span class="p">,</span> <span class="n">exp_error_raw</span></div>
-
-
-<div class="viewcode-block" id="normalize_data_by_maximum_value"><a class="viewcode-back" href="../../../games.config.experimental_data.html#games.config.experimental_data.normalize_data_by_maximum_value">[docs]</a><span class="k">def</span> <span class="nf">normalize_data_by_maximum_value</span><span class="p">(</span>
-    <span class="n">solutions_raw</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">error_raw</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-    <span class="sd">&quot;&quot;&quot;Normalizes data by maximum value</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    solutions_raw</span>
-<span class="sd">        a list of floats defining the solutions before normalization</span>
-
-<span class="sd">    dataID</span>
-<span class="sd">        a string defining the dataID</span>
-
-<span class="sd">    error_raw</span>
-<span class="sd">        a list of floats defining the measurement error before normalization</span>
-<span class="sd">        default is 0 so that this function can also be used for simulated data</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    solutions_norm</span>
-<span class="sd">    a list of floats defining the dependent variable for the given</span>
-<span class="sd">    dataset (after normalization)</span>
-
-<span class="sd">    error_norm</span>
-<span class="sd">     a list of floats defining the measurement error for</span>
-<span class="sd">     the dependent variable for the given dataset (after normalization),</span>
-<span class="sd">     if relevant</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="n">dataID</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response and DBD dose response&quot;</span><span class="p">:</span>
-        <span class="c1"># normalize ligand dose response</span>
-        <span class="n">solutions_norm_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">[:</span><span class="mi">11</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">solutions_raw</span><span class="p">[:</span><span class="mi">11</span><span class="p">]]</span>
-
-        <span class="c1"># normalize DBD dose response</span>
-        <span class="n">solutions_norm_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">[</span><span class="mi">11</span><span class="p">:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">solutions_raw</span><span class="p">[</span><span class="mi">11</span><span class="p">:]]</span>
-        <span class="n">solutions_norm</span> <span class="o">=</span> <span class="n">solutions_norm_1</span> <span class="o">+</span> <span class="n">solutions_norm_2</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">error_raw</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">error_norm</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">error_raw</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">error_norm</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">solutions_norm</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">solutions_raw</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">error_raw</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">error_norm</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">error_raw</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">error_norm</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">solutions_norm</span><span class="p">,</span> <span class="n">error_norm</span></div>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span></div>
 </pre></div>
 
            </div>

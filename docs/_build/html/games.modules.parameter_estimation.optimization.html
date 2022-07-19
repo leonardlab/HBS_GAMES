@@ -85,8 +85,176 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-modules-parameter-estimation-optimization-module">
-<h1>games.modules.parameter_estimation.optimization module<a class="headerlink" href="#games-modules-parameter-estimation-optimization-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.modules.parameter_estimation.optimization">
+<span id="games-modules-parameter-estimation-optimization-module"></span><h1>games.modules.parameter_estimation.optimization module<a class="headerlink" href="#module-games.modules.parameter_estimation.optimization" title="Permalink to this headline"></a></h1>
+<p>Created on Fri Jun  3 15:25:37 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.optimization.generalize_parameter_labels">
+<span class="sig-name descname"><span class="pre">generalize_parameter_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">free_parameter_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/optimization.html#generalize_parameter_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.optimization.generalize_parameter_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Generates generalized parameter labels (p_1, p_2, etc.) for use in optimization functions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_labels</strong> – a lists of strings containing the labels for all parameters</p></li>
+<li><p><strong>free_parameter_labels</strong> – a lists of strings containing the labels for the free parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>general_parameter_labels</em> – list of floats defining the generalized parameter labels</p></li>
+<li><p><em>general_parameter_labels_free</em> – list of floats defining which of the generalized parameter labels are free</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.optimization.define_best_optimization_results">
+<span class="sig-name descname"><span class="pre">define_best_optimization_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_optimization_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/optimization.html#define_best_optimization_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.optimization.define_best_optimization_results" title="Permalink to this definition"></a></dt>
+<dd><p>Prints best parameter set from optimization to
+console and plots the best fit to training data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_optimization_results</strong> – df containing the results of all optimization runs</p></li>
+<li><p><strong>run_type</strong> – <dl class="simple">
+<dt>a string defining the run_type (‘default’ or ‘ppl’</dt><dd><p>or ‘ppl threshold’ or ‘PEM evaluation)</p>
+</dd>
+<dt>settings</dt><dd><p>a dictionary of run settings</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>r_sq_opt</em> – a float defining the best case r_sq value</p></li>
+<li><p><em>chi_sq_opt_min</em> – a float defining the best case chi2_sq value</p></li>
+<li><p><em>best_case_parameters</em> – a list of floats defining the best case parameters</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.optimization.optimize_all">
+<span class="sig-name descname"><span class="pre">optimize_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_global_search_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pandas.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/optimization.html#optimize_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.optimization.optimize_all" title="Permalink to this definition"></a></dt>
+<dd><p>Runs optimization for each initial guess and saves results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_global_search_results</strong> – df containing the results of the global search</p></li>
+<li><p><strong>settings</strong> – a dictionary of run settings</p></li>
+<li><p><strong>problem</strong> – a dictionary containing the parameter estimation problem -
+must be provided for PPL simulations only, in which the free parameters
+change depending on which parameter’s PPL is being calculated</p></li>
+<li><p><strong>run_type</strong> – a string defining the run_type (‘default’ or ‘ppl’ or ‘ppl threshold’ or ‘pem evaluation’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>r_sq_opt</em> – a float defining the best case r_sq value</p></li>
+<li><p><em>chi_sq_opt_min</em> – a float defining the  best case chi2_sq value</p></li>
+<li><p><em>df_optimization_results</em> – a dataframe containing the optimization results</p></li>
+<li><p><em>best_case_parameters</em> – a list of floats defining the best case parameters</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.optimization.define_parameters_for_opt">
+<span class="sig-name descname"><span class="pre">define_parameters_for_opt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">free_parameter_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">free_parameter_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">lmfit.Parameters</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/optimization.html#define_parameters_for_opt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.optimization.define_parameters_for_opt" title="Permalink to this definition"></a></dt>
+<dd><p>Defines parameters for optimization with structure necessary for LMFit optimization code</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>initial_parameters</strong> – a list of floats containing the initial guesses for each parameter</p></li>
+<li><p><strong>free_parameter_labels</strong> – a lists of strings containing the bounds for the free parameters</p></li>
+<li><p><strong>free_parameter_bounds</strong> – a lists of lists containing the bounds for the free parameters</p></li>
+<li><p><strong>parameter_labels</strong> – a lists of strings containing the labels for all parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>vary_list</em> – a list of booleans defining whether each parameter is allowed to vary
+in the optimization run</p></li>
+<li><p><em>params_for_opt</em> – an object defining the parameters and bounds for optimization
+(in structure necessary for LMFit optimization code)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.optimization.define_results_row">
+<span class="sig-name descname"><span class="pre">define_results_row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lmfit.model.ModelResult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi_sq_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results_row_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/optimization.html#define_results_row"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.optimization.define_results_row" title="Permalink to this definition"></a></dt>
+<dd><p>Defines results for each optimization run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results</strong> – a results class containing results of the given optimization run</p></li>
+<li><p><strong>initial_parameters</strong> – a list of floats containing the initial guesses for each parameter</p></li>
+<li><p><strong>chi_sq_list</strong> – a list of floats containing the chi_sq values for each function evaluation</p></li>
+<li><p><strong>data_information</strong> – <p>a list of lists containing x, exp_data, and exp_error</p>
+<dl class="simple">
+<dt>x</dt><dd><p>a list of floats containing the values of the independent variable</p>
+</dd>
+<dt>exp_data</dt><dd><p>a list of floats containing the values of the dependent variable</p>
+</dd>
+<dt>exp_error</dt><dd><p>a list of floats containing the values of the measurement error
+for the dependent variable</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>results_row_settings</strong> – <p>a list of list and strings containing settings for the results row
+parameter_labels</p>
+<blockquote>
+<div><p>a list of strings defining the parameter labels</p>
+</div></blockquote>
+<dl class="simple">
+<dt>dataID</dt><dd><p>a string defining the dataID</p>
+</dd>
+<dt>weight_by_error</dt><dd><p>a string defining whether the cost function should be weighted by error or not</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>results_row</em> – a list of floats and lists containing the results for the given optimization run</p></li>
+<li><p><em>results_row_labels</em> – a list of strings defining the labels for each item in results_row</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.optimization.optimize_single_initial_guess">
+<span class="sig-name descname"><span class="pre">optimize_single_initial_guess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/optimization.html#optimize_single_initial_guess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.optimization.optimize_single_initial_guess" title="Permalink to this definition"></a></dt>
+<dd><p>Runs optimization for a single initial guess</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>row</strong> – a tuple of floats containing the initial guesses for each parameter
+(represents a row of the global search results)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>results_row</em> – a list of floats and lists containing the results for the given optimization run</p></li>
+<li><p><em>results_row_labels</em> – a list of strings defining the labels for each item in results_row</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

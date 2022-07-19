@@ -12,7 +12,6 @@ import pandas as pd
 from SALib.sample import latin
 from games.models.set_model import model
 from games.modules.solve_single import solve_single_parameter_set
-from games.config.settings import settings
 
 
 def replace_parameter_values_for_sweep(
@@ -118,7 +117,7 @@ def convert_parameters_to_linear(param_values_global_search: List[list]) -> np.n
 
 
 def generate_parameter_sets(
-    problem_global_search: dict, all_parameters: List[float] = settings["parameters"]
+    problem_global_search: dict, settings: dict, all_parameters: List[float]
 ) -> pd.DataFrame:
     """
     Generates parameter sets for global search
@@ -127,6 +126,9 @@ def generate_parameter_sets(
     ----------
     problem_global_search
         a dictionary including the number, labels, and bounds for the free parameters
+
+    settings
+        a dictionary defining the run settings
 
     all_parameters
         a list of floats containing all initial parameter values,
@@ -175,18 +177,22 @@ def solve_single_for_global_search(row: tuple) -> Tuple[List[float], float]:
 
     """
     # Unpack row
-    model.parameters = list(row[1:-3])
-    x = row[-3]
-    exp_data = row[-2]
-    exp_error = row[-1]
+    model.parameters = list(row[1:-6])
+    [x, exp_data, exp_error, dataID, weight_by_error, parameter_labels] = row[-6:]
 
     # Solve equations
-    solutions, chi_sq, _ = solve_single_parameter_set(x, exp_data, exp_error)
+    solutions, chi_sq, _ = solve_single_parameter_set(
+        x, exp_data, exp_error, dataID, weight_by_error, parameter_labels
+    )
     return solutions, chi_sq
 
 
 def solve_global_search(
-    df_parameters: pd.DataFrame, x: List[float], exp_data: List[float], exp_error: List[float]
+    df_parameters: pd.DataFrame,
+    x: List[float],
+    exp_data: List[float],
+    exp_error: List[float],
+    settings: dict,
 ) -> pd.DataFrame:
     """
     Generates parameter sets for global search
@@ -206,8 +212,8 @@ def solve_global_search(
         a list of floats containing the values of the measurement error
         for the dependent variable
 
-    run_type
-        a string defining the run_type ('default' or 'PEM evaluation')
+    settings
+        a dictionary defining the run settings
 
     Returns
     -------
@@ -221,6 +227,9 @@ def solve_global_search(
     df_parameters["x"] = [x] * len(df_parameters.index)
     df_parameters["exp_data"] = [exp_data] * len(df_parameters.index)
     df_parameters["exp_error"] = [exp_error] * len(df_parameters.index)
+    df_parameters["dataID"] = [settings["dataID"]] * len(df_parameters.index)
+    df_parameters["weight_by_error"] = [settings["weight_by_error"]] * len(df_parameters.index)
+    df_parameters["parameter_labels"] = [settings["parameter_labels"]] * len(df_parameters.index)
 
     # Solve for each parameter set in global search
     chi_sq_list = []

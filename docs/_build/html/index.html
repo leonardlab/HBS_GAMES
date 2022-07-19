@@ -113,6 +113,7 @@
 <p>The /docs directory includes documentation for the code.</p>
 <p>The /src directory includes the source code.</p>
 <p>The /tests directory includes unit and functional tests.</p>
+<p>The /htmlcov directory includes information on the coverage of tests in the code. See the sections on Unit tests and Functional tests for more information.</p>
 <p>Note that the GAMES source code is all included in the src directory. All additional files are related to the Python project tools, which are described in the relevant sections below.</p>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h2>
@@ -127,9 +128,9 @@ The config.json file in src/games/config/ can be used to run this example.</p>
 <p>The synTF example is a new example that is not mentioned in the GAMES paper, but is included here as an additional example of how to integrate multiple different models in the GAMES workflow.
 In addition, the synTF example is a more practical example than the synTF_chem example, as it is not based on a reference parameter set.
 The synTF example is similar to the synTF_chem example, but includes a constitutively expressed (rather than chemically responsive) synTF and also has a slightly different promoter activation mechanism.
-Therefore, for PPL calculations, the calibrated parameter set is used as the reference parameter set. Then, the simulated data generated with the calibrated parameters are used as the starting point for generating the noise realizations used to calculate the PPL threshold. Note that noise must be added to the simulated data generated with the calibrated parameters before  generating the noise realizations.
-To make the code amenable to both situations where the reference parameters are known (such as the proof-of-principle synTF_chem example in the GAMES paper) and more practical situations in which the reference parameters are unknown (such as our additional synTF example), there is an if/else statement in src/games/modules/parameter_profile_likelihood/calculate_threshold.py in the function calculate_threshold_chi_sq().
-If the modelID is anything except for “synTF_chem,” it is assumed that reference parameters are unknown.
+Therefore, for PPL calculations, the calibrated parameter set is used as the reference parameter set. Then, the simulated data generated with the calibrated parameters are used as the starting point for generating the noise realizations used to calculate the PPL threshold. Note that noise must be added to the simulated data generated with the calibrated parameters before  generating the noise realizations.</p>
+<p>To make the code amenable to both situations where the reference parameters are known (such as the proof-of-principle synTF_chem example in the GAMES paper) and more practical situations in which the reference parameters are unknown (such as our additional synTF example), there is an if/else statement in src/games/modules/parameter_profile_likelihood/calculate_threshold.py in the function calculate_threshold_chi_sq().</p>
+<p>If the modelID is anything except for “synTF_chem,” it is assumed that reference parameters are unknown.
 <strong>As an installation test, we suggest that the user runs all modules for the synTF example, which is signficantly less computationally expensive than the synTF_chem example.
 To run the synTF example, simply replace the config.json file in src/games/config/ with the synTF config.json file located in src/games/synTF_example and change the “context” variable (See Installation and running instructions, step 3 for more information).</strong></p>
 </section>
@@ -138,8 +139,9 @@ To run the synTF example, simply replace the config.json file in src/games/confi
 <section id="release-overview">
 <h1>Release overview<a class="headerlink" href="#release-overview" title="Permalink to this headline"></a></h1>
 <p>v2.0.0 is a refactored version of the GAMES code used in Dray et al. 2022.
-This version includes a variety of Python tools for type annotation, linting, testing, and documentation, along with a new, improved, and more user-friendly code stucture that is more amenable to extention to different models, data sets, and simulation conditions.
-Information on how to install and run each Python tool is included below.</p>
+This version includes a variety of Python tools for package dependencies and environment management, type annotation, linting, testing, and documentation, along with a new, improved, and more user-friendly code structure that is more amenable to extension to different models, data sets, and simulation conditions.
+Information on how to install and run each Python tool is included below.
+Python 3.10 is required.</p>
 </section>
 <section id="installation-and-running-instructions">
 <h1>Installation and running instructions<a class="headerlink" href="#installation-and-running-instructions" title="Permalink to this headline"></a></h1>
@@ -150,16 +152,16 @@ Information on how to install and run each Python tool is included below.</p>
 </pre></div>
 </div>
 <ol class="arabic simple">
-<li><p>This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file. See the Python project tools section for more information.</p></li>
-<li><p>Run settings are set using the config.json file in src/games/config/. The “context” variable must be set to the absolute path to the user’s src/games/ folder.</p></li>
+<li><p>This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file. See the Python project tools - getting started section for more information.</p></li>
+<li><p>Run settings are set using the config.json file in src/games/config/. The “context” variable must be set to the absolute path to the user’s src/games/ folder.  In addition, the path to the config file must be set in models/set_model.py</p></li>
 <li><p>All code is executable using the command line</p></li>
 </ol>
-<p>To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), use the command line to run the following, where x is the module number:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ run --modules<span class="o">=</span><span class="s1">&#39;x&#39;</span>
+<p>To run a given module (0 = test with a single parameter set, 1 = PEM evaluation, 2 = parameter estimation, 3 = parameter profile likelihood), navigate to src/games/ and then use the command line to run the following, where x is the module number:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python run.py --modules<span class="o">=</span><span class="s1">&#39;x&#39;</span>
 </pre></div>
 </div>
 <p>Mutiple modules can be run in series. For example, the following command will run modules 2 and 3.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ run --modules<span class="o">=</span><span class="s1">&#39;23&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python run.py --modules<span class="o">=</span><span class="s1">&#39;23&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -285,7 +287,8 @@ The user must change the “context” value to the path to the GAMES directory 
 <section id="unit-tests">
 <h2>Unit tests<a class="headerlink" href="#unit-tests" title="Permalink to this headline"></a></h2>
 <p>We provide a small number of unit tests here as a learning tool and proof-of-principle for the testing architecture.
-The user may want to use the examples shown here to write more unit tests or functional tests based on their own needs.</p>
+The user may want to use the examples shown here to write more unit tests based on their own needs. <span class="raw-html-md"><br /></span>
+The test coverage for each file is included in /htmlcov.</p>
 </section>
 <section id="functional-tests">
 <h2>Functional tests<a class="headerlink" href="#functional-tests" title="Permalink to this headline"></a></h2>
@@ -343,7 +346,7 @@ The other tools will be installed by Poetry.</p>
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h1>
 <ol class="arabic simple">
 <li><p>Clone the repo (see Installation and running instructions for details)</p></li>
-<li><p>Activate the environment (this is all you need for day-to-day development):</p></li>
+<li><p>Activate the environment using poetry (this is all you need for day-to-day development). You will need the package pyenv installed, with Python 3.10 available.</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ poetry shell
 </pre></div>
@@ -355,9 +358,9 @@ The other tools will be installed by Poetry.</p>
 </pre></div>
 </div>
 <ol class="arabic simple">
-<li><p>Run a test with the command line interface (CLI).</p></li>
+<li><p>Run a test with the command line interface (CLI). If the –modules option is not specified, the default module (0) will run. Before running the test, navigate to the src/games/ folder.</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ run --modules<span class="o">=</span><span class="s1">&#39;0&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python run.py
 </pre></div>
 </div>
 </section>
@@ -384,13 +387,6 @@ When new dependencies are added, Poetry performs an exhaustive dependency resolu
 Use <code class="docutils literal notranslate"><span class="pre">-D</span></code> to indicate development dependencies.
 You can also add dependencies directly to the file.</p>
 </section>
-<section id="github-actions">
-<h2>GitHub Actions<a class="headerlink" href="#github-actions" title="Permalink to this headline"></a></h2>
-<p>Tests are run on each push.
-Linting is performed on each push.
-This workflow <code class="docutils literal notranslate"><span class="pre">.github/workflows/lint.yml</span></code> lints code using Pylint (fails when score is &lt; 7.0), checks formatting with Black (fails if files would be reformatted), and performs type checking with MyPy (fails if code has type errors).
-Note that this type checking is not the same as the type checking done by Tox, which additionally checks for missing types.</p>
-</section>
 <section id="id4">
 <h2>Tox<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h2>
 <p>Running tox will automatically perform unit and functional tests, linting, formatting, and type checking.</p>
@@ -414,6 +410,7 @@ Most recommendations from Pylint are good, but it is not perfect; make sure to b
 <section id="id7">
 <h2>Sphinx<a class="headerlink" href="#id7" title="Permalink to this headline"></a></h2>
 <p>We used Sphinx to automatically generate documentation using Numpy style docstrings - <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">Numpy style docstrings</a>. Documentation for each module can be found in ‘GAMES/docs/<a href="#id10"><span class="problematic" id="id11">build_</span></a>’.</p>
+<p>Note that to generate documentation, the absolute path to config.json must be specified in src/games/config/settings.py.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>

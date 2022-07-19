@@ -13,7 +13,6 @@ from games.modules.parameter_estimation.global_search import (
     generate_parameter_sets,
     solve_global_search,
 )
-from games.config.settings import settings, parameter_estimation_problem_definition
 from games.plots.plots_parameter_profile_likelihood import plot_parameter_profile_likelihood
 from games.plots.plots_parameter_profile_likelihood import plot_parameter_relationships
 from games.plots.plots_parameter_profile_likelihood import plot_internal_states_along_ppl
@@ -105,7 +104,11 @@ def set_ppl_settings(
 
 
 def calculate_chi_sq_ppl_single_datapoint(
-    fixed_val: float, fixed_index_in_free_parameter_list: int, parameters: list
+    fixed_val: float,
+    fixed_index_in_free_parameter_list: int,
+    parameters: list,
+    parameter_estimation_problem_definition: dict,
+    settings: dict,
 ) -> Tuple[float, float, List[float]]:
     """
     Calculates chi_sq_ppl for a single datapoint on the profile likelihood
@@ -121,6 +124,12 @@ def calculate_chi_sq_ppl_single_datapoint(
 
     parameters
         a list of floats of the initial parameter values (fixed and free)
+
+    parameter_estimation_problem_definition
+        a dictionary containing the parameter estimation problem
+
+    settings
+        a dictionary defining settings for the run
 
     Returns
     -------
@@ -155,11 +164,14 @@ def calculate_chi_sq_ppl_single_datapoint(
     ]
 
     # Run PEM
-    df_parameters = generate_parameter_sets(problem_ppl, parameters)
-    x, exp_data, exp_error = define_experimental_data()
-    df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error)
+    df_parameters = generate_parameter_sets(problem_ppl, settings, parameters)
+    x, exp_data, exp_error = define_experimental_data(settings)
+    df_global_search_results = solve_global_search(df_parameters, x, exp_data, exp_error, settings)
     _, calibrated_chi_sq, _, calibrated_parameters = optimize_all(
-        df_global_search_results, run_type="ppl", problem=problem_ppl
+        df_global_search_results,
+        settings,
+        problem=problem_ppl,
+        run_type="ppl",
     )
 
     return fixed_val, calibrated_chi_sq, calibrated_parameters
@@ -170,6 +182,8 @@ def calculate_ppl(
     calibrated_parameter_values: list,
     calibrated_chi_sq: float,
     threshold_chi_sq: float,
+    settings: dict,
+    parameter_estimation_problem_definition: dict,
 ) -> float:
     """Calculates the ppl for the given parameter
 
@@ -186,6 +200,14 @@ def calculate_ppl(
 
     threshold_chi_sq
         a float defining the threshold chi_sq value
+
+    settings
+        a dictionary defining the run settings
+
+    parameter_estimation_problem_definition
+        a dictionary containing the parameter estimation problem -
+        must be provided for PPL simulations only, in which the free parameters
+        change depending on which parameter's PPL is being calculated
 
     Returns
     -------
@@ -379,7 +401,11 @@ def calculate_ppl(
                                 ]  # Replace with cal val
 
                 param_val, chi_sq_ppl_val, param_vals = calculate_chi_sq_ppl_single_datapoint(
-                    fixed_val, fixed_index_in_free_parameter_list, parameters_single_datapoint
+                    fixed_val,
+                    fixed_index_in_free_parameter_list,
+                    parameters_single_datapoint,
+                    parameter_estimation_problem_definition,
+                    settings,
                 )
                 print("")
                 print("chi_sq_ppl: " + str(round(chi_sq_ppl_val, 3)))
@@ -687,8 +713,8 @@ def calculate_ppl(
         threshold_chi_sq,
     )
 
-    plot_parameter_relationships(df_ppl, parameter_label)
+    plot_parameter_relationships(df_ppl, parameter_label, settings)
     if settings["modelID"] == "synTF_chem":
-        plot_internal_states_along_ppl(df_ppl, parameter_label)
+        plot_internal_states_along_ppl(df_ppl, parameter_label, settings["parameter_labels"])
 
     return elapsed_time_total

@@ -76,7 +76,7 @@ $ git clone https://github.com/leonardlab/GAMES.git
 
 2. This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file. See the Python project tools - getting started section for more information.
 
-3. Run settings are set using the config.json file in src/games/config/. The "context" variable must be set to the absolute path to the user's src/games/ folder. 
+3. Run settings are set using the config.json file in src/games/config/. The "context" variable must be set to the absolute path to the user's src/games/ folder.  In addition, the path to the config file must be set in models/set_model.py
  
 4. All code is executable using the command line
 

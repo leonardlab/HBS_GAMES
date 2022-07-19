@@ -75,12 +75,10 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span>
 
 
 <div class="viewcode-block" id="calc_r_sq"><a class="viewcode-back" href="../../../games.utilities.metrics.html#games.utilities.metrics.calc_r_sq">[docs]</a><span class="k">def</span> <span class="nf">calc_r_sq</span><span class="p">(</span><span class="n">data_x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">data_y</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-
-    <span class="sd">&quot;&quot;&quot;Calculate correlation coefficient, r_sq, between 2 datasets</span>
+    <span class="sd">&quot;&quot;&quot;Calculates correlation coefficient, r_sq, between 2 datasets</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -112,29 +110,33 @@
     <span class="k">return</span> <span class="n">r_sq</span></div>
 
 
-<div class="viewcode-block" id="calc_chi_sq"><a class="viewcode-back" href="../../../games.utilities.metrics.html#games.utilities.metrics.calc_chi_sq">[docs]</a><span class="k">def</span> <span class="nf">calc_chi_sq</span><span class="p">(</span><span class="n">exp_</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">sim</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">std</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-
-    <span class="sd">&quot;&quot;&quot;Calculate chi2 between 2 datasets with measurement error described by std</span>
+<div class="viewcode-block" id="calc_chi_sq"><a class="viewcode-back" href="../../../games.utilities.metrics.html#games.utilities.metrics.calc_chi_sq">[docs]</a><span class="k">def</span> <span class="nf">calc_chi_sq</span><span class="p">(</span>
+    <span class="n">exp_</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">sim</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">std</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">weight_by_error</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates chi2 between 2 datasets with measurement error described by std</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    exp_</span>
-<span class="sd">        experimental data (list of floats, length = # datapoints)</span>
+<span class="sd">        a list of floats defining the experimental data</span>
 
 <span class="sd">    sim</span>
-<span class="sd">        simulated data (list of floats, length = # datapoints)</span>
+<span class="sd">        a list of floats defining the simulated data</span>
 
 <span class="sd">    std</span>
-<span class="sd">        measurement error for exp data (list of floats, length = # datapoints)</span>
+<span class="sd">        a list of floats defining the measurement error for the experimental data</span>
+
+<span class="sd">    weight_by_error</span>
+<span class="sd">        a string defining whether the cost function should be weighted by error or not</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    chi_sq</span>
-<span class="sd">        chi2 value (float)</span>
+<span class="sd">        a float defining the chi_sq value</span>
 
 <span class="sd">    &#39;&quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;weight_by_error&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">weight_by_error</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
         <span class="n">std</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">exp_</span><span class="p">)</span>
 
     <span class="n">chi_sq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>

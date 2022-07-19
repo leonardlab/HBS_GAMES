@@ -79,7 +79,6 @@
 <span class="kn">from</span> <span class="nn">SALib.sample</span> <span class="kn">import</span> <span class="n">latin</span>
 <span class="kn">from</span> <span class="nn">games.models.set_model</span> <span class="kn">import</span> <span class="n">model</span>
 <span class="kn">from</span> <span class="nn">games.modules.solve_single</span> <span class="kn">import</span> <span class="n">solve_single_parameter_set</span>
-<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span>
 
 
 <div class="viewcode-block" id="replace_parameter_values_for_sweep"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.replace_parameter_values_for_sweep">[docs]</a><span class="k">def</span> <span class="nf">replace_parameter_values_for_sweep</span><span class="p">(</span>
@@ -126,7 +125,7 @@
 <div class="viewcode-block" id="create_default_df"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.create_default_df">[docs]</a><span class="k">def</span> <span class="nf">create_default_df</span><span class="p">(</span>
     <span class="n">n_search</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">all_parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">all_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Generate df with default values for all parameters, before the global search</span>
+    <span class="sd">&quot;&quot;&quot;Generates df with default values for all parameters, before the global search</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -185,20 +184,22 @@
 
 
 <div class="viewcode-block" id="generate_parameter_sets"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.generate_parameter_sets">[docs]</a><span class="k">def</span> <span class="nf">generate_parameter_sets</span><span class="p">(</span>
-    <span class="n">problem_global_search</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">all_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span>
+    <span class="n">problem_global_search</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">all_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generate parameter sets for global search</span>
+<span class="sd">    Generates parameter sets for global search</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    problem_global_search</span>
 <span class="sd">        a dictionary including the number, labels, and bounds for the free parameters</span>
 
+<span class="sd">    settings</span>
+<span class="sd">        a dictionary defining the run settings</span>
+
 <span class="sd">    all_parameters</span>
 <span class="sd">        a list of floats containing all initial parameter values,</span>
 <span class="sd">        including fixed and free parameters</span>
-
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -243,18 +244,22 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Unpack row</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
-    <span class="n">exp_data</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">exp_error</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">6</span><span class="p">])</span>
+    <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">,</span> <span class="n">dataID</span><span class="p">,</span> <span class="n">weight_by_error</span><span class="p">,</span> <span class="n">parameter_labels</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">6</span><span class="p">:]</span>
 
     <span class="c1"># Solve equations</span>
-    <span class="n">solutions</span><span class="p">,</span> <span class="n">chi_sq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">solve_single_parameter_set</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+    <span class="n">solutions</span><span class="p">,</span> <span class="n">chi_sq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">solve_single_parameter_set</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">,</span> <span class="n">dataID</span><span class="p">,</span> <span class="n">weight_by_error</span><span class="p">,</span> <span class="n">parameter_labels</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">solutions</span><span class="p">,</span> <span class="n">chi_sq</span></div>
 
 
 <div class="viewcode-block" id="solve_global_search"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation.global_search.html#games.modules.parameter_estimation.global_search.solve_global_search">[docs]</a><span class="k">def</span> <span class="nf">solve_global_search</span><span class="p">(</span>
-    <span class="n">df_parameters</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">exp_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">df_parameters</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">exp_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates parameter sets for global search</span>
@@ -274,8 +279,8 @@
 <span class="sd">        a list of floats containing the values of the measurement error</span>
 <span class="sd">        for the dependent variable</span>
 
-<span class="sd">    run_type</span>
-<span class="sd">        a string defining the run_type (&#39;default&#39; or &#39;PEM evaluation&#39;)</span>
+<span class="sd">    settings</span>
+<span class="sd">        a dictionary defining the run settings</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -289,6 +294,9 @@
     <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
     <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;exp_data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">exp_data</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
     <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;exp_error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">exp_error</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;weight_by_error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;weight_by_error&quot;</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df_parameters</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
 
     <span class="c1"># Solve for each parameter set in global search</span>
     <span class="n">chi_sq_list</span> <span class="o">=</span> <span class="p">[]</span>

@@ -85,8 +85,60 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-modules-parameter-estimation-method-evaluation-evaluate-parameter-estimation-method-module">
-<h1>games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method module<a class="headerlink" href="#games-modules-parameter-estimation-method-evaluation-evaluate-parameter-estimation-method-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method">
+<span id="games-modules-parameter-estimation-method-evaluation-evaluate-parameter-estimation-method-module"></span><h1>games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method module<a class="headerlink" href="#module-games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method" title="Permalink to this headline"></a></h1>
+<p>Created on Wed Jun 15 16:13:15 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method.define_initial_guesses_for_pem_eval">
+<span class="sig-name descname"><span class="pre">define_initial_guesses_for_pem_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_global_search_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pem_evaluation_data_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameter_sets_optimization</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_by_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation_method_evaluation/evaluate_parameter_estimation_method.html#define_initial_guesses_for_pem_eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method.define_initial_guesses_for_pem_eval" title="Permalink to this definition"></a></dt>
+<dd><p>Defines initial guesses for each pem evaluation optimization run
+based on results of global search PEM evaluation data and then running
+multi-start optimization with each set of PEM evaluation data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_global_search_results</strong> – a df containing global search results</p></li>
+<li><p><strong>pem_evaluation_data_list</strong> – a list of lists defining the pem evaluation data (length = # pem evaluation datasets)</p></li>
+<li><p><strong>num_parameter_sets_optimization</strong> – an int defining the number of parameter sets to use as initial guesses for optimization</p></li>
+<li><p><strong>weight_by_error</strong> – a string defining whether the cost function should be weighted by error or not</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of dataframes containing the initial guesses for each pem evaluation dataset
+(length = # pem evaluation datasets)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>df_initial_guesses_list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method.optimize_pem_evaluation_data">
+<span class="sig-name descname"><span class="pre">optimize_pem_evaluation_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_initial_guesses_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi_sq_pem_evaluation_criterion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation_method_evaluation/evaluate_parameter_estimation_method.html#optimize_pem_evaluation_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation_method_evaluation.evaluate_parameter_estimation_method.optimize_pem_evaluation_data" title="Permalink to this definition"></a></dt>
+<dd><p>Runs optimization for each set of pem evaluation data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_initial_guesses_list</strong> – a list of dfs containing the initial guesses for each pem evaluation data set</p></li>
+<li><p><strong>chi_sq_pem_evaluation_criterion</strong> – a float defining the pem evaluation criterion for chi_sq</p></li>
+<li><p><strong>folder_path</strong> – a string defining the path to the main results folder</p></li>
+<li><p><strong>settings</strong> – a dictionary of run settings</p></li>
+<li><p><strong>problem</strong> – a dictionary containing the parameter estimation problem -
+must be provided for PPL simulations only, in which the free parameters
+change depending on which parameter’s PPL is being calculated</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of dataframes defining the optimization results (length = #PEM evaluation data sets)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>df_list</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

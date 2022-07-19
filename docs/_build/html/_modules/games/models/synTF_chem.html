@@ -77,7 +77,6 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">odeint</span>
-<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span>
 <span class="kn">from</span> <span class="nn">games.plots.plots_training_data</span> <span class="kn">import</span> <span class="n">plot_training_data_2d</span>
 
 
@@ -92,6 +91,7 @@
         <span class="n">parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">input_ligand</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">mechanismID</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="sd">&quot;&quot;&quot;Initializes synTF_Chem model.</span>
@@ -106,6 +106,9 @@
 
 <span class="sd">        input_ligand</span>
 <span class="sd">            Float defining the input ligand concentration</span>
+
+<span class="sd">        mechanismID</span>
+<span class="sd">            a string defining the mechanism identity</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -125,18 +128,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_ligand</span> <span class="o">=</span> <span class="n">input_ligand</span>
-        <span class="n">number_of_states</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mechanismID</span> <span class="o">=</span> <span class="n">mechanismID</span>
+        <span class="n">number_of_states</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_labels</span><span class="p">)</span>
         <span class="n">y_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">number_of_states</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="n">y_init</span>
 
-<div class="viewcode-block" id="synTF_chem.solve_single"><a class="viewcode-back" href="../../../games.models.synTF_chem.html#games.models.synTF_chem.synTF_chem.solve_single">[docs]</a>    <span class="k">def</span> <span class="nf">solve_single</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<div class="viewcode-block" id="synTF_chem.solve_single"><a class="viewcode-back" href="../../../games.models.synTF_chem.html#games.models.synTF_chem.synTF_chem.solve_single">[docs]</a>    <span class="k">def</span> <span class="nf">solve_single</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Solves synTF_Chem model for a single set of parameters and inputs, including 2 steps</span>
 <span class="sd">           1) Time from transfection to ligand addition</span>
 <span class="sd">           2) Time from ligand addition to measurement via flow cytometry</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        None</span>
+<span class="sd">        parameter_labels</span>
+<span class="sd">            a list of strings defining the parameter labels</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -159,11 +166,12 @@
             <span class="n">args</span><span class="o">=</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mechanismID</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
 
         <span class="c1"># solve after ligand addition</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_labels</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;e&quot;</span><span class="p">:</span>
                 <span class="n">input_ligand_transformed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_ligand</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
@@ -179,6 +187,7 @@
             <span class="n">args</span><span class="o">=</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mechanismID</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
 
@@ -190,30 +199,41 @@
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="synTF_chem.gradient"><a class="viewcode-back" href="../../../games.models.synTF_chem.html#games.models.synTF_chem.synTF_chem.gradient">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span>
+        <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">mechanismID</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Defines the gradient for synTF_Chem model.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
+<span class="sd">        y</span>
+<span class="sd">            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)</span>
+
+<span class="sd">        t</span>
+<span class="sd">            an array defining the time (necessary parameter to use ODEint to solve gradient)</span>
+
 <span class="sd">        parameters</span>
-<span class="sd">            List of floats defining the parameters</span>
+<span class="sd">            a list of floats defining the parameters</span>
 
 <span class="sd">        inputs</span>
-<span class="sd">            List of floats defining the inputs</span>
+<span class="sd">            a list of floats defining the inputs</span>
+
+<span class="sd">        mechanismID</span>
+<span class="sd">            a string defining the mechanism identity</span>
 
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dydt</span>
-<span class="sd">            An list of floats corresponding to the gradient of each model state at time t</span>
+<span class="sd">            a list of floats corresponding to the gradient of each model state at time t</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="p">[</span><span class="n">dose_a</span><span class="p">,</span> <span class="n">dose_b</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span>
-        <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;mechanismID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span> <span class="ow">or</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;mechanismID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mechanismID</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span> <span class="ow">or</span> <span class="n">mechanismID</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
             <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k_bind</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">km</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span>
 
-        <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;mechanismID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;C&quot;</span> <span class="ow">or</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;mechanismID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mechanismID</span> <span class="o">==</span> <span class="s2">&quot;C&quot;</span> <span class="ow">or</span> <span class="n">mechanismID</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span>
             <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">k_bind</span><span class="p">,</span> <span class="n">m_star</span><span class="p">,</span> <span class="n">km</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">m_star</span> <span class="o">*</span> <span class="n">b</span>
 
@@ -246,7 +266,7 @@
 
         <span class="k">return</span> <span class="n">dydt</span></div>
 
-<div class="viewcode-block" id="synTF_chem.solve_experiment"><a class="viewcode-back" href="../../../games.models.synTF_chem.html#games.models.synTF_chem.synTF_chem.solve_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">solve_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<div class="viewcode-block" id="synTF_chem.solve_experiment"><a class="viewcode-back" href="../../../games.models.synTF_chem.html#games.models.synTF_chem.synTF_chem.solve_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">solve_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameter_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Solve synTF_Chem model for a list of ligand values.</span>
 
 <span class="sd">        Parameters</span>
@@ -256,6 +276,9 @@
 
 <span class="sd">        dataID</span>
 <span class="sd">            a string defining the dataID</span>
+
+<span class="sd">        parameter_labels</span>
+<span class="sd">            a list of strings defining the parameter labels</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -271,7 +294,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">]</span>  <span class="c1"># ng</span>
             <span class="k">for</span> <span class="n">ligand</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[:</span><span class="mi">11</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">input_ligand</span> <span class="o">=</span> <span class="n">ligand</span>
-                <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_single</span><span class="p">()</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_single</span><span class="p">(</span><span class="n">parameter_labels</span><span class="p">)</span>
                 <span class="n">solutions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sol</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">dataID</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response and DBD dose response&quot;</span><span class="p">:</span>
@@ -279,22 +302,60 @@
                 <span class="k">for</span> <span class="n">dbd_dose</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">11</span><span class="p">:</span><span class="mi">19</span><span class="p">]:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">dbd_dose</span><span class="p">,</span> <span class="n">ad_dose</span><span class="p">]</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">input_ligand</span> <span class="o">=</span> <span class="mi">100</span>
-                    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_single</span><span class="p">()</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">sol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_single</span><span class="p">(</span><span class="n">parameter_labels</span><span class="p">)</span>
                     <span class="n">solutions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sol</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">solutions</span></div>
 
+<div class="viewcode-block" id="synTF_chem.normalize_data"><a class="viewcode-back" href="../../../games.models.synTF_chem.html#games.models.synTF_chem.synTF_chem.normalize_data">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">normalize_data</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Normalizes data by maximum value</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        solutions_raw</span>
+<span class="sd">            a list of floats defining the solutions before normalization</span>
+
+<span class="sd">        dataID</span>
+<span class="sd">            a string defining the dataID</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        solutions_norm</span>
+<span class="sd">            a list of floats defining the dependent variable for the given</span>
+<span class="sd">            dataset (after normalization)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">dataID</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response and DBD dose response&quot;</span><span class="p">:</span>
+            <span class="c1"># normalize ligand dose response</span>
+            <span class="n">solutions_norm_1</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">[:</span><span class="mi">11</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">solutions_raw</span><span class="p">[:</span><span class="mi">11</span><span class="p">]]</span>
+
+            <span class="c1"># normalize DBD dose response</span>
+            <span class="n">solutions_norm_2</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">[</span><span class="mi">11</span><span class="p">:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">solutions_raw</span><span class="p">[</span><span class="mi">11</span><span class="p">:]]</span>
+
+            <span class="c1"># combine solutions</span>
+            <span class="n">solutions_norm</span> <span class="o">=</span> <span class="n">solutions_norm_1</span> <span class="o">+</span> <span class="n">solutions_norm_2</span>
+
+        <span class="k">elif</span> <span class="n">dataID</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response&quot;</span><span class="p">:</span>
+            <span class="c1"># normalize ligand dose response</span>
+            <span class="n">solutions_norm</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">solutions_raw</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">solutions_raw</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">solutions_norm</span></div>
+
 <div class="viewcode-block" id="synTF_chem.plot_training_data"><a class="viewcode-back" href="../../../games.models.synTF_chem.html#games.models.synTF_chem.synTF_chem.plot_training_data">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">plot_training_data</span><span class="p">(</span>
         <span class="n">x</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
-        <span class="n">solutions_norm</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
-        <span class="n">exp_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
-        <span class="n">exp_error</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+        <span class="n">solutions_norm</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">exp_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
         <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">run_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Plots training data and simulated training data</span>
+<span class="sd">        Plots training data and simulated training data for a single parameter set</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -316,13 +377,42 @@
 <span class="sd">        run_type</span>
 <span class="sd">            a string containing the data type (&#39;PEM evaluation&#39; or else)</span>
 
+<span class="sd">        context</span>
+<span class="sd">            a string defining the file structure context</span>
+
+<span class="sd">        dataID</span>
+<span class="sd">            a string defining the dataID</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        None&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response&quot;</span><span class="p">:</span>
-            <span class="n">plot_training_data_2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">solutions_norm</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">run_type</span><span class="p">)</span>
 
-        <span class="k">elif</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response and DBD dose response&quot;</span><span class="p">:</span>
+        <span class="c1"># define plot settings</span>
+        <span class="k">if</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span>
+            <span class="n">plot_color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>
+            <span class="n">marker_type</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span>
+
+        <span class="k">elif</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s2">&quot;PEM evaluation&quot;</span><span class="p">:</span>
+            <span class="n">plot_color</span> <span class="o">=</span> <span class="s2">&quot;dimgrey&quot;</span>
+            <span class="n">marker_type</span> <span class="o">=</span> <span class="s2">&quot;^&quot;</span>
+
+        <span class="k">if</span> <span class="n">dataID</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response&quot;</span><span class="p">:</span>
+            <span class="n">y_label</span> <span class="o">=</span> <span class="s2">&quot;Rep. protein (au)&quot;</span>
+            <span class="n">x_label</span> <span class="o">=</span> <span class="s2">&quot;Ligand (nM)&quot;</span>
+            <span class="n">x_scale</span> <span class="o">=</span> <span class="s2">&quot;symlog&quot;</span>
+            <span class="n">plot_settings</span> <span class="o">=</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">plot_color</span><span class="p">,</span> <span class="n">marker_type</span>
+            <span class="n">plot_training_data_2d</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">solutions_norm</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_settings</span><span class="p">,</span> <span class="n">context</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">dataID</span> <span class="o">==</span> <span class="s2">&quot;ligand dose response and DBD dose response&quot;</span><span class="p">:</span>
+            <span class="c1"># Define plot settings for ligand dose response</span>
+            <span class="n">y_label</span> <span class="o">=</span> <span class="s2">&quot;Rep. protein (au)&quot;</span>
+            <span class="n">x_label</span> <span class="o">=</span> <span class="s2">&quot;Ligand (nM)&quot;</span>
+            <span class="n">x_scale</span> <span class="o">=</span> <span class="s2">&quot;symlog&quot;</span>
+            <span class="n">plot_settings</span> <span class="o">=</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">plot_color</span><span class="p">,</span> <span class="n">marker_type</span>
+
+            <span class="c1"># plot ligand dose response</span>
             <span class="n">filename_1</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;ligand dose response&quot;</span>
             <span class="n">plot_training_data_2d</span><span class="p">(</span>
                 <span class="n">x</span><span class="p">[:</span><span class="mi">11</span><span class="p">],</span>
@@ -330,10 +420,17 @@
                 <span class="n">exp_data</span><span class="p">[:</span><span class="mi">11</span><span class="p">],</span>
                 <span class="n">exp_error</span><span class="p">[:</span><span class="mi">11</span><span class="p">],</span>
                 <span class="n">filename_1</span><span class="p">,</span>
-                <span class="n">run_type</span><span class="p">,</span>
-                <span class="s2">&quot;ligand&quot;</span><span class="p">,</span>
+                <span class="n">plot_settings</span><span class="p">,</span>
+                <span class="n">context</span><span class="p">,</span>
             <span class="p">)</span>
 
+            <span class="c1"># Define plot settings for DBD dose response</span>
+            <span class="n">y_label</span> <span class="o">=</span> <span class="s2">&quot;Rep. protein (au)&quot;</span>
+            <span class="n">x_label</span> <span class="o">=</span> <span class="s2">&quot;DBD plasmid dose (ng)&quot;</span>
+            <span class="n">x_scale</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span>
+            <span class="n">plot_settings</span> <span class="o">=</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">x_scale</span><span class="p">,</span> <span class="n">plot_color</span><span class="p">,</span> <span class="n">marker_type</span>
+
+            <span class="c1"># Plot DBD dose response @ 20ng AD</span>
             <span class="n">filename_2</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;DBD dose response 20ng AD&quot;</span>
             <span class="n">plot_training_data_2d</span><span class="p">(</span>
                 <span class="n">x</span><span class="p">[</span><span class="mi">11</span><span class="p">:</span><span class="mi">19</span><span class="p">],</span>
@@ -341,10 +438,11 @@
                 <span class="n">exp_data</span><span class="p">[</span><span class="mi">11</span><span class="p">:</span><span class="mi">19</span><span class="p">],</span>
                 <span class="n">exp_error</span><span class="p">[</span><span class="mi">11</span><span class="p">:</span><span class="mi">19</span><span class="p">],</span>
                 <span class="n">filename_2</span><span class="p">,</span>
-                <span class="n">run_type</span><span class="p">,</span>
-                <span class="s2">&quot;DBD&quot;</span><span class="p">,</span>
+                <span class="n">plot_settings</span><span class="p">,</span>
+                <span class="n">context</span><span class="p">,</span>
             <span class="p">)</span>
 
+            <span class="c1"># Plot DBD dose response @ 10ng AD</span>
             <span class="n">filename_3</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;DBD dose response 10ng AD&quot;</span>
             <span class="n">plot_training_data_2d</span><span class="p">(</span>
                 <span class="n">x</span><span class="p">[</span><span class="mi">19</span><span class="p">:],</span>
@@ -352,8 +450,8 @@
                 <span class="n">exp_data</span><span class="p">[</span><span class="mi">19</span><span class="p">:],</span>
                 <span class="n">exp_error</span><span class="p">[</span><span class="mi">19</span><span class="p">:],</span>
                 <span class="n">filename_3</span><span class="p">,</span>
-                <span class="n">run_type</span><span class="p">,</span>
-                <span class="s2">&quot;DBD&quot;</span><span class="p">,</span>
+                <span class="n">plot_settings</span><span class="p">,</span>
+                <span class="n">context</span><span class="p">,</span>
             <span class="p">)</span></div></div>
 </pre></div>
 

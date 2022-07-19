@@ -85,8 +85,128 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-modules-parameter-estimation-method-evaluation-generate-pem-evaluation-data-module">
-<h1>games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data module<a class="headerlink" href="#games-modules-parameter-estimation-method-evaluation-generate-pem-evaluation-data-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data">
+<span id="games-modules-parameter-estimation-method-evaluation-generate-pem-evaluation-data-module"></span><h1>games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data module<a class="headerlink" href="#module-games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data" title="Permalink to this headline"></a></h1>
+<p>Created on Wed Jun 15 16:13:15 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.add_noise">
+<span class="sig-name descname"><span class="pre">add_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solutions_norm_raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation_method_evaluation/generate_pem_evaluation_data.html#add_noise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.add_noise" title="Permalink to this definition"></a></dt>
+<dd><p>Adds noise to a set of simulated data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>solutions_norm_raw</strong> – a list of floats defining data to add noise to</p></li>
+<li><p><strong>noise</strong> – a list of floats defining the noise values to add to each data point</p></li>
+<li><p><strong>dataID</strong> – a string defining the dataID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of floats defining the data set with noise added and normalized</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>solutions_norm_noise</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.generate_noise_pem_evaluation">
+<span class="sig-name descname"><span class="pre">generate_noise_pem_evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modelID</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation_method_evaluation/generate_pem_evaluation_data.html#generate_noise_pem_evaluation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.generate_noise_pem_evaluation" title="Permalink to this definition"></a></dt>
+<dd><p>Generates noise values to add to a set of simulated data</p>
+<p>NOTE: This function has been refactored to generate noise values in a more modular way.
+The original method for generating noise is retained for synTF_chem to ensure that results from
+this refactored code match those in the GAMES paper.</p>
+<p>For future use, the code used here for synTF_chem can be deleted.</p>
+<p>This function can also be combined with generate_noise in calculate_threshold.py
+(used to generate noise for PPL) for future use. The functions are left separate here
+because slightly different methods for random number generation and seeding were used
+in the original GAMES code such that combining the functions may lead to slightly
+different results that do not exactly match the results from the paper
+(although the trends and conclusions would remain the same).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exp_error</strong> – a list of floats defining the measurement error
+(standard deviation) for each data point</p></li>
+<li><p><strong>count</strong> – an integer defining the PEM evaluation dataset number</p></li>
+<li><p><strong>modelID</strong> – a string defining the modelID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an array containing noise values to be added to each data point</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>noise</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.filter_global_search_results">
+<span class="sig-name descname"><span class="pre">filter_global_search_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_global_search_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_pem_evaluation_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation_method_evaluation/generate_pem_evaluation_data.html#filter_global_search_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.filter_global_search_results" title="Permalink to this definition"></a></dt>
+<dd><p>Filters data to choose parameter sets used to generate pem evaluation data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_global_search_results</strong> – a dataframe containing global search results</p></li>
+<li><p><strong>num_pem_evaluation_datasets</strong> – an int defining the number of pem evaluation datasets to generate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a dataframe containing the filtered global search results</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>df_global_search_results_filtered</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.generate_pem_evaluation_data">
+<span class="sig-name descname"><span class="pre">generate_pem_evaluation_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_global_search_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation_method_evaluation/generate_pem_evaluation_data.html#generate_pem_evaluation_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.generate_pem_evaluation_data" title="Permalink to this definition"></a></dt>
+<dd><p>Generates PEM evaluation data based on results of a global search</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df_global_search_results</strong> – a dataframe containing global search results</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>pem_evaluation_data_list</em> – a list of lists containing the PEM evaluation data</p></li>
+<li><p><em>settings</em> – a dictionary of run settings</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.define_pem_evaluation_criterion">
+<span class="sig-name descname"><span class="pre">define_pem_evaluation_criterion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_sq_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi_sq_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation_method_evaluation/generate_pem_evaluation_data.html#define_pem_evaluation_criterion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.define_pem_evaluation_criterion" title="Permalink to this definition"></a></dt>
+<dd><p>Generates PEM evaluation data based on results of a global search</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>r_sq_list</strong> – a list of floats containing the r_sq values associated
+with each pem evaluation dataset
+(calculated between the data with and without noise)</p></li>
+<li><p><strong>chi_sq_list</strong> – a list of floats containing the chi_sq values associated
+with each pem evaluation dataset
+(calculated between the data with and without noise)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a float defining the maximum chi_aq across all pem evaluation dataset
+(calculated between the data with and without noise)
+Note that this return can be changed if the user wants to use a different
+metric to define the PEM evaluation criterion</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>max_chi_sq</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

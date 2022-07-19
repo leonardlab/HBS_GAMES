@@ -12,7 +12,6 @@ import numpy as np
 from games.models.set_model import model
 from games.modules.solve_single import solve_single_parameter_set
 from games.utilities.metrics import calc_chi_sq, calc_r_sq
-from games.config.settings import settings
 from games.utilities.saving import save_pem_evaluation_data
 
 
@@ -145,7 +144,9 @@ def filter_global_search_results(
     return df_global_search_results_filtered
 
 
-def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> Tuple[list, float]:
+def generate_pem_evaluation_data(
+    df_global_search_results: pd.DataFrame, settings: dict
+) -> Tuple[list, float]:
     """Generates PEM evaluation data based on results of a global search
 
     Parameters
@@ -157,6 +158,9 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> Tupl
     -------
     pem_evaluation_data_list
         a list of lists containing the PEM evaluation data
+
+    settings
+        a dictionary of run settings
 
     """
 
@@ -178,7 +182,14 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> Tupl
         x = list(df_global_search_results["x"].iloc[0])
         exp_data = list(df_global_search_results["exp_data"].iloc[0])
         exp_error = list(df_global_search_results["exp_error"].iloc[0])
-        solutions_norm_raw, chi_sq, r_sq = solve_single_parameter_set(x, exp_data, exp_error)
+        solutions_norm_raw, chi_sq, r_sq = solve_single_parameter_set(
+            x,
+            exp_data,
+            exp_error,
+            settings["dataID"],
+            settings["weight_by_error"],
+            settings["parameter_labels"],
+        )
 
         # Add noise
         noise = generate_noise_pem_evaluation(exp_error, count, settings["modelID"])
@@ -187,7 +198,9 @@ def generate_pem_evaluation_data(df_global_search_results: pd.DataFrame) -> Tupl
         # Calculate cost function metrics between PEM evaluation
         # training data with and without noise
         r_sq = calc_r_sq(solutions_norm_raw, solutions_norm_noise)
-        chi_sq = calc_chi_sq(solutions_norm_raw, solutions_norm_noise, exp_error)
+        chi_sq = calc_chi_sq(
+            solutions_norm_raw, solutions_norm_noise, exp_error, settings["weight_by_error"]
+        )
 
         # Add metrics to full lists
         r_sq_list.append(r_sq)

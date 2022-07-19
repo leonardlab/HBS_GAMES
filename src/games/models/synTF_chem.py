@@ -10,7 +10,6 @@ import math
 from typing import Tuple, List
 import numpy as np
 from scipy.integrate import odeint
-from games.config.settings import settings
 from games.plots.plots_training_data import plot_training_data_2d
 
 
@@ -25,6 +24,7 @@ class synTF_chem:
         parameters: List[float] = [1, 1, 1, 1, 1, 1],
         inputs: List[float] = None,
         input_ligand: float = 1000,
+        mechanismID: str = "default",
     ) -> None:
 
         """Initializes synTF_Chem model.
@@ -39,6 +39,9 @@ class synTF_chem:
 
         input_ligand
             Float defining the input ligand concentration
+
+        mechanismID
+            a string defining the mechanism identity
 
         Returns
         -------
@@ -58,18 +61,22 @@ class synTF_chem:
         self.parameters = parameters
         self.inputs = inputs
         self.input_ligand = input_ligand
+        self.mechanismID = mechanismID
         number_of_states = len(self.state_labels)
         y_init = np.zeros(number_of_states)
         self.initial_conditions = y_init
 
-    def solve_single(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def solve_single(
+        self, parameter_labels: List[str]
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Solves synTF_Chem model for a single set of parameters and inputs, including 2 steps
            1) Time from transfection to ligand addition
            2) Time from ligand addition to measurement via flow cytometry
 
         Parameters
         ----------
-        None
+        parameter_labels
+            a list of strings defining the parameter labels
 
         Returns
         -------
@@ -92,11 +99,12 @@ class synTF_chem:
             args=(
                 self.parameters,
                 self.inputs,
+                self.mechanismID,
             ),
         )
 
         # solve after ligand addition
-        for i, label in enumerate(settings["parameter_labels"]):
+        for i, label in enumerate(parameter_labels):
             if label == "e":
                 input_ligand_transformed = self.input_ligand * self.parameters[i]
 
@@ -112,6 +120,7 @@ class synTF_chem:
             args=(
                 self.parameters,
                 self.inputs,
+                self.mechanismID,
             ),
         )
 
@@ -123,7 +132,9 @@ class synTF_chem:
         )
 
     @staticmethod
-    def gradient(y: np.ndarray, t: np.ndarray, parameters: list, inputs: list) -> np.ndarray:
+    def gradient(
+        y: np.ndarray, t: np.ndarray, parameters: list, inputs: list, mechanismID: str
+    ) -> np.ndarray:
         """Defines the gradient for synTF_Chem model.
 
         Parameters
@@ -140,6 +151,9 @@ class synTF_chem:
         inputs
             a list of floats defining the inputs
 
+        mechanismID
+            a string defining the mechanism identity
+
 
         Returns
         -------
@@ -149,10 +163,10 @@ class synTF_chem:
         """
 
         [dose_a, dose_b] = inputs
-        if settings["mechanismID"] == "A" or settings["mechanismID"] == "B":
+        if mechanismID == "A" or mechanismID == "B":
             [_, b, k_bind, m, km, n] = parameters
 
-        if settings["mechanismID"] == "C" or settings["mechanismID"] == "D":
+        if mechanismID == "C" or mechanismID == "D":
             [_, b, k_bind, m_star, km, n] = parameters
             m = m_star * b
 
@@ -185,7 +199,7 @@ class synTF_chem:
 
         return dydt
 
-    def solve_experiment(self, x: list, dataID: str) -> list:
+    def solve_experiment(self, x: list, dataID: str, parameter_labels: List[str]) -> list:
         """Solve synTF_Chem model for a list of ligand values.
 
         Parameters
@@ -195,6 +209,9 @@ class synTF_chem:
 
         dataID
             a string defining the dataID
+
+        parameter_labels
+            a list of strings defining the parameter labels
 
         Returns
         -------
@@ -210,7 +227,7 @@ class synTF_chem:
             self.inputs = [50, 50]  # ng
             for ligand in x[:11]:
                 self.input_ligand = ligand
-                _, _, _, sol = self.solve_single()
+                _, _, _, sol = self.solve_single(parameter_labels)
                 solutions.append(sol[-1, -1])
 
         if dataID == "ligand dose response and DBD dose response":
@@ -218,7 +235,7 @@ class synTF_chem:
                 for dbd_dose in x[11:19]:
                     self.inputs = [dbd_dose, ad_dose]
                     self.input_ligand = 100
-                    _, _, _, sol = self.solve_single()
+                    _, _, _, sol = self.solve_single(parameter_labels)
                     solutions.append(sol[-1, -1])
 
         return solutions
@@ -267,6 +284,8 @@ class synTF_chem:
         exp_error: List[float],
         filename: str,
         run_type: str,
+        context: str,
+        dataID: str,
     ) -> None:
         """
         Plots training data and simulated training data for a single parameter set
@@ -291,6 +310,12 @@ class synTF_chem:
         run_type
             a string containing the data type ('PEM evaluation' or else)
 
+        context
+            a string defining the file structure context
+
+        dataID
+            a string defining the dataID
+
         Returns
         -------
         None"""
@@ -304,14 +329,16 @@ class synTF_chem:
             plot_color = "dimgrey"
             marker_type = "^"
 
-        if settings["dataID"] == "ligand dose response":
+        if dataID == "ligand dose response":
             y_label = "Rep. protein (au)"
             x_label = "Ligand (nM)"
             x_scale = "symlog"
             plot_settings = x_label, y_label, x_scale, plot_color, marker_type
-            plot_training_data_2d(x, solutions_norm, exp_data, exp_error, filename, plot_settings)
+            plot_training_data_2d(
+                x, solutions_norm, exp_data, exp_error, filename, plot_settings, context
+            )
 
-        elif settings["dataID"] == "ligand dose response and DBD dose response":
+        elif dataID == "ligand dose response and DBD dose response":
             # Define plot settings for ligand dose response
             y_label = "Rep. protein (au)"
             x_label = "Ligand (nM)"
@@ -327,6 +354,7 @@ class synTF_chem:
                 exp_error[:11],
                 filename_1,
                 plot_settings,
+                context,
             )
 
             # Define plot settings for DBD dose response
@@ -344,6 +372,7 @@ class synTF_chem:
                 exp_error[11:19],
                 filename_2,
                 plot_settings,
+                context,
             )
 
             # Plot DBD dose response @ 10ng AD
@@ -355,4 +384,5 @@ class synTF_chem:
                 exp_error[19:],
                 filename_3,
                 plot_settings,
+                context,
             )

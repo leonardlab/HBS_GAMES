@@ -85,8 +85,150 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="games-modules-parameter-estimation-global-search-module">
-<h1>games.modules.parameter_estimation.global_search module<a class="headerlink" href="#games-modules-parameter-estimation-global-search-module" title="Permalink to this headline"></a></h1>
+  <section id="module-games.modules.parameter_estimation.global_search">
+<span id="games-modules-parameter-estimation-global-search-module"></span><h1>games.modules.parameter_estimation.global_search module<a class="headerlink" href="#module-games.modules.parameter_estimation.global_search" title="Permalink to this headline"></a></h1>
+<p>Created on Fri Jun  3 15:25:19 2022</p>
+<p>&#64;author: kate</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.global_search.replace_parameter_values_for_sweep">
+<span class="sig-name descname"><span class="pre">replace_parameter_values_for_sweep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_parameters_default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">free_parameter_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_linear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/global_search.html#replace_parameter_values_for_sweep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.global_search.replace_parameter_values_for_sweep" title="Permalink to this definition"></a></dt>
+<dd><p>Replaces the column of each free parameter with the list of parameters from the sweep</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_parameters_default</strong> – df with columns defining to parameter identities
+and rows defining the parameter values for each set in
+the sweep with default values only</p></li>
+<li><p><strong>num_parameters</strong> – an int defining the total number of parameters (free and fixed)</p></li>
+<li><p><strong>free_parameter_labels</strong> – a list of strings defining the free parameter labels</p></li>
+<li><p><strong>params_linear</strong> – an array containing parameter values from the
+global search parameter sweep in linear scale</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>df with columns defining to parameter identities
+and rows defining the parameter values for each set in
+the sweep</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>df_parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.global_search.create_default_df">
+<span class="sig-name descname"><span class="pre">create_default_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_parameter_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/global_search.html#create_default_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.global_search.create_default_df" title="Permalink to this definition"></a></dt>
+<dd><p>Generates df with default values for all parameters, before the global search</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_search</strong> – an int defining the number of parameter sets to define for the global search</p></li>
+<li><p><strong>all_parameter_labels</strong> – a list of strings containing all initial parameter labels,
+including fixed and free parameters</p></li>
+<li><p><strong>all_parameters</strong> – a list of floats containing all initial parameter values,
+including fixed and free parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>df with columns defining to parameter identities
+and rows defining the parameter values for each set in the sweep
+with only the default values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>df_parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.global_search.convert_parameters_to_linear">
+<span class="sig-name descname"><span class="pre">convert_parameters_to_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_values_global_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/global_search.html#convert_parameters_to_linear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.global_search.convert_parameters_to_linear" title="Permalink to this definition"></a></dt>
+<dd><p>Converts parameter array to linear scale</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param_values_global_search</strong> – a list of lists containing parameter values from the
+global search parameter sweep in log scale</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an array containing parameter values from the global
+search parameter sweep in linear scale</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>params_linear_array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.global_search.generate_parameter_sets">
+<span class="sig-name descname"><span class="pre">generate_parameter_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">problem_global_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/global_search.html#generate_parameter_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.global_search.generate_parameter_sets" title="Permalink to this definition"></a></dt>
+<dd><p>Generates parameter sets for global search</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>problem_global_search</strong> – a dictionary including the number, labels, and bounds for the free parameters</p></li>
+<li><p><strong>settings</strong> – a dictionary defining the run settings</p></li>
+<li><p><strong>all_parameters</strong> – a list of floats containing all initial parameter values,
+including fixed and free parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>df with columns defining to parameter identities
+and rows defining the parameter values for each set in the sweep</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>df_parameters</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.global_search.solve_single_for_global_search">
+<span class="sig-name descname"><span class="pre">solve_single_for_global_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/global_search.html#solve_single_for_global_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.global_search.solve_single_for_global_search" title="Permalink to this definition"></a></dt>
+<dd><p>Solves equation for a single parameter set - structure is
+necessary for upstream multiprocessing code</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>row</strong> – tuple defining the parameters and experimental data</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>solutions</em> – a list of floats defining the simulation solutions</p></li>
+<li><p><em>chi_sq</em> – a float defining the chi_sq value</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="games.modules.parameter_estimation.global_search.solve_global_search">
+<span class="sig-name descname"><span class="pre">solve_global_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="reference internal" href="_modules/games/modules/parameter_estimation/global_search.html#solve_global_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#games.modules.parameter_estimation.global_search.solve_global_search" title="Permalink to this definition"></a></dt>
+<dd><p>Generates parameter sets for global search</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_parameters</strong> – df with columns defining to parameter identities
+and rows defining the parameter values for each set in the sweep</p></li>
+<li><p><strong>x</strong> – a list of floats containing the values of the independent variable</p></li>
+<li><p><strong>exp_data</strong> – a list of floats containing the values of the dependent variable</p></li>
+<li><p><strong>exp_error</strong> – a list of floats containing the values of the measurement error
+for the dependent variable</p></li>
+<li><p><strong>settings</strong> – a dictionary defining the run settings</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>df that contains the information in df_parameters,
+along with an extra column defining the cost function
+for each parameter set</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>df_global_search_results</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

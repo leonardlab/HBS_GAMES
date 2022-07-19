@@ -6,8 +6,10 @@ Created on Thu May 26 09:38:59 2022
 @author: kate
 """
 import warnings
+import json
 import click
 from games.modules.solve_single import run_single_parameter_set
+from games.config.settings import define_settings
 from games.modules.parameter_estimation.run_parameter_estimation import run_parameter_estimation
 from games.modules.parameter_estimation_method_evaluation.run_parameter_estimation_method_evaluation import (
     run_parameter_estimation_method_evaluation,
@@ -42,28 +44,45 @@ def run(modules: str) -> None:
     None
 
     """
+    # Open default config file
+    config_filepath = "./config/config.json"
+    file = open(config_filepath, encoding="utf-8")
+    settings_import = json.load(file)
+    settings, folder_path, parameter_estimation_problem_definition = define_settings(
+        settings_import
+    )
 
     if "0" in modules:
         print("Starting Module 0...")
-        run_single_parameter_set()
+        run_single_parameter_set(settings, folder_path)
         print("Module 0 completed")
         print("")
 
     if "1" in modules:
         print("Starting Module 1...")
-        run_parameter_estimation_method_evaluation()
+        run_parameter_estimation_method_evaluation(
+            settings, folder_path, parameter_estimation_problem_definition
+        )
         print("Module 1 completed")
         print("")
 
     if "2" in modules:
         print("Starting Module 2...")
-        calibrated_chi_sq, calibrated_parameters = run_parameter_estimation()
+        calibrated_chi_sq, calibrated_parameters = run_parameter_estimation(
+            settings, folder_path, parameter_estimation_problem_definition
+        )
         print("Module 2 completed")
         print("")
 
     if "3" in modules:
         print("Starting Module 3...")
-        run_parameter_profile_likelihood(calibrated_chi_sq, calibrated_parameters)
+        run_parameter_profile_likelihood(
+            settings,
+            folder_path,
+            parameter_estimation_problem_definition,
+            calibrated_chi_sq,
+            calibrated_parameters,
+        )
         print("Module 3 completed")
         print("")
 

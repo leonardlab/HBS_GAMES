@@ -101,12 +101,13 @@ def set_non_default_parameter_bounds(
     return bounds_log
 
 
-def define_settings() -> Tuple[dict, str, dict]:
+def define_settings(settings_import: dict) -> Tuple[dict, str, dict]:
     """Defines settings dictionary
 
     Parameters
     ----------
-    None
+    settings_import
+        a dictionary defining the imported settings
 
     Returns
     -------
@@ -121,8 +122,6 @@ def define_settings() -> Tuple[dict, str, dict]:
 
     """
 
-    file = open("./src/games/config/config.json", encoding="utf-8")
-    settings_import = json.load(file)
     # Define free parameter indices and add to settings dictionary
     free_parameters, free_parameter_indices = define_free_parameter_indices(
         settings_import["parameters"],
@@ -152,6 +151,3 @@ def define_settings() -> Tuple[dict, str, dict]:
     # Make main results directory and define path
     folder_path_ = make_main_directory(settings_import)
     return settings_import, folder_path_, parameter_estimation_problem_definition_
-
-
-settings, folder_path, parameter_estimation_problem_definition = define_settings()

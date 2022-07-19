@@ -79,12 +79,10 @@
 <span class="kn">from</span> <span class="nn">games.models.set_model</span> <span class="kn">import</span> <span class="n">model</span>
 <span class="kn">from</span> <span class="nn">games.modules.solve_single</span> <span class="kn">import</span> <span class="n">solve_single_parameter_set</span>
 <span class="kn">from</span> <span class="nn">games.utilities.metrics</span> <span class="kn">import</span> <span class="n">calc_chi_sq</span><span class="p">,</span> <span class="n">calc_r_sq</span>
-<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span>
-<span class="kn">from</span> <span class="nn">games.config.experimental_data</span> <span class="kn">import</span> <span class="n">normalize_data_by_maximum_value</span>
 <span class="kn">from</span> <span class="nn">games.utilities.saving</span> <span class="kn">import</span> <span class="n">save_pem_evaluation_data</span>
 
 
-<div class="viewcode-block" id="add_noise"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.html#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.add_noise">[docs]</a><span class="k">def</span> <span class="nf">add_noise</span><span class="p">(</span><span class="n">solutions_norm_raw</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">noise</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="add_noise"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.html#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.add_noise">[docs]</a><span class="k">def</span> <span class="nf">add_noise</span><span class="p">(</span><span class="n">solutions_norm_raw</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">noise</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">dataID</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adds noise to a set of simulated data</span>
 
@@ -112,11 +110,12 @@
         <span class="n">new_val</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
         <span class="n">solutions_noise</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_val</span><span class="p">)</span>
 
-    <span class="n">solutions_norm_noise</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">normalize_data_by_maximum_value</span><span class="p">(</span><span class="n">solutions_noise</span><span class="p">,</span> <span class="n">dataID</span><span class="p">)</span>
+    <span class="n">solutions_norm_noise</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">normalize_data</span><span class="p">(</span><span class="n">solutions_noise</span><span class="p">,</span> <span class="n">dataID</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">solutions_norm_noise</span></div>
 
-<div class="viewcode-block" id="generate_noise_pem_evaluation"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.html#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.generate_noise_pem_evaluation">[docs]</a><span class="k">def</span> <span class="nf">generate_noise_pem_evaluation</span><span class="p">(</span><span class="n">exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">modelID</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="generate_noise_pem_evaluation"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.html#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.generate_noise_pem_evaluation">[docs]</a><span class="k">def</span> <span class="nf">generate_noise_pem_evaluation</span><span class="p">(</span><span class="n">exp_error</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">modelID</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Generates noise values to add to a set of simulated data</span>
 
 <span class="sd">    NOTE: This function has been refactored to generate noise values in a more modular way.</span>
@@ -147,12 +146,12 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    noise</span>
-<span class="sd">        a list of floats containing noise values to be added to each data point</span>
+<span class="sd">        an array containing noise values to be added to each data point</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Define mean for error distribution</span>
     <span class="n">mu</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="n">modelID</span> <span class="o">==</span> <span class="s1">&#39;synTF_chem&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">modelID</span> <span class="o">==</span> <span class="s2">&quot;synTF_chem&quot;</span><span class="p">:</span>
         <span class="c1"># Define seeds for random number generation</span>
         <span class="n">seeds</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3457</span><span class="p">,</span> <span class="mi">1234</span><span class="p">,</span> <span class="mi">2456</span><span class="p">,</span> <span class="mi">7984</span><span class="p">,</span> <span class="mi">7306</span><span class="p">,</span> <span class="mi">3869</span><span class="p">,</span> <span class="mi">5760</span><span class="p">,</span> <span class="mi">9057</span><span class="p">,</span> <span class="mi">2859</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">seeds</span><span class="p">):</span>
@@ -170,21 +169,24 @@
         <span class="c1"># Calculate standard error values (assuming triplicate measurements)</span>
         <span class="n">sigma_values_standard_error</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exp_error</span><span class="p">]</span>
 
-        <span class="c1">#Set seed for this data set</span>
+        <span class="c1"># Set seed for this data set</span>
         <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">starting_seed</span> <span class="o">+</span> <span class="n">count</span><span class="p">)</span>
 
-        <span class="c1">#Generate noise values for each sigma value</span>
-        <span class="n">noise</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Generate noise values for each sigma value</span>
+        <span class="n">noise_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">sigma_val</span> <span class="ow">in</span> <span class="n">sigma_values_standard_error</span><span class="p">:</span>
-            <span class="n">noise_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma_val</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">noise</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">noise_value</span><span class="p">))</span>
+            <span class="n">noise_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma_val</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">noise_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">noise_value</span><span class="p">)</span>
+
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">noise_list</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">noise</span></div>
+
 
 <div class="viewcode-block" id="filter_global_search_results"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.html#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.filter_global_search_results">[docs]</a><span class="k">def</span> <span class="nf">filter_global_search_results</span><span class="p">(</span>
     <span class="n">df_global_search_results</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">num_pem_evaluation_datasets</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Filters data to choose parameter sets used to generate PEM evaluation data</span>
+    <span class="sd">&quot;&quot;&quot;Filters data to choose parameter sets used to generate pem evaluation data</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -209,7 +211,9 @@
     <span class="k">return</span> <span class="n">df_global_search_results_filtered</span></div>
 
 
-<div class="viewcode-block" id="generate_pem_evaluation_data"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.html#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.generate_pem_evaluation_data">[docs]</a><span class="k">def</span> <span class="nf">generate_pem_evaluation_data</span><span class="p">(</span><span class="n">df_global_search_results</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="generate_pem_evaluation_data"><a class="viewcode-back" href="../../../../games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.html#games.modules.parameter_estimation_method_evaluation.generate_pem_evaluation_data.generate_pem_evaluation_data">[docs]</a><span class="k">def</span> <span class="nf">generate_pem_evaluation_data</span><span class="p">(</span>
+    <span class="n">df_global_search_results</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Generates PEM evaluation data based on results of a global search</span>
 
 <span class="sd">    Parameters</span>
@@ -221,6 +225,9 @@
 <span class="sd">    -------</span>
 <span class="sd">    pem_evaluation_data_list</span>
 <span class="sd">        a list of lists containing the PEM evaluation data</span>
+
+<span class="sd">    settings</span>
+<span class="sd">        a dictionary of run settings</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -242,7 +249,14 @@
         <span class="n">x</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">exp_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;exp_data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">exp_error</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df_global_search_results</span><span class="p">[</span><span class="s2">&quot;exp_error&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">solutions_norm_raw</span><span class="p">,</span> <span class="n">chi_sq</span><span class="p">,</span> <span class="n">r_sq</span> <span class="o">=</span> <span class="n">solve_single_parameter_set</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+        <span class="n">solutions_norm_raw</span><span class="p">,</span> <span class="n">chi_sq</span><span class="p">,</span> <span class="n">r_sq</span> <span class="o">=</span> <span class="n">solve_single_parameter_set</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">exp_data</span><span class="p">,</span>
+            <span class="n">exp_error</span><span class="p">,</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;dataID&quot;</span><span class="p">],</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;weight_by_error&quot;</span><span class="p">],</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
 
         <span class="c1"># Add noise</span>
         <span class="n">noise</span> <span class="o">=</span> <span class="n">generate_noise_pem_evaluation</span><span class="p">(</span><span class="n">exp_error</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modelID&quot;</span><span class="p">])</span>
@@ -251,7 +265,9 @@
         <span class="c1"># Calculate cost function metrics between PEM evaluation</span>
         <span class="c1"># training data with and without noise</span>
         <span class="n">r_sq</span> <span class="o">=</span> <span class="n">calc_r_sq</span><span class="p">(</span><span class="n">solutions_norm_raw</span><span class="p">,</span> <span class="n">solutions_norm_noise</span><span class="p">)</span>
-        <span class="n">chi_sq</span> <span class="o">=</span> <span class="n">calc_chi_sq</span><span class="p">(</span><span class="n">solutions_norm_raw</span><span class="p">,</span> <span class="n">solutions_norm_noise</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+        <span class="n">chi_sq</span> <span class="o">=</span> <span class="n">calc_chi_sq</span><span class="p">(</span>
+            <span class="n">solutions_norm_raw</span><span class="p">,</span> <span class="n">solutions_norm_noise</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;weight_by_error&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
 
         <span class="c1"># Add metrics to full lists</span>
         <span class="n">r_sq_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r_sq</span><span class="p">)</span>
@@ -297,7 +313,7 @@
 
     <span class="n">mean_chi_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">chi_sq_list</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
     <span class="n">max_chi_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">chi_sq_list</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">max_chi_sq</span> <span class="o">==</span> <span class="p">[</span><span class="mf">0.</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">max_chi_sq</span> <span class="o">==</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]:</span>
         <span class="n">max_chi_sq</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean chi_sq between PEM evaluation data with and without noise: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mean_chi_sq</span><span class="p">))</span>
@@ -305,8 +321,8 @@
 
     <span class="c1"># Save PEM evaluation criterion</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;r_sq&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">r_sq_list</span><span class="p">)</span>
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;chi_sq&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">chi_sq_list</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;r_sq&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">r_sq_list</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;chi_sq&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">chi_sq_list</span><span class="p">)</span>
     <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;./PEM evaluation criterion.csv&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">max_chi_sq</span></div>

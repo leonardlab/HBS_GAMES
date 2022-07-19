@@ -7,16 +7,16 @@ Created on Wed Jun 15 10:36:16 2022
 """
 from typing import Tuple, List
 import pandas as pd
-from games.config.settings import settings
 
 
-def define_experimental_data() -> Tuple[List[float], List[float], List[float]]:
+def define_experimental_data(settings: dict) -> Tuple[List[float], List[float], List[float]]:
     """
     Imports experimental data
 
     Parameters
     ---------
-    None
+    settings
+       a dictionary of run settings
 
     Returns
     -------

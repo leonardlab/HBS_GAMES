@@ -80,7 +80,6 @@
     <span class="n">generate_parameter_sets</span><span class="p">,</span>
     <span class="n">solve_global_search</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">games.config.settings</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">parameter_estimation_problem_definition</span>
 <span class="kn">from</span> <span class="nn">games.plots.plots_parameter_profile_likelihood</span> <span class="kn">import</span> <span class="n">plot_parameter_profile_likelihood</span>
 <span class="kn">from</span> <span class="nn">games.plots.plots_parameter_profile_likelihood</span> <span class="kn">import</span> <span class="n">plot_parameter_relationships</span>
 <span class="kn">from</span> <span class="nn">games.plots.plots_parameter_profile_likelihood</span> <span class="kn">import</span> <span class="n">plot_internal_states_along_ppl</span>
@@ -112,11 +111,10 @@
 
 <span class="sd">    non_default_min_step_fraction_ppl</span>
 <span class="sd">        a list of dictionaries defining the non-default values for each setting</span>
-<span class="sd">        each key is the parameter name and each value is a list where the</span>
-<span class="sd">        first item is the direction of ppl calculations</span>
-<span class="sd">        and the second item is the value for the given setting and</span>
-<span class="sd">        the given parameter/direction. For example, {&quot;k&quot;: [1, 100]} means that</span>
-<span class="sd">        the value of the given setting should be 100 for parameter k in the positive direction</span>
+<span class="sd">        each key is a string with the parameter name followed by a space followed by the</span>
+<span class="sd">        direction of ppl calculations (-1 or 1). The value of the dictionary</span>
+<span class="sd">        is the value for the given setting. For example, {&quot;k_bind -1&quot; : 0.001}, means that</span>
+<span class="sd">        the value of the given setting should be 0.001 for parameter k_bind in the negative direction</span>
 
 <span class="sd">    non_default_max_step_fraction_ppl</span>
 <span class="sd">        same as above but setting = max step fraction</span>
@@ -136,10 +134,12 @@
 <span class="sd">       an integer defining the maximum number of allowable steps</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Min step value</span>
+
     <span class="k">if</span> <span class="n">non_default_min_step_fraction_ppl</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">non_default_min_step_fraction_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">direction</span><span class="p">:</span>
-                <span class="n">min_step_fraction</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">non_default_min_step_fraction_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">direction</span><span class="p">):</span>
+                <span class="n">min_step_fraction</span> <span class="o">=</span> <span class="n">value</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">min_step_fraction</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
@@ -147,9 +147,10 @@
 
     <span class="c1"># Max step value</span>
     <span class="k">if</span> <span class="n">non_default_max_step_fraction_ppl</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">non_default_max_step_fraction_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">direction</span><span class="p">:</span>
-                <span class="n">max_step_fraction</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">non_default_max_step_fraction_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">direction</span><span class="p">):</span>
+                <span class="n">max_step_fraction</span> <span class="o">=</span> <span class="n">value</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">max_step_fraction</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
@@ -157,9 +158,10 @@
 
     <span class="c1"># Max number of steps</span>
     <span class="k">if</span> <span class="n">non_default_max_number_steps_ppl</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">non_default_max_number_steps_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">direction</span><span class="p">:</span>
-                <span class="n">max_steps</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">non_default_max_number_steps_ppl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">parameter_label</span> <span class="ow">and</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">direction</span><span class="p">):</span>
+                <span class="n">max_steps</span> <span class="o">=</span> <span class="n">value</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">max_steps</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
@@ -169,7 +171,11 @@
 
 
 <div class="viewcode-block" id="calculate_chi_sq_ppl_single_datapoint"><a class="viewcode-back" href="../../../../games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.html#games.modules.parameter_profile_likelihood.calculate_parameter_profile_likelihood.calculate_chi_sq_ppl_single_datapoint">[docs]</a><span class="k">def</span> <span class="nf">calculate_chi_sq_ppl_single_datapoint</span><span class="p">(</span>
-    <span class="n">fixed_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">fixed_index_in_free_parameter_list</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">list</span>
+    <span class="n">fixed_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">fixed_index_in_free_parameter_list</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">parameter_estimation_problem_definition</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates chi_sq_ppl for a single datapoint on the profile likelihood</span>
@@ -185,6 +191,12 @@
 
 <span class="sd">    parameters</span>
 <span class="sd">        a list of floats of the initial parameter values (fixed and free)</span>
+
+<span class="sd">    parameter_estimation_problem_definition</span>
+<span class="sd">        a dictionary containing the parameter estimation problem</span>
+
+<span class="sd">    settings</span>
+<span class="sd">        a dictionary defining settings for the run</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -219,11 +231,14 @@
     <span class="p">]</span>
 
     <span class="c1"># Run PEM</span>
-    <span class="n">df_parameters</span> <span class="o">=</span> <span class="n">generate_parameter_sets</span><span class="p">(</span><span class="n">problem_ppl</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
-    <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span> <span class="o">=</span> <span class="n">define_experimental_data</span><span class="p">()</span>
-    <span class="n">df_global_search_results</span> <span class="o">=</span> <span class="n">solve_global_search</span><span class="p">(</span><span class="n">df_parameters</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">)</span>
+    <span class="n">df_parameters</span> <span class="o">=</span> <span class="n">generate_parameter_sets</span><span class="p">(</span><span class="n">problem_ppl</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span> <span class="o">=</span> <span class="n">define_experimental_data</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+    <span class="n">df_global_search_results</span> <span class="o">=</span> <span class="n">solve_global_search</span><span class="p">(</span><span class="n">df_parameters</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">,</span> <span class="n">exp_error</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">calibrated_chi_sq</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">calibrated_parameters</span> <span class="o">=</span> <span class="n">optimize_all</span><span class="p">(</span>
-        <span class="n">df_global_search_results</span><span class="p">,</span> <span class="n">run_type</span><span class="o">=</span><span class="s2">&quot;ppl&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">=</span><span class="n">problem_ppl</span>
+        <span class="n">df_global_search_results</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">,</span>
+        <span class="n">problem</span><span class="o">=</span><span class="n">problem_ppl</span><span class="p">,</span>
+        <span class="n">run_type</span><span class="o">=</span><span class="s2">&quot;ppl&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">fixed_val</span><span class="p">,</span> <span class="n">calibrated_chi_sq</span><span class="p">,</span> <span class="n">calibrated_parameters</span></div>
@@ -234,6 +249,8 @@
     <span class="n">calibrated_parameter_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">calibrated_chi_sq</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">threshold_chi_sq</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">parameter_estimation_problem_definition</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Calculates the ppl for the given parameter</span>
 
@@ -250,6 +267,14 @@
 
 <span class="sd">    threshold_chi_sq</span>
 <span class="sd">        a float defining the threshold chi_sq value</span>
+
+<span class="sd">    settings</span>
+<span class="sd">        a dictionary defining the run settings</span>
+
+<span class="sd">    parameter_estimation_problem_definition</span>
+<span class="sd">        a dictionary containing the parameter estimation problem -</span>
+<span class="sd">        must be provided for PPL simulations only, in which the free parameters</span>
+<span class="sd">        change depending on which parameter&#39;s PPL is being calculated</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -443,7 +468,11 @@
                                 <span class="p">]</span>  <span class="c1"># Replace with cal val</span>
 
                 <span class="n">param_val</span><span class="p">,</span> <span class="n">chi_sq_ppl_val</span><span class="p">,</span> <span class="n">param_vals</span> <span class="o">=</span> <span class="n">calculate_chi_sq_ppl_single_datapoint</span><span class="p">(</span>
-                    <span class="n">fixed_val</span><span class="p">,</span> <span class="n">fixed_index_in_free_parameter_list</span><span class="p">,</span> <span class="n">parameters_single_datapoint</span>
+                    <span class="n">fixed_val</span><span class="p">,</span>
+                    <span class="n">fixed_index_in_free_parameter_list</span><span class="p">,</span>
+                    <span class="n">parameters_single_datapoint</span><span class="p">,</span>
+                    <span class="n">parameter_estimation_problem_definition</span><span class="p">,</span>
+                    <span class="n">settings</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;chi_sq_ppl: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">chi_sq_ppl_val</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
@@ -751,9 +780,9 @@
         <span class="n">threshold_chi_sq</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">plot_parameter_relationships</span><span class="p">(</span><span class="n">df_ppl</span><span class="p">,</span> <span class="n">parameter_label</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modelID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;synTF_chem&#39;</span><span class="p">:</span>
-        <span class="n">plot_internal_states_along_ppl</span><span class="p">(</span><span class="n">df_ppl</span><span class="p">,</span> <span class="n">parameter_label</span><span class="p">)</span>
+    <span class="n">plot_parameter_relationships</span><span class="p">(</span><span class="n">df_ppl</span><span class="p">,</span> <span class="n">parameter_label</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;modelID&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;synTF_chem&quot;</span><span class="p">:</span>
+        <span class="n">plot_internal_states_along_ppl</span><span class="p">(</span><span class="n">df_ppl</span><span class="p">,</span> <span class="n">parameter_label</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;parameter_labels&quot;</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">elapsed_time_total</span></div>
 </pre></div>

@@ -12,7 +12,6 @@ import numpy as np
 from games.models.set_model import model
 from games.modules.parameter_estimation.optimization import optimize_all
 from games.modules.solve_single import solve_single_parameter_set
-from games.config.settings import settings
 from games.config.experimental_data import define_experimental_data
 from games.utilities.metrics import calc_chi_sq
 from games.utilities.saving import save_chi_sq_distribution
@@ -94,6 +93,7 @@ def generate_noise_realizations_and_calc_chi_sq_ref(
     exp_data_to_generate_noise_realizations: List[float],
     norm_solutions_ref: List[float],
     exp_error: List[float],
+    settings: dict,
 ) -> Tuple[List[list], List[float]]:
     """Generates noise realizations and calculates chi_sq_ref
 
@@ -109,6 +109,9 @@ def generate_noise_realizations_and_calc_chi_sq_ref(
     exp_error
         a list of floats containing standard deviation for
         each data point in the data set
+
+    settings
+        a dictionary defining the run settings
 
     Returns
     -------
@@ -137,14 +140,19 @@ def generate_noise_realizations_and_calc_chi_sq_ref(
         exp_data_noise_list.append(exp_data_noise_norm)
 
         # Calculate chi_sq_ref using noise realization i
-        chi_sq = calc_chi_sq(norm_solutions_ref, exp_data_noise_norm, exp_error)
+        chi_sq = calc_chi_sq(
+            norm_solutions_ref, exp_data_noise_norm, exp_error, settings["weight_by_error"]
+        )
         chi_sq_ref_list.append(chi_sq)
 
     return exp_data_noise_list, chi_sq_ref_list
 
 
 def calculate_chi_sq_fit(
-    calibrated_parameters: List[float], exp_data_noise_list: List[list]
+    calibrated_parameters: List[float],
+    exp_data_noise_list: List[list],
+    settings: dict,
+    parameter_estimation_problem_definition: dict,
 ) -> List[float]:
     """Runs optimization on each noise realization with
     the calibrated parameters as the initial guess
@@ -158,6 +166,14 @@ def calculate_chi_sq_fit(
         a list of lists containing the noise realizations
         (length = # noise realizations)
 
+    settings
+        a dictionary defining the run settings
+
+    parameter_estimation_problem_definition
+        a dictionary containing the parameter estimation problem -
+        must be provided for PPL simulations only, in which the free parameters
+        change depending on which parameter's PPL is being calculated
+
     Returns
     -------
     chi_sq_fit_list
@@ -169,24 +185,34 @@ def calculate_chi_sq_fit(
     for i, parameter_label in enumerate(settings["parameter_labels"]):
         df_noise[parameter_label] = [calibrated_parameters[i]] * settings["num_noise_realizations"]
 
-    x, _, exp_error = define_experimental_data()
+    x, _, exp_error = define_experimental_data(settings)
     df_noise["x"] = [x] * len(df_noise.index)
     df_noise["exp_data"] = exp_data_noise_list
     df_noise["exp_error"] = [exp_error] * len(df_noise.index)
+    df_noise["dataID"] = [settings["dataID"]] * len(df_noise.index)
+    df_noise["weight_by_error"] = [settings["weight_by_error"]] * len(df_noise.index)
+    df_noise["parameter_labels"] = [settings["parameter_labels"]] * settings[
+        "num_noise_realizations"
+    ]
 
     # add placeholder columns to match data structure for other
     # optimization runs that have initial guesses defined after a global search
     df_noise["placeholder 1"] = [0] * len(df_noise.index)
     df_noise["placeholder 2"] = [0] * len(df_noise.index)
 
-    _, _, df_optimization_results, _ = optimize_all(df_noise, "ppl threshold")
+    _, _, df_optimization_results, _ = optimize_all(
+        df_noise, settings, parameter_estimation_problem_definition, "ppl threshold"
+    )
     chi_sq_fit_list = list(df_optimization_results["chi_sq"])
 
     return chi_sq_fit_list
 
 
 def calculate_threshold_chi_sq(
-    calibrated_parameters: List[float], calibrated_chi_sq: float
+    settings: dict,
+    parameter_estimation_problem_definition: dict,
+    calibrated_parameters: List[float],
+    calibrated_chi_sq: float,
 ) -> float:
     """Calculates threshold chi_sq value for ppl calculations
 
@@ -205,6 +231,12 @@ def calculate_threshold_chi_sq(
 
     Parameters
     ----------
+    settings
+        a dictionary defining the run settings
+
+    parameter_estimation_problem_definition
+        a dictionary containing the parameter estimation problem
+
     calibrated_parameters
         a list of floats containing the calibrated values for each parameter
 
@@ -220,16 +252,30 @@ def calculate_threshold_chi_sq(
 
     if settings["modelID"] == "synTF_chem":
         model.parameters = settings["parameters_reference"]
-        x, exp_data, exp_error = define_experimental_data()
-        norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set(x, exp_data, exp_error)
+        x, exp_data, exp_error = define_experimental_data(settings)
+        norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set(
+            x,
+            exp_data,
+            exp_error,
+            settings["dataID"],
+            settings["weight_by_error"],
+            settings["parameter_labels"],
+        )
         print("chi_sq reference with training data: " + str(round(chi_sq_ref, 4)))
         exp_data_to_generate_noise_realizations = exp_data
 
     else:
         # solve model with calibrated parameters
         model.parameters = calibrated_parameters
-        x, exp_data, exp_error = define_experimental_data()
-        norm_solutions_cal, _, _ = solve_single_parameter_set(x, exp_data, exp_error)
+        x, exp_data, exp_error = define_experimental_data(settings)
+        norm_solutions_cal, _, _ = solve_single_parameter_set(
+            x,
+            exp_data,
+            exp_error,
+            settings["dataID"],
+            settings["weight_by_error"],
+            settings["parameter_labels"],
+        )
 
         # add noise to simulated data generated with calibrated parameters - analagous to how
         # reference data are generated
@@ -243,16 +289,26 @@ def calculate_threshold_chi_sq(
         # (simulated data generated with calibrated parameters + added noise) and
         # the simulated data with the reference parameters (in this case, the calibrated parameters)
         norm_solutions_ref, chi_sq_ref, _ = solve_single_parameter_set(
-            x, exp_data_to_generate_noise_realizations, exp_error
+            x,
+            exp_data_to_generate_noise_realizations,
+            exp_error,
+            settings["dataID"],
+            settings["weight_by_error"],
+            settings["parameter_labels"],
         )
 
     print("Generating noise realizations and calculating chi_sq_ref...")
     exp_data_noise_list, chi_sq_ref_list = generate_noise_realizations_and_calc_chi_sq_ref(
-        exp_data_to_generate_noise_realizations, norm_solutions_ref, exp_error
+        exp_data_to_generate_noise_realizations, norm_solutions_ref, exp_error, settings
     )
 
     print("Calculating chi_sq_fit...")
-    chi_sq_fit_list = calculate_chi_sq_fit(calibrated_parameters, exp_data_noise_list)
+    chi_sq_fit_list = calculate_chi_sq_fit(
+        calibrated_parameters,
+        exp_data_noise_list,
+        settings,
+        parameter_estimation_problem_definition,
+    )
 
     # Calculate threshold chi_sq
     chi_sq_distribution = []

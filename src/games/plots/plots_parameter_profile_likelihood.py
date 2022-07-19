@@ -12,13 +12,14 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from games.config.settings import settings
-from games.models.set_model import model
+from games.models.set_model import model, settings
 
 plt.style.use(settings["context"] + "paper.mplstyle.py")
 
 
-def plot_parameter_relationships(df_results: pd.DataFrame, parameter_label: str) -> None:
+def plot_parameter_relationships(
+    df_results: pd.DataFrame, parameter_label: str, settings: dict
+) -> None:
     """Plot parameter relationships for along PPL for a given parameter
 
     Parameters
@@ -28,6 +29,9 @@ def plot_parameter_relationships(df_results: pd.DataFrame, parameter_label: str)
 
     parameter_label
         a string defining the given parameter
+
+    settings
+        a dictionary defining the run settings
 
     Returns
     -------
@@ -174,7 +178,7 @@ def plot_parameter_profile_likelihood(
     plt.savefig("profile likelihood plot " + parameter_label + ".svg")
 
 
-def plot_internal_states_along_ppl(df_results: pd.DataFrame, parameter_label: str) -> None:
+def plot_internal_states_along_ppl(df_results: pd.DataFrame, parameter_label: str, parameter_labels: List[str]) -> None:
     """Plot parameter relationships for along PPL for a given parameter
 
     Parameters
@@ -184,6 +188,9 @@ def plot_internal_states_along_ppl(df_results: pd.DataFrame, parameter_label: st
 
     parameter_label
         a string defining the given parameter
+
+    parameter_labels
+        a list of strings defining all parameter labels
 
     Returns
     -------
@@ -208,7 +215,7 @@ def plot_internal_states_along_ppl(df_results: pd.DataFrame, parameter_label: st
             tspace_after_ligand_addition,
             solution_before_ligand_addition,
             solution_after_ligand_addition,
-        ) = model.solve_single()
+        ) = model.solve_single(parameter_labels)
         tspace_after_ligand_addition = [
             i + max(tspace_before_ligand_addition) for i in list(tspace_after_ligand_addition)
         ]

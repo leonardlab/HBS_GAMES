@@ -122,7 +122,7 @@ class synTF:
 
         return dydt
 
-    def solve_experiment(self, x: List[float], dataID: str) -> List[float]:
+    def solve_experiment(self, x: List[float], dataID: str, parameter_labels) -> List[float]:
         """Solve synTF model for a list of synTF values.
 
         Parameters
@@ -132,6 +132,11 @@ class synTF:
 
         dataID
             a string defining the dataID
+
+        parameter_labels
+            a list of strings defining the parameter labels
+            (variable not necessary for synTF, but is necessary for synTF_chem,
+            so include default value here)
 
         Returns
         -------
@@ -181,7 +186,10 @@ class synTF:
         exp_error: List[float],
         filename: str,
         run_type: str,
+        context: str,
+        dataID: str,
     ) -> None:
+
         """
         Plots training data and simulated training data for a single parameter set
 
@@ -205,6 +213,12 @@ class synTF:
         run_type
             a string containing the data type ('PEM evaluation' or else)
 
+        context
+            a string defining the absolute path to src/games
+
+        dataID
+            a string defining the data identity
+
         Returns
         -------
         None
@@ -224,4 +238,6 @@ class synTF:
         plot_settings = x_label, y_label, x_scale, plot_color, marker_type
 
         # make plot
-        plot_training_data_2d(x, solutions_norm, exp_data, exp_error, filename, plot_settings)
+        plot_training_data_2d(
+            x, solutions_norm, exp_data, exp_error, filename, plot_settings, context
+        )

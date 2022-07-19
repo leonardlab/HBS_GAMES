@@ -8,7 +8,6 @@ Created on Tue Jun 14 13:37:00 2022
 from typing import List
 from sklearn.linear_model import LinearRegression
 import numpy as np
-from games.config.settings import settings
 
 
 def calc_r_sq(data_x: List[float], data_y: List[float]) -> float:
@@ -44,7 +43,9 @@ def calc_r_sq(data_x: List[float], data_y: List[float]) -> float:
     return r_sq
 
 
-def calc_chi_sq(exp_: List[float], sim: List[float], std: List[float]) -> float:
+def calc_chi_sq(
+    exp_: List[float], sim: List[float], std: List[float], weight_by_error: str
+) -> float:
     """Calculates chi2 between 2 datasets with measurement error described by std
 
     Parameters
@@ -58,6 +59,9 @@ def calc_chi_sq(exp_: List[float], sim: List[float], std: List[float]) -> float:
     std
         a list of floats defining the measurement error for the experimental data
 
+    weight_by_error
+        a string defining whether the cost function should be weighted by error or not
+
     Returns
     -------
     chi_sq
@@ -65,7 +69,7 @@ def calc_chi_sq(exp_: List[float], sim: List[float], std: List[float]) -> float:
 
     '"""
 
-    if settings["weight_by_error"] == "no":
+    if weight_by_error == "no":
         std = [1] * len(exp_)
 
     chi_sq = float(0)
