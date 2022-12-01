@@ -297,33 +297,65 @@ The other tools will be installed by Poetry.
 
 ## Getting started
 
-1. Clone the repo (see Installation and running instructions for details)
+1. Install pyenv. Note that this repo is not compatible with Anaconda and instead uses pyenv and poetry to manage environments.
 
-2. Activate the environment using poetry (this is all you need for day-to-day development). You will need the package pyenv installed, with Python 3.10 available.
+Mac/Linux users can use [Homebrew](https://brew.sh/) as a package manager to help install pyenv and poetry.
+To install homebrew, type the following command into your command line interface (Terminal).
+
+```bash
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+```
+
+Then, to install pyenv, run
+
+```bash
+$ brew update
+$ brew install pyenv
+```
+
+To initialize pyenv properly, the following code needs to be added to your ~/.bash_profile or your ~/.zshrc. Make sure this is at the end of the file. 
+
+```
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
+```
+
+Finally, to install Python 3.10.8, run the following.
+
+```
+$ pyenv install 3.10.8
+```
+
+To see which Python versions are installed, run the following.
+
+```
+$ pyenv versions --list
+```
+
+If you are running windows, you can install [pyenv-win](https://github.com/pyenv-win/pyenv-win).
+
+2. Install poetry according to the following instructions: [Poetry](https://python-poetry.org/docs/) 
+
+3. Clone the repo (see Installation and running instructions for details).
+
+4. Activate the environment using poetry (this is all you need for day-to-day development). You will need the package pyenv installed, with Python 3.10 available.
 
 ```bash
 $ poetry shell
 ```
 
-3. Install dependencies.
+5. Install dependencies.
 
 ```bash
 $ poetry install
 ```
 
-4. Run a test with the command line interface (CLI). If the --modules option is not specified, the default module (0) will run. Before running the test, navigate to the src/games/ folder.
+6. Run a test with the command line interface (CLI). If the --modules option is not specified, the default module (0) will run. Before running the test, navigate to the src/games/ folder.
 
 ```bash
 $ python run.py
 ```
-
-## Makefile commands
-
-The `Makefile` include three commands for working with the project.
-
-- `make clean` will clean all the build and testing files
-- `make build` will run tests, format, lint, and type check your code (you can also just run `tox`)
-- `make docs` will generate documentation
 
 ## Repository tools
 
