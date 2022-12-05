@@ -153,14 +153,17 @@ def generate_pem_evaluation_data(
     ----------
     df_global_search_results
         a dataframe containing global search results
+        
+    settings
+        a dictionary of run settings
 
     Returns
     -------
     pem_evaluation_data_list
         a list of lists containing the PEM evaluation data
 
-    settings
-        a dictionary of run settings
+    max_chi_sq
+        a float defining the max chi_sq between the PEM evaluation data with and without noise
 
     """
 
