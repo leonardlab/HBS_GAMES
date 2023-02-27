@@ -2,7 +2,7 @@
   "modelID" : "synTF",
   "dataID" : "synTF dose response",
   "mechanismID" : "A",
-  "context" : "/Users/kdreyer/Documents/Github/GAMES/src/games/",
+  "context" : "/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/",
   "parameters" : [1, 1113, 0.032], 
   "parameters_reference" : [],
   "parameter_labels" : ["b", "m", "w"],
