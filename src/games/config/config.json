@@ -16,6 +16,7 @@
   "num_pem_evaluation_datasets" : 3, 
   "parallelization" : "yes", 
   "num_cores" : 8,
+  "num_processes" : 8,
   "num_noise_realizations" : 100,
   "parameter_labels_for_ppl" : ["m", "w"],
   "default_min_step_fraction_ppl" : 0.1,

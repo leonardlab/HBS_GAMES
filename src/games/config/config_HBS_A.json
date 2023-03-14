@@ -1,4 +1,4 @@
-{ "folder_name": "synTF_chem example 1", 
+{ "folder_name": "HBS_model_mech_",
   "modelID" : "synTF_chem",
   "dataID" : "ligand dose response and DBD dose response",
   "mechanismID" : "D",
@@ -11,18 +11,10 @@
   "non_default_bounds": {"n" : [0, 0.602]},
   "num_parameter_sets_global_search" : 1000, 
   "num_parameter_sets_optimization" : 100,
-  "weight_by_error" : "yes",
+  "weight_by_error" : "no",
   "num_pem_evaluation_datasets" : 3, 
   "parallelization" : "yes", 
   "num_cores" : 8,
-  "num_processes" : 8,
-  "num_noise_realizations" : 1000,
-  "parameter_labels_for_ppl" : ["e", "m", "km", "n"],
-  "default_min_step_fraction_ppl" : 0.01,
-  "non_default_min_step_fraction_ppl" : {"k_bind -1": 0.001, "m -1" :  0.001},
-  "default_max_step_fraction_ppl" : 0.2,
-  "non_default_max_step_fraction_ppl" : {"m 1" : 0.6},
-  "default_max_number_steps_ppl": 50,
-  "non_default_max_number_steps_ppl" : {"m 1" : 100}
-  
+  "num_processes" : 8
 }
+
