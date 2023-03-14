@@ -17,7 +17,11 @@ class synTF:
 
     """
 
-    def __init__(self, parameters: List[float] = None, inputs: List[float] = None) -> None:
+    def __init__(
+            self, 
+            parameters: List[float] = None,
+            inputs: List[float] = None
+        ) -> None:
         """Initializes synTF model.
 
         Parameters
