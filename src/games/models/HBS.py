@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun 16 09:11:29 2022
+Created on Mon Mar 13 2023
 
-@author: kate
+@author: Kathleen Dreyer
 """
 
 import math
@@ -133,10 +133,10 @@ class HBS_model:
         )
 
     @staticmethod
-    def gradient(
-        y: np.ndarray, t: np.ndarray, parameters: list, inputs: list, mechanismID: str
+    def gradient_simple_HBS_D(
+        y: np.ndarray, t: np.ndarray, parameters: list, input: float, mechanismID: str
     ) -> np.ndarray:
-        """Defines the gradient for synTF_Chem model.
+        """Defines the gradient for simple HBS topology model.
 
         Parameters
         ----------
@@ -149,8 +149,8 @@ class HBS_model:
         parameters
             a list of floats defining the parameters
 
-        inputs
-            a list of floats defining the inputs
+        input
+            a float defining the input O2 pressure (pO2)
 
         mechanismID
             a string defining the mechanism identity
@@ -163,41 +163,75 @@ class HBS_model:
 
         """
 
-        [dose_a, dose_b] = inputs
-        if mechanismID == "A" or mechanismID == "B":
-            [_, b, k_bind, m, km, n] = parameters
+        pO2 = input
+        #mech ID statements
+        if mechanismID == 'model_D2':
+            ([
+                t_HAF,
+                k_txn2,
+                k_dHAF, 
+                k_bHS, 
+                k_bHH, 
+                k_txnH, 
+                k_dH1R, 
+                k_dH1P, 
+                k_dHP, 
+                k_txnBH
+            ]) = parameters
 
-        if mechanismID == "C" or mechanismID == "D":
-            [_, b, k_bind, m_star, km, n] = parameters
-            m = m_star * b
+        elif mechanismID == 'model_D':
+            ([
+                t_HAF,
+                k_dHAF, 
+                k_bHS, 
+                k_bHH, 
+                k_txnH, 
+                k_dH1R, 
+                k_dH1P, 
+                k_dHP, 
+                k_txnBH
+            ]) = parameters
+            
+            k_txn2 = 1.0 #U
+            
+        #parameters that will be held constant:
+        k_txn = 1.0 #U
+        k_dR = 2.7 #1/h
+        k_tln = 1 #U
+        k_dP = 0.35 #1/h
+        k_dRep = 0.029 #1/hr
 
-        fractional_activation_promoter = (b + m * (y[5] / km) ** n) / (
-            1 + (y[5] / km) ** n + (y[1] / km) ** n
-        )
+        if pO2 == 138:
+            k_dHAF = 0
 
-        if math.isnan(fractional_activation_promoter):
-            fractional_activation_promoter = 0
+        else:
+            k_dHAF = np.piecewise(t, [t < t_HAF, t >= t_HAF], [k_dHAF, 0])
+        
+        # y holds these state variables: y0 = HAF mRNA, y1 = HAF protein,
+        # y2 = SUMO mRNA, y3 = SUMO protein, y4 = SUMO HAF, 
+        # y5 = antisense HIF1a RNA, y6 = HIF1a mRNA, y7 = HIF1a protein,
+        # y8 = HIF2a mRNA, y9 = HIF2a protein, y10 = HIF2a* protein,
+        # y11 = DsRED2 mRNA, y12 = DsRED2 protein
 
-        k_txn = 1
-        k_trans = 1
-        kdeg_rna = 2.7
-        kdeg_protein = 0.35
-        kdeg_reporter = 0.029
-        kdeg_ligand = 0.01
+        y0, y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12 = y
 
         dydt = np.array(
             [
-                k_txn * dose_a - kdeg_rna * y[0],  # y0 A mRNA
-                k_trans * y[0] - kdeg_protein * y[1] - k_bind * y[1] * y[3] * y[4],  # y1 A protein
-                k_txn * dose_b - kdeg_rna * y[2],  # y2 B mRNA
-                k_trans * y[2] - kdeg_protein * y[3] - k_bind * y[1] * y[3] * y[4],  # y3 B protein
-                -k_bind * y[1] * y[3] * y[4] - y[4] * kdeg_ligand,  # y4 Ligand
-                k_bind * y[1] * y[3] * y[4] - kdeg_protein * y[5],  # y5 Activator
-                k_txn * fractional_activation_promoter - kdeg_rna * y[6],  # y6 Reporter mRNA
-                k_trans * y[6] - kdeg_reporter * y[7],  # y7 Reporter protein
+            k_txn2 - k_dR*y0,
+            k_tln*y0 - k_dP*y1 - k_dHAF*y1 - (k_bHS/pO2)*y1*y3,
+            k_txn - k_dR*y2,
+            k_tln*y2 - k_dP*y3 - (k_bHS/pO2)*y1*y3,
+            (k_bHS/pO2)*y1*y3 - k_dP*y4 - k_bHH*y9*y4,
+            k_txnH*(y7 + y10) - k_dR*y5,
+            k_txn - k_dR*y6 - k_dH1R*y5*y6,
+            k_tln*y6 - k_dP*y7 - k_dHP*pO2*y7 - k_dH1P*y7*(y1 + y4),
+            k_txn - k_dR*y8,
+            k_tln*y8 - k_dP*y9 - k_dHP*pO2*y9 - k_bHH*y9*y4,
+            k_bHH*y9*y4 - k_dP*y10,
+            k_txnBH*(y7 + y10) - k_dR*y11,
+            k_tln*y11 - k_dRep*y12
             ]
         )
-
         return dydt
 
     def solve_experiment(self, x: list, dataID: str, parameter_labels: List[str]) -> list:
