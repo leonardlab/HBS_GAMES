@@ -18,8 +18,6 @@ class HBS_model:
     Representation of HBS model
 
     """
-##### START here#######
-#include all model versions in single class, use ID to set state labels, ODEs, params
     def __init__(
         self,
         parameters: List[float] = [1, 1, 1, 1, 1, 1],
@@ -133,8 +131,13 @@ class HBS_model:
         )
 
     @staticmethod
-    def gradient_simple_HBS_D(
-        y: np.ndarray, t: np.ndarray, parameters: list, input: float, mechanismID: str
+    def topology_gradient_D(
+        y: np.ndarray, 
+        t: np.ndarray, 
+        parameters: list[float], 
+        input: float, 
+        mechanismID: str, 
+        topology: str
     ) -> np.ndarray:
         """Defines the gradient for simple HBS topology model.
 
@@ -155,6 +158,9 @@ class HBS_model:
         mechanismID
             a string defining the mechanism identity
 
+        topology
+            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
+            or "H2a_fb" for HBS with HIF2a feedback)
 
         Returns
         -------
@@ -206,33 +212,38 @@ class HBS_model:
 
         else:
             k_dHAF = np.piecewise(t, [t < t_HAF, t >= t_HAF], [k_dHAF, 0])
-        
-        # y holds these state variables: y0 = HAF mRNA, y1 = HAF protein,
-        # y2 = SUMO mRNA, y3 = SUMO protein, y4 = SUMO HAF, 
-        # y5 = antisense HIF1a RNA, y6 = HIF1a mRNA, y7 = HIF1a protein,
-        # y8 = HIF2a mRNA, y9 = HIF2a protein, y10 = HIF2a* protein,
-        # y11 = DsRED2 mRNA, y12 = DsRED2 protein
-
-        y0, y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12 = y
 
         dydt = np.array(
             [
-            k_txn2 - k_dR*y0,
-            k_tln*y0 - k_dP*y1 - k_dHAF*y1 - (k_bHS/pO2)*y1*y3,
-            k_txn - k_dR*y2,
-            k_tln*y2 - k_dP*y3 - (k_bHS/pO2)*y1*y3,
-            (k_bHS/pO2)*y1*y3 - k_dP*y4 - k_bHH*y9*y4,
-            k_txnH*(y7 + y10) - k_dR*y5,
-            k_txn - k_dR*y6 - k_dH1R*y5*y6,
-            k_tln*y6 - k_dP*y7 - k_dHP*pO2*y7 - k_dH1P*y7*(y1 + y4),
-            k_txn - k_dR*y8,
-            k_tln*y8 - k_dP*y9 - k_dHP*pO2*y9 - k_bHH*y9*y4,
-            k_bHH*y9*y4 - k_dP*y10,
-            k_txnBH*(y7 + y10) - k_dR*y11,
-            k_tln*y11 - k_dRep*y12
+            k_txn2 - k_dR*y[0], #y[0] = HAF mRNA
+            k_tln*y[0] - k_dP*y[1] - k_dHAF*y[1] - (k_bHS/pO2)*y[1]*y[3], #y[1] = HAF protein
+            k_txn - k_dR*y[2], # y[2] = SUMO mRNA
+            k_tln*y[2] - k_dP*y[3] - (k_bHS/pO2)*y[1]*y[3], # y[3] = SUMO protein,
+            (k_bHS/pO2)*y[1]*y[3] - k_dP*y[4] - k_bHH*y[9]*y[4], # y[4] = SUMO HAF
+            k_txnH*(y[7] + y[10]) - k_dR*y[5], # y[5] = antisense HIF1a RNA
+            k_txn - k_dR*y[6] - k_dH1R*y[5]*y[6], # y[6] = HIF1a mRNA
+            k_tln*y[6] - k_dP*y[7] - k_dHP*pO2*y[7] - k_dH1P*y[7]*(y[1] + y[4]), # y[7] = HIF1a protein
+            k_txn - k_dR*y[8], # y[8] = HIF2a mRNA
+            k_tln*y[8] - k_dP*y[9] - k_dHP*pO2*y[9] - k_bHH*y[9]*y[4], # y[9] = HIF2a protein
+            k_bHH*y[9]*y[4] - k_dP*y[10], # y[10] = HIF2a* protein
+            k_txnBH*(y[7] + y[10]) - k_dR*y[11], # y[11] = DsRED2 mRNA
+            k_tln*y[11] - k_dRep*y[12] # y[12] = DsRED2 protein
             ]
         )
-        return dydt
+
+        if topology == "simple":
+            # no changes needed to dydt 
+            return dydt
+        elif topology == "H1a_fb":
+            # y[6] = HIF1a mRNA, CHANGE dydt[6] for H1a fb
+            dydt_H1a_fb = dydt.copy()
+            dydt_H1a_fb[6] = k_txn + k_txnBH*(y[7] + y[10]) - k_dR*y[6] - k_dH1R*y[5]*y[6]
+            return dydt_H1a_fb
+        elif topology == "H2a_fb":
+            # y[8] = HIF2a mRNA, CHANGE dydt[8] for H2a fb
+            dydt_H2a_fb = dydt.copy()
+            dydt_H2a_fb[8] = k_txn + k_txnBH*(y[7] + y[10]) - k_dR*y[8]
+            return dydt_H2a_fb
 
     def solve_experiment(self, x: list, dataID: str, parameter_labels: List[str]) -> list:
         """Solve synTF_Chem model for a list of ligand values.

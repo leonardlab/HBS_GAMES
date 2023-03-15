@@ -29,10 +29,10 @@ def generalize_parameter_labels(
     Parameters
     ----------
     parameter_labels
-        a lists of strings containing the labels for all parameters
+        a list of strings containing the labels for all parameters
 
     free_parameter_labels
-        a lists of strings containing the labels for the free parameters
+        a list of strings containing the labels for the free parameters
 
     Returns
     -------
@@ -40,7 +40,7 @@ def generalize_parameter_labels(
         list of floats defining the generalized parameter labels
 
     general_parameter_labels_free
-        list of floats defining which of the generalized parameter labels are free
+        list of strings defining which of the generalized parameter labels are free
 
     """
     free_parameter_indices = []
