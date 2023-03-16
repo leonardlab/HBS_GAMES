@@ -6,7 +6,6 @@ Created on Fri Jun  3 15:25:47 2022
 @author: kate
 """
 import os
-from typing import Tuple, List
 import numpy as np
 from games.models.set_model import model
 from games.utilities.saving import create_folder
@@ -18,12 +17,11 @@ from games.config.experimental_data import define_experimental_data
 def solve_single_parameter_set(
     t_hypoxia: np.ndarray,
     topologies: list[str], 
-    exp_data: List[float],
-    exp_error: List[float],
+    exp_data: list[float],
+    exp_error: list[float],
     dataID: str,
     weight_by_error: str,
-    parameter_labels: List[str],
-) -> Tuple[List[float], float, float]:
+) -> dict:
     """
     Solves model for a single parameter set
 
@@ -66,7 +64,7 @@ def solve_single_parameter_set(
     return solutions_dict #, chi_sq, r_sq
 
 
-def run_single_parameter_set(settings: dict, folder_path: str) -> Tuple[List[float], float, float]:
+def run_single_parameter_set(settings: dict, folder_path: str) -> tuple[list[float], float, float]:
     """Solves model for a single parameter set using dataID defined in settings["
 
     Parameters
@@ -129,3 +127,32 @@ def run_single_parameter_set(settings: dict, folder_path: str) -> Tuple[List[flo
     print("*************************")
 
     return solutions_norm, chi_sq, r_sq
+
+
+
+settings = {
+   "context": "/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/",
+   "dataID": "hypoxia_only",
+   "parameters": [47.1, 1.51, 0.324, 4.37, 1.08e-3, 22.7, 7.43e-4, 0.622, 0.593, 3.88]
+}
+
+model.parameters = settings["parameters"]
+
+input_pO2, exp_data, exp_error = define_experimental_data(
+   settings
+)
+
+solutions = solve_single_parameter_set(
+    model.t_hypoxia_exp,
+    ["simple", "H1a_fb", "H2a_fb"],
+    exp_data,
+    exp_error,
+    settings["dataID"],
+    "no",
+)
+
+# print(solutions)
+for key, val in solutions.items():
+    print(key, ": ")
+    for sub_key, sub_val in val.items():
+        print(sub_key, ": ", np.around(sub_val, 4))

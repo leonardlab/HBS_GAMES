@@ -1,15 +1,15 @@
 { "folder_name" : "HBS_model_mech_D2",
   "modelID" : "HBS",
   "topologies" : ["simple", "H1a_fb", "H2a_fb"],
-  "dataID" : "",
+  "dataID" : "hypoxia_only",
   "mechanismID" : "D2",
   "context" : "/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/",
-  "parameters" : [15, 1, 1, 720, 100, 2], 
-  "parameters_reference" : [15, 1, 0.05, 720, 100, 2],
-  "parameter_labels" : ["e", "b", "k_bind", "m", "km", "n"],
-  "free_parameter_labels" : ["e", "m", "km", "n"],
+  "parameters" : [47.1, 1.51, 0.324, 4.37, 1.08e-3, 22.7, 7.43e-4, 0.622, 0.593, 3.88], 
+  "parameters_reference" : [36, 1.0, 0.1, 0.1, 0.1, 1.0, 0.1, 1.0e-2, 1.0e-2, 1.0],
+  "parameter_labels" : ["t_HAF", "k_txn2", "k_dHAF", "k_bHS", "k_bHH", "k_txnH", "k_dH1R", "k_dH1P", "k_dHP", "k_txnBH"],
+  "free_parameter_labels" : ["t_HAF", "k_txn2", "k_dHAF", "k_bHS", "k_bHH", "k_txnH", "k_dH1R", "k_dH1P", "k_dHP", "k_txnBH"],
   "bounds_orders_of_magnitude" : 3,
-  "non_default_bounds": {"n" : [0, 0.602]},
+  "non_default_bounds": {"t_HAF" : [1.3802, 1.8573]},
   "num_parameter_sets_global_search" : 1000, 
   "num_parameter_sets_optimization" : 100,
   "weight_by_error" : "no",
@@ -18,3 +18,6 @@
   "num_cores" : 8,
   "num_processes" : 8
 }
+
+
+
