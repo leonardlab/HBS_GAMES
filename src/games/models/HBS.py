@@ -19,8 +19,8 @@ class HBS_model:
     """
     def __init__(
         self,
-        parameters: list[float] = [1, 1, 1, 1, 1, 1],
-        input_pO2: list[float] = None,
+        parameters: list[float] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        input_pO2: list[float] = [138, 7.6],
         mechanismID: str = "default",
         t_normoxia: np.ndarray = np.arange(0, 500, 1),
         t_hypoxia_exp: np.ndarray = np.array([0, 24, 48, 72, 96, 120]),
@@ -90,7 +90,7 @@ class HBS_model:
 
     def solve_single(
         self, topology: str, t_hypoxia: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Solves single HBS topology model for a single set of parameters and inputs,
         including 2 steps:
            1) time = 0 hours to time = 500 hours in normoxia (21% O2)
@@ -196,7 +196,7 @@ class HBS_model:
 
         pO2 = input_pO2
         #mech ID statements
-        if mechanismID == 'model_D2':
+        if mechanismID == "D2":
             ([
                 t_HAF,
                 k_txn2,
@@ -210,7 +210,7 @@ class HBS_model:
                 k_txnBH
             ]) = parameters
 
-        elif mechanismID == 'model_D':
+        elif mechanismID == "D":
             ([
                 t_HAF,
                 k_dHAF, 
@@ -346,113 +346,113 @@ class HBS_model:
 
     #     return solutions_norm
 
-    @staticmethod
-    def plot_training_data(
-        x: list,
-        solutions_norm: List[float],
-        exp_data: List[float],
-        exp_error: List[float],
-        filename: str,
-        run_type: str,
-        context: str,
-        dataID: str,
-    ) -> None:
-        """
-        Plots training data and simulated training data for a single parameter set
+    # @staticmethod
+    # def plot_training_data(
+    #     x: list,
+    #     solutions_norm: List[float],
+    #     exp_data: List[float],
+    #     exp_error: List[float],
+    #     filename: str,
+    #     run_type: str,
+    #     context: str,
+    #     dataID: str,
+    # ) -> None:
+    #     """
+    #     Plots training data and simulated training data for a single parameter set
 
-        Parameters
-        ----------
-        x
-            list of floats defining the independent variable
+    #     Parameters
+    #     ----------
+    #     x
+    #         list of floats defining the independent variable
 
-        solutions_norm
-            list of floats defining the simulated dependent variable
+    #     solutions_norm
+    #         list of floats defining the simulated dependent variable
 
-        exp_data
-            list of floats defining the experimental dependent variable
+    #     exp_data
+    #         list of floats defining the experimental dependent variable
 
-        exp_error
-            list of floats defining the experimental error for the dependent variable
+    #     exp_error
+    #         list of floats defining the experimental error for the dependent variable
 
-        filename
-           a string defining the filename used to save the plot
+    #     filename
+    #        a string defining the filename used to save the plot
 
-        run_type
-            a string containing the data type ('PEM evaluation' or else)
+    #     run_type
+    #         a string containing the data type ('PEM evaluation' or else)
 
-        context
-            a string defining the file structure context
+    #     context
+    #         a string defining the file structure context
 
-        dataID
-            a string defining the dataID
+    #     dataID
+    #         a string defining the dataID
 
-        Returns
-        -------
-        None"""
+    #     Returns
+    #     -------
+    #     None"""
 
-        # define plot settings
-        if run_type == "default":
-            plot_color = "black"
-            marker_type = "o"
+    #     # define plot settings
+    #     if run_type == "default":
+    #         plot_color = "black"
+    #         marker_type = "o"
 
-        elif run_type == "PEM evaluation":
-            plot_color = "dimgrey"
-            marker_type = "^"
+    #     elif run_type == "PEM evaluation":
+    #         plot_color = "dimgrey"
+    #         marker_type = "^"
 
-        if dataID == "ligand dose response":
-            y_label = "Rep. protein (au)"
-            x_label = "Ligand (nM)"
-            x_scale = "symlog"
-            plot_settings = x_label, y_label, x_scale, plot_color, marker_type
-            plot_training_data_2d(
-                x, solutions_norm, exp_data, exp_error, filename, plot_settings, context
-            )
+    #     if dataID == "ligand dose response":
+    #         y_label = "Rep. protein (au)"
+    #         x_label = "Ligand (nM)"
+    #         x_scale = "symlog"
+    #         plot_settings = x_label, y_label, x_scale, plot_color, marker_type
+    #         plot_training_data_2d(
+    #             x, solutions_norm, exp_data, exp_error, filename, plot_settings, context
+    #         )
 
-        elif dataID == "ligand dose response and DBD dose response":
-            # Define plot settings for ligand dose response
-            y_label = "Rep. protein (au)"
-            x_label = "Ligand (nM)"
-            x_scale = "symlog"
-            plot_settings = x_label, y_label, x_scale, plot_color, marker_type
+    #     elif dataID == "ligand dose response and DBD dose response":
+    #         # Define plot settings for ligand dose response
+    #         y_label = "Rep. protein (au)"
+    #         x_label = "Ligand (nM)"
+    #         x_scale = "symlog"
+    #         plot_settings = x_label, y_label, x_scale, plot_color, marker_type
 
-            # plot ligand dose response
-            filename_1 = filename + "ligand dose response"
-            plot_training_data_2d(
-                x[:11],
-                solutions_norm[:11],
-                exp_data[:11],
-                exp_error[:11],
-                filename_1,
-                plot_settings,
-                context,
-            )
+    #         # plot ligand dose response
+    #         filename_1 = filename + "ligand dose response"
+    #         plot_training_data_2d(
+    #             x[:11],
+    #             solutions_norm[:11],
+    #             exp_data[:11],
+    #             exp_error[:11],
+    #             filename_1,
+    #             plot_settings,
+    #             context,
+    #         )
 
-            # Define plot settings for DBD dose response
-            y_label = "Rep. protein (au)"
-            x_label = "DBD plasmid dose (ng)"
-            x_scale = "linear"
-            plot_settings = x_label, y_label, x_scale, plot_color, marker_type
+    #         # Define plot settings for DBD dose response
+    #         y_label = "Rep. protein (au)"
+    #         x_label = "DBD plasmid dose (ng)"
+    #         x_scale = "linear"
+    #         plot_settings = x_label, y_label, x_scale, plot_color, marker_type
 
-            # Plot DBD dose response @ 20ng AD
-            filename_2 = filename + "DBD dose response 20ng AD"
-            plot_training_data_2d(
-                x[11:19],
-                solutions_norm[11:19],
-                exp_data[11:19],
-                exp_error[11:19],
-                filename_2,
-                plot_settings,
-                context,
-            )
+    #         # Plot DBD dose response @ 20ng AD
+    #         filename_2 = filename + "DBD dose response 20ng AD"
+    #         plot_training_data_2d(
+    #             x[11:19],
+    #             solutions_norm[11:19],
+    #             exp_data[11:19],
+    #             exp_error[11:19],
+    #             filename_2,
+    #             plot_settings,
+    #             context,
+    #         )
 
-            # Plot DBD dose response @ 10ng AD
-            filename_3 = filename + "DBD dose response 10ng AD"
-            plot_training_data_2d(
-                x[19:],
-                solutions_norm[19:],
-                exp_data[19:],
-                exp_error[19:],
-                filename_3,
-                plot_settings,
-                context,
-            )
+    #         # Plot DBD dose response @ 10ng AD
+    #         filename_3 = filename + "DBD dose response 10ng AD"
+    #         plot_training_data_2d(
+    #             x[19:],
+    #             solutions_norm[19:],
+    #             exp_data[19:],
+    #             exp_error[19:],
+    #             filename_3,
+    #             plot_settings,
+    #             context,
+    #         )
