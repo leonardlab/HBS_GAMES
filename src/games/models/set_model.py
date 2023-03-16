@@ -6,8 +6,8 @@ Created on Fri Jun  3 14:57:05 2022
 @author: kate
 """
 import json
-from games.models.synTF import synTF
 from games.models.synTF_chem import synTF_chem
+from games.models.HBS import HBS_model
 
 
 def set_model():
@@ -30,12 +30,15 @@ def set_model():
             parameters=settings["parameters"], mechanismID=settings["mechanismID"]
         )
 
-    elif settings["modelID"] == "synTF":
-        given_model = synTF(parameters=settings["parameters"])
+    elif settings["modelID"] == "HBS":
+        given_model = HBS_model(
+            parameters=settings["parameters"], mechanismID=settings["mechanismID"]
+
+        )
 
     return given_model
 
 
-file = open("/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/config/config.json", encoding="utf-8")
+file = open("/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/config/config_HBS_D2.json", encoding="utf-8")
 settings = json.load(file)
 model = set_model()

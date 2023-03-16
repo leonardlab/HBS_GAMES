@@ -16,7 +16,8 @@ from games.config.experimental_data import define_experimental_data
 
 
 def solve_single_parameter_set(
-    x: List[float],
+    t_hypoxia: np.ndarray,
+    topologies: list[str], 
     exp_data: List[float],
     exp_error: List[float],
     dataID: str,
@@ -28,9 +29,6 @@ def solve_single_parameter_set(
 
     Parameters
     ----------
-    x
-        a list of floats containing the values of the independent variable
-
     exp_data
         a list of floats containing the values of the dependent variable
 
@@ -60,12 +58,12 @@ def solve_single_parameter_set(
         a float defining the value of the correlation coefficient (r_sq)
     """
 
-    solutions = model.solve_experiment(x, dataID, parameter_labels)
-    solutions_norm = model.normalize_data(solutions, dataID)
-    chi_sq = calc_chi_sq(exp_data, solutions_norm, exp_error, weight_by_error)
-    r_sq = calc_r_sq(exp_data, solutions_norm)
+    solutions_dict = model.solve_experiment(t_hypoxia, topologies, dataID)
+    # solutions_norm = model.normalize_data(solutions_dict, dataID)
+    # chi_sq = calc_chi_sq(exp_data, solutions_norm, exp_error, weight_by_error)
+    # r_sq = calc_r_sq(exp_data, solutions_norm)
 
-    return solutions_norm, chi_sq, r_sq
+    return solutions_dict #, chi_sq, r_sq
 
 
 def run_single_parameter_set(settings: dict, folder_path: str) -> Tuple[List[float], float, float]:
