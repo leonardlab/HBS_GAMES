@@ -9,8 +9,8 @@ import os
 import numpy as np
 from games.models.set_model import model
 from games.utilities.saving import create_folder
-from games.utilities.metrics import calc_chi_sq, calc_r_sq
-from games.plots.plots_timecourses import plot_timecourses
+# from games.utilities.metrics import calc_chi_sq, calc_r_sq
+# from games.plots.plots_timecourses import plot_timecourses
 from games.config.experimental_data import define_experimental_data
 
 
@@ -92,52 +92,48 @@ def run_single_parameter_set(settings: dict, folder_path: str) -> tuple[list[flo
     path = create_folder(folder_path, sub_folder_name)
     os.chdir(path)
     model.parameters = settings["parameters"]
-    x, exp_data, exp_error = define_experimental_data(settings)
-    solutions_norm, chi_sq, r_sq = solve_single_parameter_set(
-        x,
-        exp_data,
-        exp_error,
-        settings["dataID"],
-        settings["weight_by_error"],
-        settings["parameter_labels"],
-    )
-    filename = "fit to training data"
-    run_type = "default"
-    plot_timecourses(settings["modelID"], settings["parameter_labels"])
-    model.plot_training_data(
-        x,
-        solutions_norm,
-        exp_data,
-        exp_error,
-        filename,
-        run_type,
-        settings["context"],
-        settings["dataID"],
-    )
+    # x, exp_data, exp_error = define_experimental_data(settings)
+    # solutions_norm, chi_sq, r_sq = solve_single_parameter_set(
+    #     x,
+    #     exp_data,
+    #     exp_error,
+    #     settings["dataID"],
+    #     settings["weight_by_error"],
+    #     settings["parameter_labels"],
+    # )
+    # filename = "fit to training data"
+    # run_type = "default"
+    # plot_timecourses(settings["modelID"], settings["parameter_labels"])
+    # model.plot_training_data(
+    #     x,
+    #     solutions_norm,
+    #     exp_data,
+    #     exp_error,
+    #     filename,
+    #     run_type,
+    #     settings["context"],
+    #     settings["dataID"],
+    # )
 
-    print("")
-    print("*************************")
-    print("Parameters")
-    for i, label in enumerate(settings["parameter_labels"]):
-        print(label + " = " + str(model.parameters[i]))
-    print("")
-    print("Metrics")
-    print("R_sq = " + str(np.round(r_sq, 4)))
-    print("chi_sq = " + str(np.round(chi_sq, 4)))
-    print("*************************")
+    # print("")
+    # print("*************************")
+    # print("Parameters")
+    # for i, label in enumerate(settings["parameter_labels"]):
+    #     print(label + " = " + str(model.parameters[i]))
+    # print("")
+    # print("Metrics")
+    # print("R_sq = " + str(np.round(r_sq, 4)))
+    # print("chi_sq = " + str(np.round(chi_sq, 4)))
+    # print("*************************")
 
-    return solutions_norm, chi_sq, r_sq
-
-
+    # return solutions_norm, chi_sq, r_sq
 
 settings = {
    "context": "/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/",
    "dataID": "hypoxia_only",
    "parameters": [47.1, 1.51, 0.324, 4.37, 1.08e-3, 22.7, 7.43e-4, 0.622, 0.593, 3.88]
 }
-
 model.parameters = settings["parameters"]
-
 input_pO2, exp_data, exp_error = define_experimental_data(
    settings
 )
