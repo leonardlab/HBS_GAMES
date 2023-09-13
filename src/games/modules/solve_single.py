@@ -9,17 +9,15 @@ import os
 import numpy as np
 from games.models.set_model import model
 from games.utilities.saving import create_folder
-# from games.utilities.metrics import calc_chi_sq, calc_r_sq
-# from games.plots.plots_timecourses import plot_timecourses
+from games.utilities.metrics import calc_chi_sq, calc_r_sq
+from games.plots.plots_timecourses import plot_timecourses
 from games.config.experimental_data import define_experimental_data
 
 
 def solve_single_parameter_set(
-    t_hypoxia: np.ndarray,
-    topologies: list[str], 
+    x: list[float],
     exp_data: list[float],
     exp_error: list[float],
-    dataID: str,
     weight_by_error: str,
 ) -> dict:
     """
@@ -56,12 +54,32 @@ def solve_single_parameter_set(
         a float defining the value of the correlation coefficient (r_sq)
     """
 
-    solutions_dict = model.solve_experiment(t_hypoxia, topologies, dataID)
-    # solutions_norm = model.normalize_data(solutions_dict, dataID)
-    # chi_sq = calc_chi_sq(exp_data, solutions_norm, exp_error, weight_by_error)
-    # r_sq = calc_r_sq(exp_data, solutions_norm)
+    all_topology_hypoxia_dict, normalization_value = model.solve_experiment(x)
 
-    return solutions_dict #, chi_sq, r_sq
+    solutions_DsRE2P_simple = np.append(
+        all_topology_hypoxia_dict["simple"][6.6]["DSRE2P"][:5],
+        all_topology_hypoxia_dict["simple"][138.0]["DSRE2P"][0]
+    )
+    solutions_DsRE2P_H1a_fb = np.append(
+        all_topology_hypoxia_dict["H1a_fb"][6.6]["DSRE2P"],
+        all_topology_hypoxia_dict["H1a_fb"][138.0]["DSRE2P"][0]
+    )
+    solutions_DsRE2P_H2a_fb = np.append(
+        all_topology_hypoxia_dict["H2a_fb"][6.6]["DSRE2P"],
+        all_topology_hypoxia_dict["H2a_fb"][138.0]["DSRE2P"][0]
+    )
+
+    solutions = np.concatenate((
+        solutions_DsRE2P_simple,
+        solutions_DsRE2P_H1a_fb,
+        solutions_DsRE2P_H2a_fb
+    ))
+
+    solutions_norm = model.normalize_data(solutions, normalization_value)
+    chi_sq = calc_chi_sq(exp_data, solutions_norm, exp_error, weight_by_error)
+    r_sq = calc_r_sq(exp_data, solutions_norm)
+
+    return solutions_norm, chi_sq, r_sq
 
 
 def run_single_parameter_set(settings: dict, folder_path: str) -> tuple[list[float], float, float]:
@@ -92,63 +110,56 @@ def run_single_parameter_set(settings: dict, folder_path: str) -> tuple[list[flo
     path = create_folder(folder_path, sub_folder_name)
     os.chdir(path)
     model.parameters = settings["parameters"]
-    # x, exp_data, exp_error = define_experimental_data(settings)
-    # solutions_norm, chi_sq, r_sq = solve_single_parameter_set(
-    #     x,
-    #     exp_data,
-    #     exp_error,
-    #     settings["dataID"],
-    #     settings["weight_by_error"],
-    #     settings["parameter_labels"],
-    # )
-    # filename = "fit to training data"
-    # run_type = "default"
-    # plot_timecourses(settings["modelID"], settings["parameter_labels"])
-    # model.plot_training_data(
-    #     x,
-    #     solutions_norm,
-    #     exp_data,
-    #     exp_error,
-    #     filename,
-    #     run_type,
-    #     settings["context"],
-    #     settings["dataID"],
-    # )
+    x, exp_data, exp_error = define_experimental_data(settings)
+    solutions_norm, chi_sq, r_sq = solve_single_parameter_set(
+        x,
+        exp_data,
+        exp_error,
+        settings["weight_by_error"]
+    )
 
-    # print("")
-    # print("*************************")
-    # print("Parameters")
-    # for i, label in enumerate(settings["parameter_labels"]):
-    #     print(label + " = " + str(model.parameters[i]))
-    # print("")
-    # print("Metrics")
-    # print("R_sq = " + str(np.round(r_sq, 4)))
-    # print("chi_sq = " + str(np.round(chi_sq, 4)))
-    # print("*************************")
+    filename = "fit to training data"
+    run_type = "default"
 
-    # return solutions_norm, chi_sq, r_sq
+    all_topology_hypoxia_dict, all_topology_DsRE2P = model.solve_experiment_for_plot(x)
+    model.plot_training_data(
+        all_topology_DsRE2P,
+        exp_data,
+        exp_error,
+        filename,
+        run_type,
+        settings["context"]
+    )
 
-settings = {
-   "context": "/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/",
-   "dataID": "hypoxia_only",
-   "parameters": [47.1, 1.51, 0.324, 4.37, 1.08e-3, 22.7, 7.43e-4, 0.622, 0.593, 3.88]
-}
-model.parameters = settings["parameters"]
-input_pO2, exp_data, exp_error = define_experimental_data(
-   settings
-)
+    plot_timecourses(all_topology_hypoxia_dict)
 
-solutions = solve_single_parameter_set(
-    model.t_hypoxia_exp,
-    ["simple", "H1a_fb", "H2a_fb"],
-    exp_data,
-    exp_error,
-    settings["dataID"],
-    "no",
-)
+    print("")
+    print("*************************")
+    print("Parameters")
+    for i, label in enumerate(settings["parameter_labels"]):
+        print(label + " = " + str(model.parameters[i]))
+    print("")
+    print("Metrics")
+    print("R_sq = " + str(np.round(r_sq, 4)))
+    print("chi_sq = " + str(np.round(chi_sq, 4)))
+    print("*************************")
 
-# print(solutions)
-for key, val in solutions.items():
-    print(key, ": ")
-    for sub_key, sub_val in val.items():
-        print(sub_key, ": ", np.around(sub_val, 4))
+    return solutions_norm, chi_sq, r_sq
+
+# settings = {
+#    "context": "/Users/kdreyer/Documents/Github/HBS_GAMES2/src/games/",
+#    "parameters": [60.1111916457863, 72.7892046267712, 5.95145639453113, 7.1751187140901, 0.32105127035899, 1.89215214383565, 0.674124573024151, 0.144101152455337, 0.845364774182291, 8.4419279870071],
+#    "dataID" : "hypoxia_only"
+# }
+# model.parameters = settings["parameters"]
+# x, exp_data, exp_error = define_experimental_data(
+#    settings
+# )
+# solutions_norm, chi_sq, r_sq = solve_single_parameter_set(
+#     x,
+#     exp_data,
+#     exp_error,
+#     "no",
+# )
+# print(solutions_norm)
+# print(chi_sq, r_sq)

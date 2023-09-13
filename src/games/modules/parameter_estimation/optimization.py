@@ -86,10 +86,12 @@ def define_best_optimization_results(
     """
 
     best_case_parameters = []
+    best_case_parameters_full = []
     for i in range(0, len(settings["parameters"])):
         col_name = settings["parameter_labels"][i] + "*"
         val = df_optimization_results[col_name].iloc[0]
         best_case_parameters.append(val)
+        best_case_parameters_full.append(val)
     best_case_parameters = [np.round(parameter, 5) for parameter in best_case_parameters]
     solutions_norm = df_optimization_results["Simulation results"].iloc[0]
     r_sq_opt = round(df_optimization_results["r_sq"].iloc[0], 3)
@@ -97,15 +99,15 @@ def define_best_optimization_results(
 
     if run_type not in ("ppl", "ppl threshold"):
         filename = "best fit to training data"
+        model.parameters = best_case_parameters_full
+        _, all_topology_DsRE2P = model.solve_experiment_for_plot(df_optimization_results["x"].iloc[0])
         model.plot_training_data(
-            df_optimization_results["x"].iloc[0],
-            solutions_norm,
+            all_topology_DsRE2P,
             df_optimization_results["exp_data"].iloc[0],
             df_optimization_results["exp_error"].iloc[0],
             filename,
             run_type,
-            settings["context"],
-            settings["dataID"],
+            settings["context"]
         )
         plot_chi_sq_trajectory(list(df_optimization_results["chi_sq_list"].iloc[0]))
 
@@ -217,12 +219,12 @@ def optimize_all(
     r_sq_opt, chi_sq_opt_min, best_case_parameters = define_best_optimization_results(
         df_optimization_results, run_type, settings
     )
-    if run_type == "default":
-        plot_parameter_distributions_after_optimization(
-            df_optimization_results, settings["parameter_labels"]
-        )
-        if settings["modelID"] == "synTF_chem" and settings["dataID"] == "ligand dose response":
-            plot_training_data_fits(df_optimization_results)
+    # if run_type == "default":
+    #     plot_parameter_distributions_after_optimization(
+    #         df_optimization_results, settings["parameter_labels"]
+    #     )
+    #     if settings["modelID"] == "synTF_chem" and settings["dataID"] == "ligand dose response":
+    #         plot_training_data_fits(df_optimization_results)
 
     df_optimization_results.to_csv("optimization results.csv")
 
@@ -366,7 +368,7 @@ def define_results_row(
     model.parameters = list(results.params.valuesdict().values())[: len(initial_parameters)]
     [x, exp_data, exp_error] = data_information
     solutions_norm, chi_sq, r_sq = solve_single_parameter_set(
-        x, exp_data, exp_error, dataID, weight_by_error, parameter_labels
+        x, exp_data, exp_error, weight_by_error
     )
 
     # append best fit parameters to results_row for saving
@@ -450,7 +452,7 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
         p_opt = [p_1, p_2, p_3, p_4, p_5, p_6, p_7, p_8, p_9, p_10]
         model.parameters = p_opt[: len(parameter_labels)]
         solutions_norm, chi_sq, _ = solve_single_parameter_set(
-            x, exp_data, exp_error, dataID, weight_by_error, parameter_labels
+            x, exp_data, exp_error, weight_by_error
         )
         chi_sq_list.append(chi_sq)
         return np.array(solutions_norm)

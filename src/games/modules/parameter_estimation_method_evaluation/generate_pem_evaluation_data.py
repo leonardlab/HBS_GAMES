@@ -43,7 +43,8 @@ def add_noise(solutions_norm_raw: List[float], noise: List[float], dataID: str) 
         new_val = max(new_val, 0.0)
         solutions_noise.append(new_val)
 
-    solutions_norm_noise = model.normalize_data(solutions_noise, dataID)
+    normalization_value = np.mean(solutions_noise[:5])
+    solutions_norm_noise = model.normalize_data(np.array(solutions_noise), normalization_value)
 
     return solutions_norm_noise
 
@@ -189,9 +190,7 @@ def generate_pem_evaluation_data(
             x,
             exp_data,
             exp_error,
-            settings["dataID"],
-            settings["weight_by_error"],
-            settings["parameter_labels"],
+            settings["weight_by_error"]
         )
 
         # Add noise

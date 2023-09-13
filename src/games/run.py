@@ -45,7 +45,7 @@ def run(modules: str) -> None:
 
     """
     # Open default config file
-    config_filepath = "./config/config.json"
+    config_filepath = "./config/config_HBS_D2.json"
     file = open(config_filepath, encoding="utf-8")
     settings_import = json.load(file)
     settings, folder_path, parameter_estimation_problem_definition = define_settings(
