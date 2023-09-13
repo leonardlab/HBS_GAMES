@@ -186,7 +186,7 @@ def solve_single_for_global_search(row: tuple) -> Tuple[List[float], float]:
 
     # Solve equations
     solutions, chi_sq, _ = solve_single_parameter_set(
-        x, exp_data, exp_error, dataID, weight_by_error, parameter_labels
+        x, exp_data, exp_error, weight_by_error
     )
     return solutions, chi_sq
 

@@ -257,9 +257,7 @@ def calculate_threshold_chi_sq(
             x,
             exp_data,
             exp_error,
-            settings["dataID"],
             settings["weight_by_error"],
-            settings["parameter_labels"],
         )
         print("chi_sq reference with training data: " + str(round(chi_sq_ref, 4)))
         exp_data_to_generate_noise_realizations = exp_data
@@ -272,9 +270,7 @@ def calculate_threshold_chi_sq(
             x,
             exp_data,
             exp_error,
-            settings["dataID"],
-            settings["weight_by_error"],
-            settings["parameter_labels"],
+            settings["weight_by_error"]
         )
 
         # add noise to simulated data generated with calibrated parameters - analagous to how
@@ -292,9 +288,7 @@ def calculate_threshold_chi_sq(
             x,
             exp_data_to_generate_noise_realizations,
             exp_error,
-            settings["dataID"],
-            settings["weight_by_error"],
-            settings["parameter_labels"],
+            settings["weight_by_error"]
         )
 
     print("Generating noise realizations and calculating chi_sq_ref...")

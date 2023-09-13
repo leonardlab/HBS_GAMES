@@ -38,7 +38,7 @@ def set_model():
 
     return given_model
 
-
-file = open("/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/config/config_HBS_D2.json", encoding="utf-8")
+#HBS model D2
+file = open("/Users/kdreyer/Documents/Github/HBS_GAMES2/src/games/config/config_HBS_D2.json", encoding="utf-8")
 settings = json.load(file)
 model = set_model()

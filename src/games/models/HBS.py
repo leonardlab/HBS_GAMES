@@ -8,9 +8,15 @@ Created on Mon Mar 13 2023
 
 import math
 import numpy as np
+from typing import List, Tuple
 from scipy.integrate import odeint
+from copy import deepcopy
 from games.plots.plots_training_data import plot_training_data_2d
 
+#x = [6.6, 138.0]
+#t_normoxia: np.ndarray = np.arange(0, 500, 1),
+# t_hypoxia_exp: np.ndarray = np.array([0, 24, 48, 72, 96, 120]),
+# t_hypoxia_plot: np.ndarray = np.linspace(0,120,31)
 
 class HBS_model:
     """
@@ -19,12 +25,9 @@ class HBS_model:
     """
     def __init__(
         self,
-        parameters: list[float] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        input_pO2: list[float] = [138, 7.6],
-        mechanismID: str = "default",
-        t_normoxia: np.ndarray = np.arange(0, 500, 1),
-        t_hypoxia_exp: np.ndarray = np.array([0, 24, 48, 72, 96, 120]),
-        t_hypoxia_plot: np.ndarray = np.linspace(0,120,31)
+        parameters: List[float] = None,
+        t_hypoxia: List[float] = None,
+        mechanismID: str = "default"
     ) -> None:
 
         """Initializes HBS model.
@@ -34,8 +37,8 @@ class HBS_model:
         parameters
             List of floats defining the parameters
 
-        input_pO2
-            List of floats defining the input pO2: [pO2_normoxia, pO2_hypoxia]
+        inputs
+            List of floats defining the input pO2: [p_O2_hypoxia, pO2_normoxia]
 
         mechanismID
             a string defining the mechanism identity
@@ -46,12 +49,7 @@ class HBS_model:
 
         """
         self.parameters = parameters
-        self.pO2_normoxia = input_pO2[0]
-        self.pO2_hypoxia = input_pO2[1]
         self.mechanismID = mechanismID
-        self.t_normoxia = t_normoxia
-        self.t_hypoxia_exp = t_hypoxia_exp
-        self.t_hypoxia_plot = t_hypoxia_plot
 
         if self.mechanismID == "A":
             self.state_labels = [
@@ -89,8 +87,8 @@ class HBS_model:
         self.initial_conditions = y_init
 
     def solve_single(
-        self, topology: str, t_hypoxia: np.ndarray
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        self, x: list[float], topology: str
+    ) -> dict:
         """Solves single HBS topology model for a single set of parameters and inputs,
         including 2 steps:
            1) time = 0 hours to time = 500 hours in normoxia (21% O2)
@@ -107,22 +105,20 @@ class HBS_model:
 
         Returns
         -------
-        solution
-            An array of ODE solutions (rows are timepoints and columns are model states)
-
-        t_hypoxia
-            A 1D array of time values corresponding to the rows in solution
+        solution_hypoxia_dict
+            a dict containing solutions for all model states for the given topology
 
         """
         # solve in normoxia
+        t_normoxia = np.arange(0, 500, 1)
+
         solution_normoxia = odeint(
             self.topology_gradient,
             self.initial_conditions,
-            self.t_normoxia,
+            t_normoxia,
             args=(
                 self.parameters,
-                self.pO2_normoxia,
-                self.mechanismID,
+                x[1],
                 topology
             ),
         )
@@ -132,39 +128,39 @@ class HBS_model:
             solution_normoxia_dict[self.state_labels[i]] = solution_normoxia[:,i]
         
         # solve in hypoxia
+        # t_hypoxia = [0, 24, 48, 72, 96, 120]
         initial_conditions_hypoxia = []
     
         for label in self.state_labels:
             initial_conditions_hypoxia.append(solution_normoxia_dict[label][-1])
             
-        solution_hypoxia = odeint(
-            self.topology_gradient,
-            initial_conditions_hypoxia,
-            t_hypoxia,
-            args=(
-                self.parameters,
-                self.pO2_hypoxia,
-                self.mechanismID,
-                topology
-            ),
-        )
         solution_hypoxia_dict = {}
-
-        for i in range(0,self.number_of_states):
-            solution_hypoxia_dict[self.state_labels[i]] = solution_hypoxia[:,i]
+        for O2_val in x:
+            solution_hypoxia_dict[O2_val] = {}
+            solution_hypoxia = odeint(
+                self.topology_gradient,
+                initial_conditions_hypoxia,
+                self.t_hypoxia,
+                args=(
+                    self.parameters,
+                    O2_val,
+                    topology
+                ),
+            )
+            for i in range(0,self.number_of_states):
+                solution_hypoxia_dict[O2_val][self.state_labels[i]] = solution_hypoxia[:,i]
         
-        return solution_normoxia_dict, t_hypoxia, solution_hypoxia_dict
+        return solution_hypoxia_dict
 
     @staticmethod
     def topology_gradient_D(
         y: np.ndarray, 
         t: np.ndarray, 
         parameters: list[float], 
-        input_pO2: float, 
-        mechanismID: str, 
+        input: float, 
         topology: str
     ) -> np.ndarray:
-        """Defines the gradient for simple HBS topology model.
+        """Defines the gradient for each HBS topology model.
 
         Parameters
         ----------
@@ -177,7 +173,7 @@ class HBS_model:
         parameters
             a list of floats defining the parameters
 
-        input_pO2
+        input
             a float defining the input O2 pressure (pO2)
 
         mechanismID
@@ -194,10 +190,9 @@ class HBS_model:
 
         """
 
-        pO2 = input_pO2
-        #mech ID statements
-        if mechanismID == "D2":
-            ([
+        pO2 = input
+
+        ([
                 t_HAF,
                 k_txn2,
                 k_dHAF, 
@@ -209,21 +204,6 @@ class HBS_model:
                 k_dHP, 
                 k_txnBH
             ]) = parameters
-
-        elif mechanismID == "D":
-            ([
-                t_HAF,
-                k_dHAF, 
-                k_bHS, 
-                k_bHH, 
-                k_txnH, 
-                k_dH1R, 
-                k_dH1P, 
-                k_dHP, 
-                k_txnBH
-            ]) = parameters
-            
-            k_txn2 = 1.0 #U
             
         #parameters that will be held constant:
         k_txn = 1.0 #U
@@ -232,7 +212,7 @@ class HBS_model:
         k_dP = 0.35 #1/h
         k_dRep = 0.029 #1/hr
 
-        if pO2 == 138:
+        if pO2 == 138.0:
             k_dHAF = 0
 
         else:
@@ -261,198 +241,204 @@ class HBS_model:
             return dydt
         elif topology == "H1a_fb":
             # y[6] = HIF1a mRNA, CHANGE dydt[6] for H1a fb
-            dydt_H1a_fb = dydt.copy()
+            dydt_H1a_fb = deepcopy(dydt)
             dydt_H1a_fb[6] = k_txn + k_txnBH*(y[7] + y[10]) - k_dR*y[6] - k_dH1R*y[5]*y[6]
             return dydt_H1a_fb
         elif topology == "H2a_fb":
             # y[8] = HIF2a mRNA, CHANGE dydt[8] for H2a fb
-            dydt_H2a_fb = dydt.copy()
+            dydt_H2a_fb = deepcopy(dydt)
             dydt_H2a_fb[8] = k_txn + k_txnBH*(y[7] + y[10]) - k_dR*y[8]
             return dydt_H2a_fb
 
     def solve_experiment(
         self, 
-        t_hypoxia: np.ndarray, 
-        topologies: list[str], 
-        dataID: str
-    ) -> dict:
+        x: list[float],
+    ) -> Tuple[dict[str, dict[int, dict[str, np.ndarray]]], float]:
         """Solve all HBS topology models in normoxia and hypoxia.
 
         Parameters
         ----------
-        topologies
-            a list of strings defining the topologies to be solved
+        x
+        a list of floats containing the values of the independent variable
+
+        Returns
+        -------
+        all_hypoxia_dict
+        a dict of dicts with solutions for all model states for each topology
+
+        """
+        topologies = ["simple", "H1a_fb", "H2a_fb"]
+        self.t_hypoxia = [0.0, 24.0, 48.0, 72.0, 96.0, 120.0]
+
+        all_topology_hypoxia_dict = {}
+
+        for topology in topologies:
+            solution_hypoxia_dict = self.solve_single(
+                x,
+                topology
+            )
+            all_topology_hypoxia_dict[topology] = solution_hypoxia_dict
+
+            normalization_value = np.mean(all_topology_hypoxia_dict["simple"][6.6]['DSRE2P'][:5])
+
+        return all_topology_hypoxia_dict, normalization_value
+
+    def solve_experiment_for_plot(
+            self,
+            x: List[float],
+    ) -> dict[str, dict[int, dict[str, np.ndarray]]]:
+        
+        """Solve all HBS topology models in normoxia and hypoxia for t values
+        to use in plotting. First solve with original t values for simple HBS
+        to calculate normalization value.
+           
+        Parameters
+        ----------
+        x
+        a list of floats containing the values of the independent variable
+
+        Returns
+        -------
+        all_hypoxia_dict
+        a dict of dicts with solutions for all model states for each topology
+        """
+        self.t_hypoxia = [0.0, 24.0, 48.0, 72.0, 96.0, 120.0]
+        solution_hypoxia_dict = self.solve_single(
+            x,
+            "simple"
+        ) #simulate simple HBS with original time points to calculate normalization value
+
+        normalization_value = np.mean(solution_hypoxia_dict[6.6]['DSRE2P'][:5])
+
+        self.t_hypoxia = np.linspace(0,120,31)
+        topologies = ["simple", "H1a_fb", "H2a_fb"]
+
+        all_topology_hypoxia_dict = {}
+
+        for topology in topologies:
+            solution_hypoxia_dict = self.solve_single(
+                x,
+                topology
+            )
+            all_topology_hypoxia_dict[topology] = solution_hypoxia_dict
+
+        solutions_DsRE2P_simple = np.append(
+            all_topology_hypoxia_dict["simple"][6.6]["DSRE2P"][:26],
+            all_topology_hypoxia_dict["simple"][138.0]["DSRE2P"][0]
+        )
+        solutions_DsRE2P_H1a_fb = np.append(
+            all_topology_hypoxia_dict["H1a_fb"][6.6]["DSRE2P"],
+            all_topology_hypoxia_dict["H1a_fb"][138.0]["DSRE2P"][0]
+        )
+        solutions_DsRE2P_H2a_fb = np.append(
+            all_topology_hypoxia_dict["H2a_fb"][6.6]["DSRE2P"],
+            all_topology_hypoxia_dict["H2a_fb"][138.0]["DSRE2P"][0]
+        )
+
+        normalized_DsRE2P_simple = self.normalize_data(
+            solutions_DsRE2P_simple,
+            normalization_value
+        )
+        normalized_DsRE2P_H1a_fb = self.normalize_data(
+            solutions_DsRE2P_H1a_fb,
+            normalization_value
+        )
+        normalized_DsRE2P_H2a_fb = self.normalize_data(
+            solutions_DsRE2P_H2a_fb,
+            normalization_value
+        )
+
+        all_topology_DsRE2P = [normalized_DsRE2P_simple, normalized_DsRE2P_H1a_fb, normalized_DsRE2P_H2a_fb]
+
+        return all_topology_hypoxia_dict, all_topology_DsRE2P
+    
+    @staticmethod
+    def normalize_data(solutions_raw: np.ndarray, normalization_value: float) -> np.ndarray:
+        """Normalizes data by mean simple HBS value
+
+        Parameters
+        ----------
+        solutions_raw
+            a 1D array of floats defining the solutions before normalization
+
+        normalization_value
+            a float defining the mean of the simple HBS hypoxia simulation
+            (to be used for normalization)
+
+        Returns
+        -------
+        solutions_norm
+            a 1D array of floats defining the dependent variable for the given
+            dataset (after normalization)
+
+        """
+
+        solutions_norm = solutions_raw/normalization_value
+        
+        return solutions_norm
+
+    @staticmethod
+    def plot_training_data(
+        solutions_norm: List[np.ndarray],
+        exp_data: List[float],
+        exp_error: List[float],
+        filename: str,
+        run_type: str,
+        context: str,
+    ) -> None:
+        """
+        Plots training data and simulated training data for a single parameter set
+
+        Parameters
+        ----------
+        x
+            list of floats defining the independent variable
+
+        solutions_norm
+            list of floats defining the simulated dependent variable
+
+        exp_data
+            list of floats defining the experimental dependent variable
+
+        exp_error
+            list of floats defining the experimental error for the dependent variable
+
+        filename
+           a string defining the filename used to save the plot
+
+        run_type
+            a string containing the data type ('PEM evaluation' or else)
+
+        context
+            a string defining the file structure context
 
         dataID
             a string defining the dataID
 
         Returns
         -------
-        solutions
-            A list of floats containing the value of the reporter protein
-            at ????
+        None"""
 
-        """
-        all_topology_hypoxia_dict = {}
+        # define plot settings
+        if run_type == "default":
+            plot_color1 = "black"
+            plot_color2 = "gray"
+            marker_type = "o"
 
-        for topology in topologies:
-            _, _, solution_hypoxia_dict = self.solve_single(
-                topology,
-                t_hypoxia,
-            )
-            all_topology_hypoxia_dict[topology] = solution_hypoxia_dict
+        elif run_type == "PEM evaluation":
+            plot_color1 = "dimgrey"
+            plot_color2 = "lightgray"
 
-        return all_topology_hypoxia_dict
+            marker_type = "^"
 
-    # @staticmethod
-    # def normalize_data(solutions_raw: dict[str, dict[str, float]], dataID: str) -> list[float]:
-    #     """Normalizes data by maximum value
+        plot_settings = plot_color1, plot_color2, marker_type
+        plot_training_data_2d(
+            solutions_norm,
+            exp_data,
+            exp_error, 
+            filename, 
+            plot_settings, 
+            context
+        )
 
-    #     Parameters
-    #     ----------
-    #     solutions_raw
-    #         a list of floats defining the solutions before normalization
-
-    #     dataID
-    #         a string defining the dataID
-
-    #     Returns
-    #     -------
-    #     solutions_norm
-    #         a list of floats defining the dependent variable for the given
-    #         dataset (after normalization)
-
-    #     """
-    #     if dataID == 'hypox only':
-    #         DSRed2P_1a = np.append(SS_hox_1a[7.6]['DSRE2P'][:5], SS_hox_1a[138]['DSRE2P'][0])
-    #         DSRed2P_4b = np.append(SS_hox_4b[7.6]['DSRE2P'], SS_hox_4b[138]['DSRE2P'][0])
-    #         DSRed2P_4c = np.append(SS_hox_4c[7.6]['DSRE2P'], SS_hox_4c[138]['DSRE2P'][0])
-
-
-
-    #     if dataID == "ligand dose response and DBD dose response":
-    #         # normalize ligand dose response
-    #         solutions_norm_1 = [i / max(solutions_raw[:11]) for i in solutions_raw[:11]]
-
-    #         # normalize DBD dose response
-    #         solutions_norm_2 = [i / max(solutions_raw[11:]) for i in solutions_raw[11:]]
-
-    #         # combine solutions
-    #         solutions_norm = solutions_norm_1 + solutions_norm_2
-
-    #     elif dataID == "ligand dose response":
-    #         # normalize ligand dose response
-    #         solutions_norm = [i / max(solutions_raw) for i in solutions_raw]
-
-    #     return solutions_norm
-
-    # @staticmethod
-    # def plot_training_data(
-    #     x: list,
-    #     solutions_norm: List[float],
-    #     exp_data: List[float],
-    #     exp_error: List[float],
-    #     filename: str,
-    #     run_type: str,
-    #     context: str,
-    #     dataID: str,
-    # ) -> None:
-    #     """
-    #     Plots training data and simulated training data for a single parameter set
-
-    #     Parameters
-    #     ----------
-    #     x
-    #         list of floats defining the independent variable
-
-    #     solutions_norm
-    #         list of floats defining the simulated dependent variable
-
-    #     exp_data
-    #         list of floats defining the experimental dependent variable
-
-    #     exp_error
-    #         list of floats defining the experimental error for the dependent variable
-
-    #     filename
-    #        a string defining the filename used to save the plot
-
-    #     run_type
-    #         a string containing the data type ('PEM evaluation' or else)
-
-    #     context
-    #         a string defining the file structure context
-
-    #     dataID
-    #         a string defining the dataID
-
-    #     Returns
-    #     -------
-    #     None"""
-
-    #     # define plot settings
-    #     if run_type == "default":
-    #         plot_color = "black"
-    #         marker_type = "o"
-
-    #     elif run_type == "PEM evaluation":
-    #         plot_color = "dimgrey"
-    #         marker_type = "^"
-
-    #     if dataID == "ligand dose response":
-    #         y_label = "Rep. protein (au)"
-    #         x_label = "Ligand (nM)"
-    #         x_scale = "symlog"
-    #         plot_settings = x_label, y_label, x_scale, plot_color, marker_type
-    #         plot_training_data_2d(
-    #             x, solutions_norm, exp_data, exp_error, filename, plot_settings, context
-    #         )
-
-    #     elif dataID == "ligand dose response and DBD dose response":
-    #         # Define plot settings for ligand dose response
-    #         y_label = "Rep. protein (au)"
-    #         x_label = "Ligand (nM)"
-    #         x_scale = "symlog"
-    #         plot_settings = x_label, y_label, x_scale, plot_color, marker_type
-
-    #         # plot ligand dose response
-    #         filename_1 = filename + "ligand dose response"
-    #         plot_training_data_2d(
-    #             x[:11],
-    #             solutions_norm[:11],
-    #             exp_data[:11],
-    #             exp_error[:11],
-    #             filename_1,
-    #             plot_settings,
-    #             context,
-    #         )
-
-    #         # Define plot settings for DBD dose response
-    #         y_label = "Rep. protein (au)"
-    #         x_label = "DBD plasmid dose (ng)"
-    #         x_scale = "linear"
-    #         plot_settings = x_label, y_label, x_scale, plot_color, marker_type
-
-    #         # Plot DBD dose response @ 20ng AD
-    #         filename_2 = filename + "DBD dose response 20ng AD"
-    #         plot_training_data_2d(
-    #             x[11:19],
-    #             solutions_norm[11:19],
-    #             exp_data[11:19],
-    #             exp_error[11:19],
-    #             filename_2,
-    #             plot_settings,
-    #             context,
-    #         )
-
-    #         # Plot DBD dose response @ 10ng AD
-    #         filename_3 = filename + "DBD dose response 10ng AD"
-    #         plot_training_data_2d(
-    #             x[19:],
-    #             solutions_norm[19:],
-    #             exp_data[19:],
-    #             exp_error[19:],
-    #             filename_3,
-    #             plot_settings,
-    #             context,
-    #         )
+  

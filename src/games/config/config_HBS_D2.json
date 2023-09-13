@@ -1,11 +1,11 @@
-{ "folder_name" : "HBS_model_mech_D2",
+{ "folder_name" : "HBS_model_mech_D2_PEM_run3",
   "modelID" : "HBS",
   "topologies" : ["simple", "H1a_fb", "H2a_fb"],
   "dataID" : "hypoxia_only",
   "mechanismID" : "D2",
-  "context" : "/Users/kdreyer/Desktop/Github/HBS_GAMES2/src/games/",
-  "parameters" : [47.1, 1.51, 0.324, 4.37, 1.08e-3, 22.7, 7.43e-4, 0.622, 0.593, 3.88], 
-  "parameters_reference" : [36, 1.0, 0.1, 0.1, 0.1, 1.0, 0.1, 1.0e-2, 1.0e-2, 1.0],
+  "context" : "/Users/kdreyer/Documents/Github/HBS_GAMES2/src/games/",
+  "parameters" : [36, 1.0, 0.01, 0.1, 0.1, 1.0, 0.1, 1.0e-2, 1.0e-2, 1.0], 
+  "parameters_reference" : [],
   "parameter_labels" : ["t_HAF", "k_txn2", "k_dHAF", "k_bHS", "k_bHH", "k_txnH", "k_dH1R", "k_dH1P", "k_dHP", "k_txnBH"],
   "free_parameter_labels" : ["t_HAF", "k_txn2", "k_dHAF", "k_bHS", "k_bHH", "k_txnH", "k_dH1R", "k_dH1P", "k_dHP", "k_txnBH"],
   "bounds_orders_of_magnitude" : 3,
@@ -15,8 +15,7 @@
   "weight_by_error" : "no",
   "num_pem_evaluation_datasets" : 3, 
   "parallelization" : "yes", 
-  "num_cores" : 8,
-  "num_processes" : 8
+  "num_cores" : 8
 }
 
 
