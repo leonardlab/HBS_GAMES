@@ -1,5 +1,0 @@
-threshold_chi_sq: 6.9605214673821365
-
-calibrated_params: [15.22349, 1, 1, 585.27583, 105.02814, 2.03687]
-
-calibrated_chi_sq: 0.784
