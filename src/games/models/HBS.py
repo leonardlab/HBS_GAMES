@@ -56,14 +56,14 @@ class HBS_model:
                 'HAFR', 'HAFP', 'aHIF', 'HIF1R', 'HIF1P', 
                 'HIF2R', 'HIF2P', 'HIF2P*', 'DSRE2R', 'DSRE2P'
             ]
-            # self.topology_gradient = self.topology_gradient_A
+            self.topology_gradient = self.topology_gradient_A
         
         elif self.mechanismID == "B" or self.mechanismID == "B2":
             self.state_labels = [
                 'HAFR', 'HAFP', 'aHIF', 'HIF1R', 'HIF1P', 
                 'HIF2R', 'HIF2P', 'HIF2P*', 'DSRE2R', 'DSRE2P' 
             ]
-            # self.topology_gradient = self.topology_gradient_B
+            self.topology_gradient = self.topology_gradient_B
 
         elif self.mechanismID == "C":
             self.state_labels = [
@@ -71,7 +71,7 @@ class HBS_model:
                 'aHIF', 'HIF1R', 'HIF1P', 'HIF2R', 'HIF2P',
                 'HIF2P*', 'DSRE2R', 'DSRE2P'
             ]
-            # self.topology_gradient = self.topology_gradient_C
+            self.topology_gradient = self.topology_gradient_C
 
         elif self.mechanismID == "D" or self.mechanismID == "D2":
             self.state_labels = [
@@ -153,14 +153,14 @@ class HBS_model:
         return solution_hypoxia_dict
 
     @staticmethod
-    def topology_gradient_D(
+    def topology_gradient_A(
         y: np.ndarray, 
         t: np.ndarray, 
         parameters: list[float], 
         input: float, 
         topology: str
     ) -> np.ndarray:
-        """Defines the gradient for each HBS topology model.
+        """Defines the gradient for each HBS topology model for mechanism C.
 
         Parameters
         ----------
@@ -176,8 +176,6 @@ class HBS_model:
         input
             a float defining the input O2 pressure (pO2)
 
-        mechanismID
-            a string defining the mechanism identity
 
         topology
             a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
@@ -187,6 +185,279 @@ class HBS_model:
         -------
         dydt
             a list of floats corresponding to the gradient of each model state at time t
+
+        """
+
+        pO2 = input
+
+        ([
+                t_HAF,
+                k_txn2,
+                k_dHAF, 
+                k_bHS, 
+                k_bHH, 
+                k_txnH, 
+                k_dH1R, 
+                k_dH1P, 
+                k_dHP, 
+                k_txnBH
+            ]) = parameters
+            
+        #parameters that will be held constant:
+        k_txn = 1.0 #U
+        k_dR = 2.7 #1/h
+        k_tln = 1 #U
+        k_dP = 0.35 #1/h
+        k_dRep = 0.029 #1/hr
+
+        dydt = np.array(
+            [
+            k_txn2 - k_dR*y[0],
+            k_tln*y[0] - k_dP*y[1] - k_bHH*y[6]*y[1],
+            k_txnH*(y[4] + y[7]) - k_dR*y[2],
+            k_txn - k_dR*y[3] - k_dH1R*y[2]*y[3],
+            k_tln*y[3] - k_dP*y[4] - k_dHP*pO2*y[4] - k_dH1P*y[4]*y[1],
+            k_txn - k_dR*y[5],
+            k_tln*y[5] - k_dP*y[6] - k_dHP*pO2*y[6] - k_bHH*y[6]*y[1],
+            k_bHH*y[6]*y[1] - k_dP*y[7],
+            k_txnBH*(y[4] + y[7]) - k_dR*y[8],
+            k_tln*y[8] - k_dRep*y[9]
+            ]
+        )
+
+        if topology == "simple":
+            # no changes needed to dydt 
+            return dydt
+        elif topology == "H1a_fb":
+            # y[6] = HIF1a mRNA, CHANGE dydt[6] for H1a fb
+            dydt_H1a_fb = deepcopy(dydt)
+            dydt_H1a_fb[3] = k_txn + k_txnBH*(y[4] + y[7]) - k_dR*y[3] - k_dH1R*y[2]*y[3]
+            return dydt_H1a_fb
+        elif topology == "H2a_fb":
+            # y[8] = HIF2a mRNA, CHANGE dydt[8] for H2a fb
+            dydt_H2a_fb = deepcopy(dydt)
+            dydt_H2a_fb[5] = k_txn + k_txnBH*(y[4] + y[7]) - k_dR*y[5]
+            return dydt_H2a_fb
+
+    @staticmethod
+    def topology_gradient_B(
+        y: np.ndarray, 
+        t: np.ndarray, 
+        parameters: list[float], 
+        input: float, 
+        topology: str
+    ) -> np.ndarray:
+        """Defines the gradient for each HBS topology model for mechanism C.
+
+        Parameters
+        ----------
+        y
+            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+
+        t
+            an array defining the time (necessary parameter to use ODEint to solve gradient)
+
+        parameters
+            a list of floats defining the parameters
+
+        input
+            a float defining the input O2 pressure (pO2)
+
+
+        topology
+            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
+            or "H2a_fb" for HBS with HIF2a feedback)
+
+        Returns
+        -------
+        dydt
+            a list of floats corresponding to the gradient of each model state at time t
+
+        """
+
+        pO2 = input
+
+        ([
+                t_HAF,
+                k_txn2,
+                k_dHAF, 
+                k_bHS, 
+                k_bHH, 
+                k_txnH, 
+                k_dH1R, 
+                k_dH1P, 
+                k_dHP, 
+                k_txnBH
+            ]) = parameters
+            
+        #parameters that will be held constant:
+        k_txn = 1.0 #U
+        k_dR = 2.7 #1/h
+        k_tln = 1 #U
+        k_dP = 0.35 #1/h
+        k_dRep = 0.029 #1/hr
+
+        if pO2 == 138.0:
+            k_dHAF = 0
+
+        else:
+            k_dHAF = np.piecewise(t, [t < t_HAF, t >= t_HAF], [k_dHAF, 0])
+
+
+        dydt = np.array(
+            [
+            k_txn2 - k_dR*y[0], #y[0] = HAF mRNA
+            k_tln*y[0] - k_dP*y[1] - k_dHAF*y[1] - k_bHH*y[6]*y[1], #y[1] = HAF protein
+            k_txnH*(y[4] + y[7]) - k_dR*y[2], #y[2] = antisense HIF1a RNA
+            k_txn - k_dR*y[3] - k_dH1R*y[2]*y[3], #y[3] = HIF1a mRNA
+            k_tln*y[3] - k_dP*y[4] - k_dHP*pO2*y[4] - k_dH1P*y[4]*y[1], #y[4] = HIF1a protein
+            k_txn - k_dR*y[5], #y[5] = HIF2a mRNA
+            k_tln*y[5] - k_dP*y[6] - k_dHP*pO2*y[6] - k_bHH*y[6]*y[1], #y[6] = HIF2a protein
+            k_bHH*y[6]*y[1] - k_dP*y[7], #y[7] = HIF2a* protein
+            k_txnBH*(y[4] + y[7]) - k_dR*y[8], #y[8] = DsRE2 mRNA
+            k_tln*y[8] - k_dRep*y[9] #y[9] = DsRE2 protein
+            ]
+        )
+
+        if topology == "simple":
+            # no changes needed to dydt 
+            return dydt
+        elif topology == "H1a_fb":
+            # y[6] = HIF1a mRNA, CHANGE dydt[6] for H1a fb
+            dydt_H1a_fb = deepcopy(dydt)
+            dydt_H1a_fb[3] = k_txn + k_txnBH*(y[4] + y[7]) - k_dR*y[3] - k_dH1R*y[2]*y[3]
+            return dydt_H1a_fb
+        elif topology == "H2a_fb":
+            # y[8] = HIF2a mRNA, CHANGE dydt[8] for H2a fb
+            dydt_H2a_fb = deepcopy(dydt)
+            dydt_H2a_fb[5] = k_txn + k_txnBH*(y[4] + y[7]) - k_dR*y[5]
+            return dydt_H2a_fb
+
+    @staticmethod
+    def topology_gradient_C(
+        y: np.ndarray, 
+        t: np.ndarray, 
+        parameters: list[float], 
+        input: float, 
+        topology: str
+    ) -> np.ndarray:
+        """Defines the gradient for each HBS topology model for mechanism C.
+
+        Parameters
+        ----------
+        y
+            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+
+        t
+            an array defining the time (necessary parameter to use ODEint to solve gradient)
+
+        parameters
+            a list of floats defining the parameters
+
+        input
+            a float defining the input O2 pressure (pO2)
+
+
+        topology
+            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
+            or "H2a_fb" for HBS with HIF2a feedback)
+
+        Returns
+        -------
+        dydt
+            a list of floats corresponding to the gradient of each model state at time t
+
+        """
+
+        pO2 = input
+
+        ([
+                t_HAF,
+                k_txn2,
+                k_dHAF, 
+                k_bHS, 
+                k_bHH, 
+                k_txnH, 
+                k_dH1R, 
+                k_dH1P, 
+                k_dHP, 
+                k_txnBH
+            ]) = parameters
+            
+        #parameters that will be held constant:
+        k_txn = 1.0 #U
+        k_dR = 2.7 #1/h
+        k_tln = 1 #U
+        k_dP = 0.35 #1/h
+        k_dRep = 0.029 #1/hr
+
+
+        dydt = np.array(
+            [
+            k_txn2 - k_dR*y[0], #y[0] = HAF mRNA
+            k_tln*y[0] - k_dP*y[1] - (k_bHS/pO2)*y[1]*y[3], # y[1] = HAF protein
+            k_txn - k_dR*y[2], #y[2] = SUMO mRNA
+            k_tln*y[2] - k_dP*y[3] - (k_bHS/pO2)*y[1]*y[3], #y[3] = SUMO protein
+            (k_bHS/pO2)*y[1]*y[3] - k_dP*y[4] - k_bHH*y[9]*y[4], #y[4] = SUMO HAF
+            k_txnH*(y[7] + y[10]) - k_dR*y[5], #y[5] = antisense HIF1a RNA
+            k_txn - k_dR*y[6] - k_dH1R*y[5]*y[6], #y[6] = HIF1a mRNA
+            k_tln*y[6] - k_dP*y[7] - k_dHP*pO2*y[7] - k_dH1P*y[7]*(y[1] + y[4]), #y[7] = HIF1a protein
+            k_txn - k_dR*y[8], #y[8] = HIF2a mRNA
+            k_tln*y[8] - k_dP*y[9] - k_dHP*pO2*y[9] - k_bHH*y[9]*y[4], #y[9] = HIF2a protein
+            k_bHH*y[9]*y[4] - k_dP*y[10], #y[10] = HIF2a* protein
+            k_txnBH*(y[7] + y[10]) - k_dR*y[11], #y[11] = DsRE2 mRNA
+            k_tln*y[11] - k_dRep*y[12] #y[12] = DsRE2 protein
+            ]
+        )
+
+        if topology == "simple":
+            # no changes needed to dydt 
+            return dydt
+        elif topology == "H1a_fb":
+            # y[6] = HIF1a mRNA, CHANGE dydt[6] for H1a fb
+            dydt_H1a_fb = deepcopy(dydt)
+            dydt_H1a_fb[6] = k_txn + k_txnBH*(y[7] + y[10]) - k_dR*y[6] - k_dH1R*y[5]*y[6]
+            return dydt_H1a_fb
+        elif topology == "H2a_fb":
+            # y[8] = HIF2a mRNA, CHANGE dydt[8] for H2a fb
+            dydt_H2a_fb = deepcopy(dydt)
+            dydt_H2a_fb[8] = k_txn + k_txnBH*(y[7] + y[10]) - k_dR*y[8]
+            return dydt_H2a_fb
+
+
+    @staticmethod
+    def topology_gradient_D(
+        y: np.ndarray, 
+        t: np.ndarray, 
+        parameters: list[float], 
+        input: float, 
+        topology: str
+    ) -> np.ndarray:
+        """Defines the gradient for each HBS topology model for mechanism D.
+
+        Parameters
+        ----------
+        y
+            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+
+        t
+            an array defining the time (necessary parameter to use ODEint to solve gradient)
+
+        parameters
+            a list of floats defining the parameters
+
+        input
+            a float defining the input O2 pressure (pO2)
+
+
+        topology
+            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
+            or "H2a_fb" for HBS with HIF2a feedback)
+
+        Returns
+        -------
+        dydt
+            a numpy array of floats corresponding to the gradient of each model state at time t
 
         """
 
@@ -231,8 +502,8 @@ class HBS_model:
             k_txn - k_dR*y[8], # y[8] = HIF2a mRNA
             k_tln*y[8] - k_dP*y[9] - k_dHP*pO2*y[9] - k_bHH*y[9]*y[4], # y[9] = HIF2a protein
             k_bHH*y[9]*y[4] - k_dP*y[10], # y[10] = HIF2a* protein
-            k_txnBH*(y[7] + y[10]) - k_dR*y[11], # y[11] = DsRED2 mRNA
-            k_tln*y[11] - k_dRep*y[12] # y[12] = DsRED2 protein
+            k_txnBH*(y[7] + y[10]) - k_dR*y[11], # y[11] = DsRE2 mRNA
+            k_tln*y[11] - k_dRep*y[12] # y[12] = DsRE2 protein
             ]
         )
 

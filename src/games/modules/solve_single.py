@@ -148,7 +148,7 @@ def run_single_parameter_set(settings: dict, folder_path: str) -> tuple[list[flo
 
 # settings = {
 #    "context": "/Users/kdreyer/Documents/Github/HBS_GAMES2/src/games/",
-#    "parameters": [60.1111916457863, 72.7892046267712, 5.95145639453113, 7.1751187140901, 0.32105127035899, 1.89215214383565, 0.674124573024151, 0.144101152455337, 0.845364774182291, 8.4419279870071],
+#    "parameters": [0, 1, 0, 4.429493523, 0.198487505, 43.39121915, 9.527538436, 0.540226238, 1.079281817, 33.79767681],
 #    "dataID" : "hypoxia_only"
 # }
 # model.parameters = settings["parameters"]
