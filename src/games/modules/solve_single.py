@@ -7,6 +7,7 @@ Created on Fri Jun  3 15:25:47 2022
 """
 import os
 import numpy as np
+from typing import Tuple
 from games.models.set_model import model
 from games.utilities.saving import create_folder
 from games.utilities.metrics import calc_chi_sq, calc_r_sq
@@ -19,33 +20,38 @@ def solve_single_parameter_set(
     exp_data: list[float],
     exp_error: list[float],
     weight_by_error: str,
-) -> dict:
+) -> Tuple[np.ndarray, float, float]:
     """
     Solves model for a single parameter set
 
     Parameters
     ----------
+    x
+        a list of floats containing the values of the independent
+        variable (pO2 in the format [pO2 normoxia, pO2 hypoxia])
+
     exp_data
-        a list of floats containing the values of the dependent variable
+        a list of floats defining the experimental relative DsRE2
+        expression for each HBS topology (in the format
+        [simple HBS values, HBS with H1a feedback values,
+        HBS with H2a feedback values])
 
     exp_error
-        a list of floats containing the values of the measurement error
-        for the dependent variable
-
-    dataID
-        a string defining the dataID
+        a list of floats defining the experimental error for the
+        relative DsRE2 expression for each HBS topology (in the
+        format [simple HBS values, HBS with H1a feedback values,
+        HBS with H2a feedback values])
 
     weight_by_error
-        a string defining whether the cost function should be weighted by error or not
-
-    parameter_labels
-        a list of strings defining the parameter labels
+        a string defining whether the cost function should be weighted
+        by error or not
 
     Returns
     -------
     solutions_norm
-        a list of floats containing the normalized simulation values
-        corresponding to the dataID defined in Settings
+        an array of floats containing the normalized simulation values
+        for each topology (in the format [simple HBS values,
+        HBS with H1a feedback values, HBS with H2a feedback values])
 
     chi_sq
         a float defining the value of the cost function
@@ -96,8 +102,9 @@ def run_single_parameter_set(settings: dict, folder_path: str) -> tuple[list[flo
     Returns
     -------
     solutions_norm
-        a list of floats containing the normalized simulation
-        values corresponding to the dataID defined in Settings
+        an array of floats containing the normalized simulation values
+        for each topology (in the format [simple HBS values,
+        HBS with H1a feedback values, HBS with H2a feedback values])
 
     chi_sq
         a float defining the value of the cost function
@@ -145,21 +152,3 @@ def run_single_parameter_set(settings: dict, folder_path: str) -> tuple[list[flo
     print("*************************")
 
     return solutions_norm, chi_sq, r_sq
-
-# settings = {
-#    "context": "/Users/kdreyer/Documents/Github/HBS_GAMES2/src/games/",
-#    "parameters": [0, 1, 0, 4.429493523, 0.198487505, 43.39121915, 9.527538436, 0.540226238, 1.079281817, 33.79767681],
-#    "dataID" : "hypoxia_only"
-# }
-# model.parameters = settings["parameters"]
-# x, exp_data, exp_error = define_experimental_data(
-#    settings
-# )
-# solutions_norm, chi_sq, r_sq = solve_single_parameter_set(
-#     x,
-#     exp_data,
-#     exp_error,
-#     "no",
-# )
-# print(solutions_norm)
-# print(chi_sq, r_sq)

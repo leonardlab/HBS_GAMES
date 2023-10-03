@@ -219,12 +219,6 @@ def optimize_all(
     r_sq_opt, chi_sq_opt_min, best_case_parameters = define_best_optimization_results(
         df_optimization_results, run_type, settings
     )
-    # if run_type == "default":
-    #     plot_parameter_distributions_after_optimization(
-    #         df_optimization_results, settings["parameter_labels"]
-    #     )
-    #     if settings["modelID"] == "synTF_chem" and settings["dataID"] == "ligand dose response":
-    #         plot_training_data_fits(df_optimization_results)
 
     df_optimization_results.to_csv("optimization results.csv")
 

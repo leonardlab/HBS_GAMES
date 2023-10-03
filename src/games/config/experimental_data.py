@@ -9,7 +9,8 @@ from typing import Tuple, List
 import pandas as pd
 
 
-def define_experimental_data(settings: dict) -> Tuple[List[float], List[float], List[float]]:
+def define_experimental_data(settings: dict
+ ) -> Tuple[List[float], List[float], List[float]]:
    """
    Imports experimental data
 
@@ -30,6 +31,7 @@ def define_experimental_data(settings: dict) -> Tuple[List[float], List[float], 
    exp_error
       a list of floats defining the normalized measurement error for
       the dependent variable for the given dataset
+      
    """
 
    path = settings["context"] + "config/"

@@ -22,17 +22,23 @@ def plot_training_data_2d(
 
     Parameters
     ----------
-    x_values
-        list of floats defining the independent variable
 
     y_sim
-        list of floats defining the simulated dependent variable
+        a list of arrays defining the HBS simulation value for each
+        topology (in the format [[simple HBS], [HBS with H1a feedback],
+        [HBS with H2a feedback]])
 
     y_exp
-        list of floats defining the experimental dependent variable
+        a list of floats defining the experimental relative DsRE2
+        expression for each HBS topology (in the format
+        [simple HBS values, HBS with H1a feedback values,
+        HBS with H2a feedback values])
 
     y_exp_error
-        list of floats defining the experimental error for the dependent variable
+        a list of floats defining the experimental error for the
+        relative DsRE2 expression for each HBS topology (in the
+        format [simple HBS values, HBS with H1a feedback values,
+        HBS with H2a feedback values])
 
     filename
        string defining the filename used to save the plot
@@ -203,5 +209,4 @@ def plot_training_data_2d(
     ax3.set_title('HIF2a Feedback HBS')
     ax3.set_box_aspect(1)
 
-    # plt.show()
     plt.savefig("./" + filename + ".svg", dpi=600)

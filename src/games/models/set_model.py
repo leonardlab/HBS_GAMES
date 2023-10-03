@@ -25,15 +25,8 @@ def set_model():
 
     """
 
-    if settings["modelID"] == "synTF_chem":
-        given_model = synTF_chem(
-            parameters=settings["parameters"], mechanismID=settings["mechanismID"]
-        )
-
-    elif settings["modelID"] == "HBS":
-        given_model = HBS_model(
-            parameters=settings["parameters"], mechanismID=settings["mechanismID"]
-
+    given_model = HBS_model(
+        parameters=settings["parameters"], mechanismID=settings["mechanismID"]
         )
 
     return given_model

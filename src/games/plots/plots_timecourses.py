@@ -13,16 +13,17 @@ from games.models.set_model import model, settings
 plt.style.use(settings["context"] + "paper.mplstyle.py")
 
 
-def plot_timecourses(all_topology_hypoxia_dict: dict[str, dict[int, dict[str, np.ndarray]]]) -> None:
+def plot_timecourses(
+          all_topology_hypoxia_dict: dict[str, dict[int, dict[str, np.ndarray]]]
+ ) -> None:
     """Plots timecourses of internal states for a single set of inputs
 
     Parameters
     ----------
-     modelID
-        a string defining the modelID
-
-     parameter_labels
-        a list of strings defining the parameter labels
+    all_topology_hypoxia_dict
+        a dict of dicts with solutions for all model states for 
+        each topology (in the format 
+        dict[topology]dict[pO2]dict[model state][solution])
 
     Returns
     -------
