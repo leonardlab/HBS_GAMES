@@ -1,7 +1,5 @@
 Supporting code for the unpublished article: Dreyer, KS et al. Feedback employing the endogenous cellular hypoxia response enhances synthetic hypooxia biosensors. This code is an extension of the GAMES workflow and [code](https://github.com/leonardlab/GAMES)
 
-> KE Dray, JJ Muldoon, N Mangan, N Bagheri\*, JN Leonard\*. GAMES: A dynamic model development workflow for rigorous characterization of synthetic genetic systems. ACS Synthetic Biology 2022, 11(2): 1009-1029. \*co-corresponding authorship.
-
 ## Summary of README contents
 
 + [Repository overview](#repository-overview) 
