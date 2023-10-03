@@ -1,11 +1,11 @@
-Supporting code for the article:
+Supporting code for the unpublished article: Dreyer, KS et al. Feedback employing the endogenous cellular hypoxia response enhances synthetic hypooxia biosensors. This code is an extension of the GAMES workflow and [code](https://github.com/leonardlab/GAMES)
 
 > KE Dray, JJ Muldoon, N Mangan, N Bagheri\*, JN Leonard\*. GAMES: A dynamic model development workflow for rigorous characterization of synthetic genetic systems. ACS Synthetic Biology 2022, 11(2): 1009-1029. \*co-corresponding authorship.
 
 ## Summary of README contents
 
 + [Repository overview](#repository-overview) 
-  - [Examples](#examples)
+  - [Code overview](#code-overview)
 + [Release overview](#release-overview)
 + [Installation and running instructions](#installation-and-running-instructions)
 + [Workflow summary](#workflow-summary)
@@ -37,27 +37,9 @@ The /htmlcov directory includes information on the coverage of tests in the code
 
 Note that the GAMES source code is all included in the src directory. All additional files are related to the Python project tools, which are described in the relevant sections below.
 
+### Code overview
 
-### Examples
-Within src/games, the /results directory includes the results for 2 different examples using 2 different models.
-
-#### SynTF_chem
-
-The synTF_chem example is the same example as Model D in the GAMES paper.
-The config.json file in src/games/config/ can be used to run this example.
-
-#### SynTF
-
-The synTF example is a new example that is not mentioned in the GAMES paper, but is included here as an additional example of how to integrate multiple different models in the GAMES workflow. 
-In addition, the synTF example is a more practical example than the synTF_chem example, as it is not based on a reference parameter set.
-The synTF example is similar to the synTF_chem example, but includes a constitutively expressed (rather than chemically responsive) synTF and also has a slightly different promoter activation mechanism. 
-Therefore, for PPL calculations, the calibrated parameter set is used as the reference parameter set. Then, the simulated data generated with the calibrated parameters are used as the starting point for generating the noise realizations used to calculate the PPL threshold. Note that noise must be added to the simulated data generated with the calibrated parameters before  generating the noise realizations.
-
-To make the code amenable to both situations where the reference parameters are known (such as the proof-of-principle synTF_chem example in the GAMES paper) and more practical situations in which the reference parameters are unknown (such as our additional synTF example), there is an if/else statement in src/games/modules/parameter_profile_likelihood/calculate_threshold.py in the function calculate_threshold_chi_sq().
-
-If the modelID is anything except for "synTF_chem," it is assumed that reference parameters are unknown.
-**As an installation test, we suggest that the user runs all modules for the synTF example, which is signficantly less computationally expensive than the synTF_chem example.
-To run the synTF example, simply replace the config.json file in src/games/config/ with the synTF config.json file located in src/games/synTF_example and change the "context" variable (See Installation and running instructions, step 3 for more information).**
+This code contains each model version in the model development process for the HBS model (model A, model B, model B2, model C, model D, and model D2). Each model version consists of 3 different topologies: a simple HBS, an HBS with HIF1a feedback, and an HBS with HIF2a feedback, and the ODEs are solved for each topology during a run of the code. To run the code for a particular model, use the config.json file with the corresponding model name at the end (e.g. for model A use config_HBS_A.json) 
 
 ## Release overview
 
@@ -71,7 +53,7 @@ Python 3.10 is required.
 1. To clone the repository, navigate to the location on your computer where you would like this repository stored and run the following command:
 
 ```bash
-$ git clone https://github.com/leonardlab/GAMES.git
+$ git clone https://github.com/leonardlab/HBS_GAMES2.git
 ```
 
 2. This repository uses Poetry for packaging and dependency management. The user can create a virtual environment using poetry that includes all necessary packages and dependencies based on the pyproject.toml file. See the Python project tools - getting started section for more information.
@@ -113,14 +95,13 @@ The code is executed by running run.py, which then calls functions necessary to 
 paper.mpstyle.py is a matploblib style file that includes settings for figures. 
 
 config/ includes the following files:
-- config.json, which defines the user-specified settings for the given run
-- a number of .csv files (ex: training_data_ligand dose response.csv) that include experimental (training) data for different models and data sets
+- config_HBS_A.json, config_HBS_B.json, config_HBS_B2.json, config_HBS_C.json, config_HBS_D.json, and config_HBS_D2.json, which define the user-specified settings for the given run for the model indicated by the end of the config file name
+- training_data_hypoxia_only.csv, which includes experimental (training) data for each HBS topology
 - experimental_data.py, which imports and normalizes the experimental (training) data
 - settings.py, which includes code for importing and restructuring config.json 
 
 models/ includes the following files:
-- synTF.py, which includes the synTF model class and all relevant methods
-- synTF_chem.py, which includes the synTF_chem model class and all relevant methods
+- HBS.py, which includes the synTF model class and all relevant methods, for each version of the model
 
 modules/ includes the following folders:
 
@@ -147,21 +128,12 @@ modules/parameter_profile_likelihood/ includes the following files:
 - calculate_parameter_profile_likelihood.py, which includes code for calculating the parameter profile likelihood threshold using a binary step algorithm
 
 plots/ includes the following files:
+- plot_parameter_distributions_chi_sq.py, which is a separate executable file to generate a plot of the parameter distributions for optimized parameters with chi_sq values within 10% of the chi_sq value for the calibrated parameters
 - plots_parameter_estimation.py, which includes code to generate plots to analyze parameter estimation results
 - plots_parameter_profile_likelihood.py, which includes code to generate plots to analyze parameter profile likelihood results
 - plots_pem_evaluation.py, which includes code to generate plots to analyze parameter estimation method evaluation results
 - plots_timecourses.py, which includes code to generate timecourse plots of internal model states
 - plots_training_data.py, which includes code to generate plots of the training data
-
-results/ includes the following folders:
-
-```
-src/games/results
-|___synTF_chem example model D/
-|___synTF example/
-```
-
-Each folder contains the results of modules 1-3 for the given example. 
 
 utilities/ includes the following files:
 - saving.py, which includes code for saving results and creating folders
