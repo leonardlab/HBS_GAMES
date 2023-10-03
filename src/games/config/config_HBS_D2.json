@@ -1,4 +1,4 @@
-{ "folder_name" : "HBS_model_mech_D2_PEM_run3",
+{ "folder_name" : "plot_param_distributions_modelD2",
   "modelID" : "HBS",
   "topologies" : ["simple", "H1a_fb", "H2a_fb"],
   "dataID" : "hypoxia_only",

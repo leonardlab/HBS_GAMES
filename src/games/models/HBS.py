@@ -8,15 +8,11 @@ Created on Mon Mar 13 2023
 
 import math
 import numpy as np
-from typing import List, Tuple
+from typing import Tuple
 from scipy.integrate import odeint
 from copy import deepcopy
 from games.plots.plots_training_data import plot_training_data_2d
 
-#x = [6.6, 138.0]
-#t_normoxia: np.ndarray = np.arange(0, 500, 1),
-# t_hypoxia_exp: np.ndarray = np.array([0, 24, 48, 72, 96, 120]),
-# t_hypoxia_plot: np.ndarray = np.linspace(0,120,31)
 
 class HBS_model:
     """
@@ -25,8 +21,8 @@ class HBS_model:
     """
     def __init__(
         self,
-        parameters: List[float] = None,
-        t_hypoxia: List[float] = None,
+        parameters: list[float] = None,
+        t_hypoxia: list[float] = None,
         mechanismID: str = "default"
     ) -> None:
 
@@ -35,12 +31,14 @@ class HBS_model:
         Parameters
         ----------
         parameters
-            List of floats defining the parameters
+            a list of floats defining the parameters
 
-        inputs
-            List of floats defining the input pO2: [p_O2_hypoxia, pO2_normoxia]
+        t_hypixia
+            a list of floats defining the time points to solve the
+            ODEs in hypoxia (set in solve_experiment and
+            solve_experiment_for_plot)
 
-        mechanismID
+        mechanismID:
             a string defining the mechanism identity
 
         Returns
@@ -50,6 +48,7 @@ class HBS_model:
         """
         self.parameters = parameters
         self.mechanismID = mechanismID
+        self.t_hypoxia = t_hypoxia
 
         if self.mechanismID == "A":
             self.state_labels = [
@@ -89,24 +88,28 @@ class HBS_model:
     def solve_single(
         self, x: list[float], topology: str
     ) -> dict:
-        """Solves single HBS topology model for a single set of parameters and inputs,
-        including 2 steps:
-           1) time = 0 hours to time = 500 hours in normoxia (21% O2)
-           2) time = 0 hours to time = 120 hours in hypoxia (1% O2)
+        """Solves single HBS topology model for a single set of parameters
+            and inputs, including 2 steps:
+            1) time = 0 hours to time = 500 hours in normoxia (21% O2)
+            2) time = 0 hours to time = 120 hours in hypoxia (1% O2)
 
         Parameters
         ----------
-        parameter_labels
-            a list of strings defining the parameter labels
+        x
+            a list of floats defining the O2 pressures to solve the ODEs
+            (in the format [pO2 normoxia, pO2 hypoxia])
 
         topology
-            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS
-            with HIF1a feedback, or "H2a_fb" for HBS with HIF2a feedback)
+            a string defining the topology ("simple" for simple HBS, "H1a_fb"
+            for HBS with HIF1a feedback, or "H2a_fb" for HBS with HIF2a
+            feedback)
 
         Returns
         -------
         solution_hypoxia_dict
-            a dict containing solutions for all model states for the given topology
+            a dict of dicts containing solutions for all model states for 
+            the given topology (in the format 
+            dict[pO2]dict[model state][solution])
 
         """
         # solve in normoxia
@@ -128,7 +131,6 @@ class HBS_model:
             solution_normoxia_dict[self.state_labels[i]] = solution_normoxia[:,i]
         
         # solve in hypoxia
-        # t_hypoxia = [0, 24, 48, 72, 96, 120]
         initial_conditions_hypoxia = []
     
         for label in self.state_labels:
@@ -160,15 +162,17 @@ class HBS_model:
         input: float, 
         topology: str
     ) -> np.ndarray:
-        """Defines the gradient for each HBS topology model for mechanism C.
+        """Defines the gradient for each HBS topology model for mechanism A.
 
         Parameters
         ----------
         y
-            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+            an array defining the initial conditions (necessary parameter to use
+            ODEint to solve gradient)
 
         t
-            an array defining the time (necessary parameter to use ODEint to solve gradient)
+            an array defining the time (necessary parameter to use ODEint to 
+            solve gradient)
 
         parameters
             a list of floats defining the parameters
@@ -178,13 +182,14 @@ class HBS_model:
 
 
         topology
-            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
-            or "H2a_fb" for HBS with HIF2a feedback)
+            a string defining the topology ("simple" for simple HBS, "H1a_fb" for
+            HBS with HIF1a feedback, or "H2a_fb" for HBS with HIF2a feedback)
 
         Returns
         -------
         dydt
-            a list of floats corresponding to the gradient of each model state at time t
+            a list of floats corresponding to the gradient of each model state at
+            time t
 
         """
 
@@ -247,15 +252,17 @@ class HBS_model:
         input: float, 
         topology: str
     ) -> np.ndarray:
-        """Defines the gradient for each HBS topology model for mechanism C.
+        """Defines the gradient for each HBS topology model for mechanism B.
 
         Parameters
         ----------
         y
-            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+            an array defining the initial conditions (necessary parameter to use
+            ODEint to solve gradient)
 
         t
-            an array defining the time (necessary parameter to use ODEint to solve gradient)
+            an array defining the time (necessary parameter to use ODEint to 
+            solve gradient)
 
         parameters
             a list of floats defining the parameters
@@ -265,13 +272,14 @@ class HBS_model:
 
 
         topology
-            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
-            or "H2a_fb" for HBS with HIF2a feedback)
+            a string defining the topology ("simple" for simple HBS, "H1a_fb" for
+            HBS with HIF1a feedback, or "H2a_fb" for HBS with HIF2a feedback)
 
         Returns
         -------
         dydt
-            a list of floats corresponding to the gradient of each model state at time t
+            a list of floats corresponding to the gradient of each model state at
+            time t
 
         """
 
@@ -346,10 +354,12 @@ class HBS_model:
         Parameters
         ----------
         y
-            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+            an array defining the initial conditions (necessary parameter to use
+            ODEint to solve gradient)
 
         t
-            an array defining the time (necessary parameter to use ODEint to solve gradient)
+            an array defining the time (necessary parameter to use ODEint to 
+            solve gradient)
 
         parameters
             a list of floats defining the parameters
@@ -359,13 +369,14 @@ class HBS_model:
 
 
         topology
-            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
-            or "H2a_fb" for HBS with HIF2a feedback)
+            a string defining the topology ("simple" for simple HBS, "H1a_fb" for
+            HBS with HIF1a feedback, or "H2a_fb" for HBS with HIF2a feedback)
 
         Returns
         -------
         dydt
-            a list of floats corresponding to the gradient of each model state at time t
+            a list of floats corresponding to the gradient of each model state at
+            time t
 
         """
 
@@ -438,10 +449,12 @@ class HBS_model:
         Parameters
         ----------
         y
-            an array defining the initial conditions (necessary parameter to use ODEint to solve gradient)
+            an array defining the initial conditions (necessary parameter to use
+            ODEint to solve gradient)
 
         t
-            an array defining the time (necessary parameter to use ODEint to solve gradient)
+            an array defining the time (necessary parameter to use ODEint to 
+            solve gradient)
 
         parameters
             a list of floats defining the parameters
@@ -451,13 +464,14 @@ class HBS_model:
 
 
         topology
-            a string defining the topology ("simple" for simple HBS, "H1a_fb" for HBS with HIF1a feedback,
-            or "H2a_fb" for HBS with HIF2a feedback)
+            a string defining the topology ("simple" for simple HBS, "H1a_fb" for
+            HBS with HIF1a feedback, or "H2a_fb" for HBS with HIF2a feedback)
 
         Returns
         -------
         dydt
-            a numpy array of floats corresponding to the gradient of each model state at time t
+            a list of floats corresponding to the gradient of each model state at
+            time t
 
         """
 
@@ -530,12 +544,20 @@ class HBS_model:
         Parameters
         ----------
         x
-        a list of floats containing the values of the independent variable
+            a list of floats containing the values of the independent 
+            variable (pO2 in the format [pO2 normoxia, pO2 hypoxia])
 
         Returns
         -------
         all_hypoxia_dict
-        a dict of dicts with solutions for all model states for each topology
+            a dict of dicts with solutions for all model states for 
+            each topology (in the format 
+            dict[topology]dict[pO2]dict[model state][solution])
+
+        normalization value
+            a float defining the value to use for normalization of
+            the solutions (mean of the simulated DsRE2 expression
+            for the simple HBS topology)
 
         """
         topologies = ["simple", "H1a_fb", "H2a_fb"]
@@ -556,8 +578,8 @@ class HBS_model:
 
     def solve_experiment_for_plot(
             self,
-            x: List[float],
-    ) -> dict[str, dict[int, dict[str, np.ndarray]]]:
+            x: list[float],
+    ) -> Tuple[dict[str, dict[int, dict[str, np.ndarray]]], list]:
         
         """Solve all HBS topology models in normoxia and hypoxia for t values
         to use in plotting. First solve with original t values for simple HBS
@@ -566,19 +588,29 @@ class HBS_model:
         Parameters
         ----------
         x
-        a list of floats containing the values of the independent variable
+            a list of floats containing the values of the independent
+            variable (pO2 in the format [pO2 normoxia, pO2 hypoxia])
 
         Returns
         -------
-        all_hypoxia_dict
-        a dict of dicts with solutions for all model states for each topology
+        all_topology_hypoxia_dict
+            a dict of dicts with solutions for all model states for 
+            each topology (in the format 
+            dict[topology]dict[pO2]dict[model state][solution])
+
+        all_topology_DsRE2P
+            a list of lists defining the normalized simulation
+            values for each topology (at time points to use
+            for plotting)
+
         """
+        #simulate simple HBS with original time points to 
+        #calculate normalization value
         self.t_hypoxia = [0.0, 24.0, 48.0, 72.0, 96.0, 120.0]
         solution_hypoxia_dict = self.solve_single(
             x,
             "simple"
-        ) #simulate simple HBS with original time points to calculate normalization value
-
+        ) 
         normalization_value = np.mean(solution_hypoxia_dict[6.6]['DSRE2P'][:5])
 
         self.t_hypoxia = np.linspace(0,120,31)
@@ -619,28 +651,34 @@ class HBS_model:
             normalization_value
         )
 
-        all_topology_DsRE2P = [normalized_DsRE2P_simple, normalized_DsRE2P_H1a_fb, normalized_DsRE2P_H2a_fb]
+        all_topology_DsRE2P = [
+            normalized_DsRE2P_simple, normalized_DsRE2P_H1a_fb, 
+            normalized_DsRE2P_H2a_fb
+        ]
 
         return all_topology_hypoxia_dict, all_topology_DsRE2P
     
     @staticmethod
-    def normalize_data(solutions_raw: np.ndarray, normalization_value: float) -> np.ndarray:
-        """Normalizes data by mean simple HBS value
+    def normalize_data(solutions_raw: np.ndarray, 
+                       normalization_value: float
+    ) -> np.ndarray:
+        """Normalizes data by mean simple HBS simulation value
 
         Parameters
         ----------
         solutions_raw
-            a 1D array of floats defining the solutions before normalization
+            a 1D array of floats defining the solutions before
+            normalization
 
         normalization_value
-            a float defining the mean of the simple HBS hypoxia simulation
-            (to be used for normalization)
+            a float defining the mean of the simple HBS hypoxia
+            simulation (to be used for normalization)
 
         Returns
         -------
         solutions_norm
-            a 1D array of floats defining the dependent variable for the given
-            dataset (after normalization)
+            a 1D array of floats defining the HBS simulation value
+            after normalization
 
         """
 
@@ -650,41 +688,46 @@ class HBS_model:
 
     @staticmethod
     def plot_training_data(
-        solutions_norm: List[np.ndarray],
-        exp_data: List[float],
-        exp_error: List[float],
+        solutions_norm: list[np.ndarray],
+        exp_data: list[float],
+        exp_error: list[float],
         filename: str,
         run_type: str,
         context: str,
     ) -> None:
         """
-        Plots training data and simulated training data for a single parameter set
+        Plots training data and simulated training data for a single 
+        parameter set
 
         Parameters
         ----------
-        x
-            list of floats defining the independent variable
 
         solutions_norm
-            list of floats defining the simulated dependent variable
+            a list of arrays defining the HBS simulation value for each
+            topology (in the format [[simple HBS], [HBS with H1a feedback],
+            [HBS with H2a feedback]])
 
         exp_data
-            list of floats defining the experimental dependent variable
+            a list of floats defining the experimental relative DsRE2
+            expression for each HBS topology (in the format
+            [simple HBS values, HBS with H1a feedback values,
+            HBS with H2a feedback values])
 
         exp_error
-            list of floats defining the experimental error for the dependent variable
+            a list of floats defining the experimental error for the
+            relative DsRE2 expression for each HBS topology (in the
+            format [simple HBS values, HBS with H1a feedback values,
+            HBS with H2a feedback values])
 
         filename
            a string defining the filename used to save the plot
 
         run_type
-            a string containing the data type ('PEM evaluation' or else)
+            a string containing the data type ( 'default or 
+            'PEM evaluation')
 
         context
             a string defining the file structure context
-
-        dataID
-            a string defining the dataID
 
         Returns
         -------
