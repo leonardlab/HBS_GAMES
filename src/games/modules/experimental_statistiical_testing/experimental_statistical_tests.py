@@ -28,8 +28,8 @@ def anova(path:str, fig_name:str, data_df:pd.DataFrame, dep_var:str, ind_var1:st
         ind_var = ind_var1
     
     # save results as .csv file
-    # file_name = anova_type + "_" + fig_name + "_" + ind_var
-    # anova_table.to_csv(path+file_name+".csv")
+    file_name = anova_type + "_" + fig_name + "_" + ind_var
+    anova_table.to_csv(path+file_name+".csv")
 
     return anova_table
 
@@ -43,23 +43,23 @@ def tukeys_hsd(path:str, fig_name:str, dep_var:str, data_df:pd.DataFrame, groups
         data_df["combination"] = interactions
         tukeys_table_i = pairwise_tukeyhsd(endog=data_df[dep_var], groups=data_df["combination"], alpha=0.05)
         # save results as .csv file
-        # tukey_test_i_csv = tukeys_table_i.summary().as_csv()
-        # file_name = "tukey_hsd_" + fig_name + "_" + interaction_group[0] + "_" + interaction_group[1]
-        # with open(path+file_name+".csv", "w") as f:
-        #     f.write(tukey_test_i_csv)
-        #     f.close() 
+        tukey_test_i_csv = tukeys_table_i.summary().as_csv()
+        file_name = "tukey_hsd_" + fig_name + "_" + interaction_group[0] + "_" + interaction_group[1]
+        with open(path+file_name+".csv", "w") as f:
+            f.write(tukey_test_i_csv)
+            f.close() 
 
     tukeys_tables = []
     for group in groups:
         tukeys_table = pairwise_tukeyhsd(endog=data_df[dep_var], groups=data_df[group], alpha=0.05)
         tukeys_tables.append(tukeys_table)
         # save results as .csv file
-        # tukey_test_csv = tukeys_table.summary().as_csv()
-        # file_name = "tukey_hsd_" + fig_name + "_" + group
+        tukey_test_csv = tukeys_table.summary().as_csv()
+        file_name = "tukey_hsd_" + fig_name + "_" + group
 
-    # with open(path+file_name+".csv", "w") as f:
-    #     f.write(tukey_test_csv)
-    #     f.close() 
+        with open(path+file_name+".csv", "w") as f:
+            f.write(tukey_test_csv)
+            f.close() 
     if interaction_group:
         return tukeys_table_i, tukeys_tables
     else:
@@ -97,8 +97,8 @@ def run_corrected_t_tests(path:str, fig_name:str, dep_var:str, data_df:pd.DataFr
     t_test_df_corrected = BH_correction(t_test_df)
 
     # save as a .csv file
-    # file_name = "t_tests_" + fig_name
-    # t_test_df_corrected.to_csv(path+file_name+".csv")
+    file_name = "t_tests_" + fig_name
+    t_test_df_corrected.to_csv(path+file_name+".csv")
 
     return t_test_df_corrected
 
@@ -115,7 +115,7 @@ def repeated_measures_anova(path:str, fig_name:str, data_df:pd.DataFrame, dep_va
         rm_anova_table = rm_anova(data_df, dv=dep_var, within=within_var, subject="subject", detailed=True)
 
     # save results as .csv file
-    # file_name = rm_anova_type + "_" + fig_name + "_within_" + within_var
-    # rm_anova_table.to_csv(path+file_name+".csv")
+    file_name = rm_anova_type + "_" + fig_name + "_within_" + within_var
+    rm_anova_table.to_csv(path+file_name+".csv")
 
     return rm_anova_table
