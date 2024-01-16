@@ -102,6 +102,8 @@ dmypy.json
 
 # Results folders
 src/games/results/
+src/games/modules/experimental_statistical_testing/experimental_data_plots/
+src/games/modules/experimental_statistical_testing/results/
 
 # generally informed by:
 # https://gist.github.com/GhostofGoes/94580e76cd251972b15b4821c8a06f59/
