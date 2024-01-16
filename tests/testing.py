@@ -4,7 +4,7 @@ import seaborn as sns
 import statsmodels.api as sm 
 import csv
 from pingouin import read_dataset, mixed_anova
-from games.modules.experimental_statistiical_testing.experimental_statistical_tests import (anova,
+from games.modules.experimental_statistical_testing.experimental_statistical_tests import (anova,
                                                   tukeys_hsd,
                                                   t_tests,
                                                   BH_correction,
