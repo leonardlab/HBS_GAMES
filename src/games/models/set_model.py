@@ -6,7 +6,6 @@ Created on Fri Jun  3 14:57:05 2022
 @author: kate
 """
 import json
-from games.models.synTF_chem import synTF_chem
 from games.models.HBS import HBS_model
 
 
