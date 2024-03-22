@@ -53,14 +53,14 @@ class HBS_model:
         if self.mechanismID == "A":
             self.state_labels = [
                 'HAFR', 'HAFP', 'aHIF', 'HIF1R', 'HIF1P', 
-                'HIF2R', 'HIF2P', 'HIF2P*', 'DSRE2R', 'DSRE2P'
+                'HIF2R', 'HIF2P', 'HIF2P*', 'reporterR', 'reporterP'
             ]
             self.topology_gradient = self.topology_gradient_A
         
         elif self.mechanismID == "B" or self.mechanismID == "B2":
             self.state_labels = [
                 'HAFR', 'HAFP', 'aHIF', 'HIF1R', 'HIF1P', 
-                'HIF2R', 'HIF2P', 'HIF2P*', 'DSRE2R', 'DSRE2P' 
+                'HIF2R', 'HIF2P', 'HIF2P*', 'reporterR', 'reporterP' 
             ]
             self.topology_gradient = self.topology_gradient_B
 
@@ -68,7 +68,7 @@ class HBS_model:
             self.state_labels = [
                 'HAFR', 'HAFP', 'SUMOR', 'SUMOP', 'HAFS', 
                 'aHIF', 'HIF1R', 'HIF1P', 'HIF2R', 'HIF2P',
-                'HIF2P*', 'DSRE2R', 'DSRE2P'
+                'HIF2P*', 'reporterR', 'reporterP'
             ]
             self.topology_gradient = self.topology_gradient_C
 
@@ -76,7 +76,7 @@ class HBS_model:
             self.state_labels = [
                 'HAFR', 'HAFP', 'SUMOR', 'SUMOP', 'HAFS', 
                 'aHIF', 'HIF1R', 'HIF1P', 'HIF2R', 'HIF2P', 
-                'HIF2P*', 'DSRE2R', 'DSRE2P'
+                'HIF2P*', 'reporterR', 'reporterP'
             ]
             self.topology_gradient = self.topology_gradient_D
 
@@ -322,8 +322,8 @@ class HBS_model:
             k_txn - k_dR*y[5], #y[5] = HIF2a mRNA
             k_tln*y[5] - k_dP*y[6] - k_dHP*pO2*y[6] - k_bHH*y[6]*y[1], #y[6] = HIF2a protein
             k_bHH*y[6]*y[1] - k_dP*y[7], #y[7] = HIF2a* protein
-            k_txnBH*(y[4] + y[7]) - k_dR*y[8], #y[8] = DsRE2 mRNA
-            k_tln*y[8] - k_dRep*y[9] #y[9] = DsRE2 protein
+            k_txnBH*(y[4] + y[7]) - k_dR*y[8], #y[8] = reporter mRNA
+            k_tln*y[8] - k_dRep*y[9] #y[9] = reporter protein
             ]
         )
 
@@ -416,8 +416,8 @@ class HBS_model:
             k_txn - k_dR*y[8], #y[8] = HIF2a mRNA
             k_tln*y[8] - k_dP*y[9] - k_dHP*pO2*y[9] - k_bHH*y[9]*y[4], #y[9] = HIF2a protein
             k_bHH*y[9]*y[4] - k_dP*y[10], #y[10] = HIF2a* protein
-            k_txnBH*(y[7] + y[10]) - k_dR*y[11], #y[11] = DsRE2 mRNA
-            k_tln*y[11] - k_dRep*y[12] #y[12] = DsRE2 protein
+            k_txnBH*(y[7] + y[10]) - k_dR*y[11], #y[11] = reporter mRNA
+            k_tln*y[11] - k_dRep*y[12] #y[12] = reporter protein
             ]
         )
 
@@ -516,8 +516,8 @@ class HBS_model:
             k_txn - k_dR*y[8], # y[8] = HIF2a mRNA
             k_tln*y[8] - k_dP*y[9] - k_dHP*pO2*y[9] - k_bHH*y[9]*y[4], # y[9] = HIF2a protein
             k_bHH*y[9]*y[4] - k_dP*y[10], # y[10] = HIF2a* protein
-            k_txnBH*(y[7] + y[10]) - k_dR*y[11], # y[11] = DsRE2 mRNA
-            k_tln*y[11] - k_dRep*y[12] # y[12] = DsRE2 protein
+            k_txnBH*(y[7] + y[10]) - k_dR*y[11], # y[11] = reporter mRNA
+            k_tln*y[11] - k_dRep*y[12] # y[12] = reporter protein
             ]
         )
 
@@ -556,7 +556,7 @@ class HBS_model:
 
         normalization value
             a float defining the value to use for normalization of
-            the solutions (mean of the simulated DsRE2 expression
+            the solutions (mean of the simulated reporter expression
             for the simple HBS topology)
 
         """
@@ -572,7 +572,7 @@ class HBS_model:
             )
             all_topology_hypoxia_dict[topology] = solution_hypoxia_dict
 
-            normalization_value = np.mean(all_topology_hypoxia_dict["simple"][6.6]['DSRE2P'][:5])
+            normalization_value = np.mean(all_topology_hypoxia_dict["simple"][6.6]['reporterP'][:5])
 
         return all_topology_hypoxia_dict, normalization_value
 
@@ -598,7 +598,7 @@ class HBS_model:
             each topology (in the format 
             dict[topology]dict[pO2]dict[model state][solution])
 
-        all_topology_DsRE2P
+        all_topology_reporterP
             a list of lists defining the normalized simulation
             values for each topology (at time points to use
             for plotting)
@@ -611,7 +611,7 @@ class HBS_model:
             x,
             "simple"
         ) 
-        normalization_value = np.mean(solution_hypoxia_dict[6.6]['DSRE2P'][:5])
+        normalization_value = np.mean(solution_hypoxia_dict[6.6]['reporterP'][:5])
 
         self.t_hypoxia = np.linspace(0,120,31)
         topologies = ["simple", "H1a_fb", "H2a_fb"]
@@ -625,38 +625,38 @@ class HBS_model:
             )
             all_topology_hypoxia_dict[topology] = solution_hypoxia_dict
 
-        solutions_DsRE2P_simple = np.append(
-            all_topology_hypoxia_dict["simple"][6.6]["DSRE2P"][:26],
-            all_topology_hypoxia_dict["simple"][138.0]["DSRE2P"][0]
+        solutions_reporterP_simple = np.append(
+            all_topology_hypoxia_dict["simple"][6.6]["reporterP"][:26],
+            all_topology_hypoxia_dict["simple"][138.0]["reporterP"][0]
         )
-        solutions_DsRE2P_H1a_fb = np.append(
-            all_topology_hypoxia_dict["H1a_fb"][6.6]["DSRE2P"],
-            all_topology_hypoxia_dict["H1a_fb"][138.0]["DSRE2P"][0]
+        solutions_reporterP_H1a_fb = np.append(
+            all_topology_hypoxia_dict["H1a_fb"][6.6]["reporterP"],
+            all_topology_hypoxia_dict["H1a_fb"][138.0]["reporterP"][0]
         )
-        solutions_DsRE2P_H2a_fb = np.append(
-            all_topology_hypoxia_dict["H2a_fb"][6.6]["DSRE2P"],
-            all_topology_hypoxia_dict["H2a_fb"][138.0]["DSRE2P"][0]
-        )
-
-        normalized_DsRE2P_simple = self.normalize_data(
-            solutions_DsRE2P_simple,
-            normalization_value
-        )
-        normalized_DsRE2P_H1a_fb = self.normalize_data(
-            solutions_DsRE2P_H1a_fb,
-            normalization_value
-        )
-        normalized_DsRE2P_H2a_fb = self.normalize_data(
-            solutions_DsRE2P_H2a_fb,
-            normalization_value
+        solutions_reporterP_H2a_fb = np.append(
+            all_topology_hypoxia_dict["H2a_fb"][6.6]["reporterP"],
+            all_topology_hypoxia_dict["H2a_fb"][138.0]["reporterP"][0]
         )
 
-        all_topology_DsRE2P = [
-            normalized_DsRE2P_simple, normalized_DsRE2P_H1a_fb, 
-            normalized_DsRE2P_H2a_fb
+        normalized_reporterP_simple = self.normalize_data(
+            solutions_reporterP_simple,
+            normalization_value
+        )
+        normalized_reporterP_H1a_fb = self.normalize_data(
+            solutions_reporterP_H1a_fb,
+            normalization_value
+        )
+        normalized_reporterP_H2a_fb = self.normalize_data(
+            solutions_reporterP_H2a_fb,
+            normalization_value
+        )
+
+        all_topology_reporterP = [
+            normalized_reporterP_simple, normalized_reporterP_H1a_fb, 
+            normalized_reporterP_H2a_fb
         ]
 
-        return all_topology_hypoxia_dict, all_topology_DsRE2P
+        return all_topology_hypoxia_dict, all_topology_reporterP
     
     @staticmethod
     def normalize_data(solutions_raw: np.ndarray, 
@@ -708,14 +708,14 @@ class HBS_model:
             [HBS with H2a feedback]])
 
         exp_data
-            a list of floats defining the experimental relative DsRE2
+            a list of floats defining the experimental relative reporter
             expression for each HBS topology (in the format
             [simple HBS values, HBS with H1a feedback values,
             HBS with H2a feedback values])
 
         exp_error
             a list of floats defining the experimental error for the
-            relative DsRE2 expression for each HBS topology (in the
+            relative reporter expression for each HBS topology (in the
             format [simple HBS values, HBS with H1a feedback values,
             HBS with H2a feedback values])
 
