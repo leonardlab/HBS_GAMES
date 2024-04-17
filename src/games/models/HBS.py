@@ -572,7 +572,7 @@ class HBS_model:
             )
             all_topology_hypoxia_dict[topology] = solution_hypoxia_dict
 
-            normalization_value = np.mean(all_topology_hypoxia_dict["simple"][6.6]['reporterP'][:5])
+        normalization_value = np.mean(all_topology_hypoxia_dict["simple"][6.6]['reporterP'][:5])
 
         return all_topology_hypoxia_dict, normalization_value
 
