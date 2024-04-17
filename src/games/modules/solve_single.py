@@ -62,23 +62,23 @@ def solve_single_parameter_set(
 
     all_topology_hypoxia_dict, normalization_value = model.solve_experiment(x)
 
-    solutions_DsRE2P_simple = np.append(
-        all_topology_hypoxia_dict["simple"][6.6]["DSRE2P"][:5],
-        all_topology_hypoxia_dict["simple"][138.0]["DSRE2P"][0]
+    solutions_reporterP_simple = np.append(
+        all_topology_hypoxia_dict["simple"][6.6]["reporterP"][:5],
+        all_topology_hypoxia_dict["simple"][138.0]["reporterP"][0]
     )
-    solutions_DsRE2P_H1a_fb = np.append(
-        all_topology_hypoxia_dict["H1a_fb"][6.6]["DSRE2P"],
-        all_topology_hypoxia_dict["H1a_fb"][138.0]["DSRE2P"][0]
+    solutions_reporterP_H1a_fb = np.append(
+        all_topology_hypoxia_dict["H1a_fb"][6.6]["reporterP"],
+        all_topology_hypoxia_dict["H1a_fb"][138.0]["reporterP"][0]
     )
-    solutions_DsRE2P_H2a_fb = np.append(
-        all_topology_hypoxia_dict["H2a_fb"][6.6]["DSRE2P"],
-        all_topology_hypoxia_dict["H2a_fb"][138.0]["DSRE2P"][0]
+    solutions_reporterP_H2a_fb = np.append(
+        all_topology_hypoxia_dict["H2a_fb"][6.6]["reporterP"],
+        all_topology_hypoxia_dict["H2a_fb"][138.0]["reporterP"][0]
     )
 
     solutions = np.concatenate((
-        solutions_DsRE2P_simple,
-        solutions_DsRE2P_H1a_fb,
-        solutions_DsRE2P_H2a_fb
+        solutions_reporterP_simple,
+        solutions_reporterP_H1a_fb,
+        solutions_reporterP_H2a_fb
     ))
 
     solutions_norm = model.normalize_data(solutions, normalization_value)
@@ -128,9 +128,9 @@ def run_single_parameter_set(settings: dict, folder_path: str) -> tuple[list[flo
     filename = "fit to training data"
     run_type = "default"
 
-    all_topology_hypoxia_dict, all_topology_DsRE2P = model.solve_experiment_for_plot(x)
+    all_topology_hypoxia_dict, all_topology_reporterP = model.solve_experiment_for_plot(x)
     model.plot_training_data(
-        all_topology_DsRE2P,
+        all_topology_reporterP,
         exp_data,
         exp_error,
         filename,
