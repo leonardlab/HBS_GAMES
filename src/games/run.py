@@ -17,6 +17,9 @@ from games.modules.parameter_estimation_method_evaluation.run_parameter_estimati
 from games.modules.parameter_profile_likelihood.run_parameter_profile_likelihood import (
     run_parameter_profile_likelihood,
 )
+from games.modules.sensitivity_analysis.run_sensitivity_analysis import(
+    run_sensitivity_analysis
+)
 
 # ignore ODEint warnings that clog up the console -
 # user can remove this line if they want to see the warnings
@@ -84,6 +87,15 @@ def run(modules: str) -> None:
             calibrated_parameters,
         )
         print("Module 3 completed")
+        print("")
+
+    if "4" in modules:
+        print("Starting Module 4...")
+        run_sensitivity_analysis(
+            settings,
+            folder_path
+        )
+        print("Module 4 completed")
         print("")
 
 
