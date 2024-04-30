@@ -78,3 +78,19 @@ def calc_chi_sq(
         chi_sq = chi_sq + err
 
     return chi_sq
+
+def calc_percent_change(metric_mid: float, metric_new: float) -> float:
+    """
+    Calculates the percent change between mse_mid and mse_new
+
+    Args:
+        mse_mid: a float defining the mse for the original parameter set
+
+        mse_new: a float defining the mse for the parameter set with increased
+            or decreased parameter value
+
+    Returns:
+        100 * (mse_new-mse_mid)/mse_mid: a float defining percent change
+    """
+
+    return 100 * (metric_new-metric_mid)/metric_mid
