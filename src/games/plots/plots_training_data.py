@@ -57,10 +57,6 @@ def plot_training_data_2d(
     """
     plt.style.use(context + "paper.mplstyle.py")
     plot_color1, plot_color2, marker_type = plot_settings
-    
-    # if t_experiment[-1] == 120.0:
-    #     t_exp_simple = t_experiment[:-1]
-    #     t_sim_simple = t_simulation[:-1]
 
     fig = plt.figure(figsize = (6.6,2.6))
     fig.subplots_adjust(wspace=0.1)
