@@ -57,8 +57,4 @@ from games.modules.experimental_statistical_testing.experimental_statistical_tes
 # # rm_anova = repeated_measures_anova("", "", df, "meptrs", "day")
 # print(rm_anova)
 
-df = read_dataset('mixed_anova')
-aov = mixed_anova(dv='Scores', between='Group',
-                  within='Time', subject='Subject', data=df)
-print(aov)
-# print(df.head(n=60))
+print(np.linspace(0,96,25))

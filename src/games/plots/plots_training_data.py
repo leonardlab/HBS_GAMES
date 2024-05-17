@@ -14,6 +14,8 @@ def plot_training_data_2d(
     y_sim: List[np.ndarray],
     y_exp: List[float],
     y_exp_error: List[float],
+    t_experiment: List[float], 
+    t_simulation: List[float],
     filename: str,
     plot_settings: Tuple[str, str],
     context: str,
@@ -55,9 +57,10 @@ def plot_training_data_2d(
     """
     plt.style.use(context + "paper.mplstyle.py")
     plot_color1, plot_color2, marker_type = plot_settings
-
-    t_experiment = [0.0, 24.0, 48.0, 72.0, 96.0, 120.0]
-    t_simulation = np.linspace(0,120,31)
+    
+    # if t_experiment[-1] == 120.0:
+    #     t_exp_simple = t_experiment[:-1]
+    #     t_sim_simple = t_simulation[:-1]
 
     fig = plt.figure(figsize = (6.6,2.6))
     fig.subplots_adjust(wspace=0.1)
@@ -66,7 +69,7 @@ def plot_training_data_2d(
     ax3 = plt.subplot(133)
 
     ax1.errorbar(
-        t_experiment[:-1],
+        t_experiment,
         y_exp[:5],
         marker=marker_type,
         yerr=y_exp_error[:5],
@@ -92,9 +95,9 @@ def plot_training_data_2d(
 
     ax2.errorbar(
         t_experiment,
-        y_exp[6:12],
+        y_exp[6:11],
         marker=marker_type,
-        yerr=y_exp_error[6:12],
+        yerr=y_exp_error[6:11],
         color=plot_color1,
         ecolor=plot_color1,
         fillstyle="none",
@@ -104,9 +107,9 @@ def plot_training_data_2d(
     )
     ax2.errorbar(
         t_experiment[0],
-        y_exp[12],
+        y_exp[11],
         marker=marker_type,
-        yerr=y_exp_error[12],
+        yerr=y_exp_error[11],
         color=plot_color2,
         ecolor=plot_color2,
         fillstyle="none",
@@ -117,9 +120,9 @@ def plot_training_data_2d(
 
     ax3.errorbar(
         t_experiment,
-        y_exp[13:-1],
+        y_exp[12:-1],
         marker=marker_type,
-        yerr=y_exp_error[13:-1],
+        yerr=y_exp_error[12:-1],
         color=plot_color1,
         ecolor=plot_color1,
         fillstyle="none",
@@ -141,7 +144,7 @@ def plot_training_data_2d(
     )
 
     ax1.plot(
-        t_simulation[:26],
+        t_simulation,
         y_sim[0][:-1],
         linestyle="dotted",
         marker="None",
@@ -188,25 +191,17 @@ def plot_training_data_2d(
         color=plot_color2
     )
 
-    ax1.set_xlabel('Time Post-Plating (hours)')
-    ax1.set_ylabel('Relative DsRE2 Expression')
-    ax1.set_xticks([0, 20, 40, 60, 80, 100])
+    for ax in [ax1, ax2, ax3]:
+        ax.set_xlabel('Hours of treatment')
+        ax.set_ylabel('Relative reporter expression')
+        ax.set_xticks([0, 20, 40, 60, 80, 100])
+        ax.set_box_aspect(1)
+
     ax1.set_ylim(ax2.get_ylim())
-    ax1.set_title('Simple HBS')
+    ax1.set_title('No feedback HBS')
     ax1.legend()
-    ax1.set_box_aspect(1)
-    
-    ax2.set_xlabel('Time Post-Plating (hours)')
-    ax2.set_ylabel('Relative DsRE2 Expression')
-    ax2.set_xticks([0, 20, 40, 60, 80, 100, 120])
     ax2.set_title('HIF1a Feedback HBS')
-    ax2.set_box_aspect(1)
-    
-    ax3.set_xlabel('Time Post-Plating (hours)')
-    ax3.set_ylabel('Relative DsRE2 Expression')
-    ax3.set_xticks([0, 20, 40, 60, 80, 100, 120])
     ax3.set_ylim(ax2.get_ylim())
     ax3.set_title('HIF2a Feedback HBS')
-    ax3.set_box_aspect(1)
 
     plt.savefig("./" + filename + ".svg", dpi=600)

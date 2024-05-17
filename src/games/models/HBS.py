@@ -22,8 +22,8 @@ class HBS_model:
     def __init__(
         self,
         parameters: list[float] = None,
-        t_hypoxia: list[float] = None,
-        mechanismID: str = "default"
+        mechanismID: str = "default",
+        # dataID: str = "default"
     ) -> None:
 
         """Initializes HBS model.
@@ -48,7 +48,6 @@ class HBS_model:
         """
         self.parameters = parameters
         self.mechanismID = mechanismID
-        self.t_hypoxia = t_hypoxia
 
         if self.mechanismID == "A":
             self.state_labels = [
@@ -84,6 +83,9 @@ class HBS_model:
         y_init = np.zeros(number_of_states)
         self.number_of_states = number_of_states
         self.initial_conditions = y_init
+
+        self.t_hypoxia_exp = [0.0, 24.0, 48.0, 72.0, 96.0]
+        self.t_hypoxia_plot = np.linspace(0,96,25)
 
     def solve_single(
         self, x: list[float], topology: str
@@ -561,7 +563,7 @@ class HBS_model:
 
         """
         topologies = ["simple", "H1a_fb", "H2a_fb"]
-        self.t_hypoxia = [0.0, 24.0, 48.0, 72.0, 96.0, 120.0]
+        self.t_hypoxia = self.t_hypoxia_exp
 
         all_topology_hypoxia_dict = {}
 
@@ -572,7 +574,7 @@ class HBS_model:
             )
             all_topology_hypoxia_dict[topology] = solution_hypoxia_dict
 
-        normalization_value = np.mean(all_topology_hypoxia_dict["simple"][6.6]['reporterP'][:5])
+        normalization_value = np.mean(all_topology_hypoxia_dict["simple"][6.6]['reporterP'])
 
         return all_topology_hypoxia_dict, normalization_value
 
@@ -606,14 +608,14 @@ class HBS_model:
         """
         #simulate simple HBS with original time points to 
         #calculate normalization value
-        self.t_hypoxia = [0.0, 24.0, 48.0, 72.0, 96.0, 120.0]
+        self.t_hypoxia = self.t_hypoxia_exp
         solution_hypoxia_dict = self.solve_single(
             x,
             "simple"
         ) 
-        normalization_value = np.mean(solution_hypoxia_dict[6.6]['reporterP'][:5])
+        normalization_value = np.mean(solution_hypoxia_dict[6.6]['reporterP'])
 
-        self.t_hypoxia = np.linspace(0,120,31)
+        self.t_hypoxia = self.t_hypoxia_plot
         topologies = ["simple", "H1a_fb", "H2a_fb"]
 
         all_topology_hypoxia_dict = {}
@@ -626,7 +628,7 @@ class HBS_model:
             all_topology_hypoxia_dict[topology] = solution_hypoxia_dict
 
         solutions_reporterP_simple = np.append(
-            all_topology_hypoxia_dict["simple"][6.6]["reporterP"][:26],
+            all_topology_hypoxia_dict["simple"][6.6]["reporterP"],
             all_topology_hypoxia_dict["simple"][138.0]["reporterP"][0]
         )
         solutions_reporterP_H1a_fb = np.append(
@@ -686,8 +688,8 @@ class HBS_model:
         
         return solutions_norm
 
-    @staticmethod
     def plot_training_data(
+        self,
         solutions_norm: list[np.ndarray],
         exp_data: list[float],
         exp_error: list[float],
@@ -749,7 +751,9 @@ class HBS_model:
         plot_training_data_2d(
             solutions_norm,
             exp_data,
-            exp_error, 
+            exp_error,
+            self.t_hypoxia_exp,
+            self.t_hypoxia_plot,
             filename, 
             plot_settings, 
             context

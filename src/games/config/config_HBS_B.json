@@ -1,4 +1,4 @@
-{ "folder_name" : "HBS_model_mech_B_PEM",
+{ "folder_name" : "HBS_model_mechanism_B_PEM",
   "modelID" : "HBS",
   "topologies" : ["simple", "H1a_fb", "H2a_fb"],
   "dataID" : "hypoxia_only",
