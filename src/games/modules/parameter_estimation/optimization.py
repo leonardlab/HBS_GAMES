@@ -162,6 +162,9 @@ def optimize_all(
     """
 
     df_global_search_results["problem"] = [problem] * len(df_global_search_results.index)
+    df_global_search_results["optimization_method"] = ([settings["optimization_method"]] * 
+                                                       len(df_global_search_results.index)
+    )
     if run_type != "ppl threshold":
         df_global_search_results = df_global_search_results.sort_values(by=["chi_sq"])
         df_global_search_results = df_global_search_results.reset_index(drop=True)
@@ -418,8 +421,9 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
         _,
         _,
         problem,
+        optimization_method,
         run_type,
-    ] = row[-10:]
+    ] = row[-11:]
     initial_parameters = list(row[1 : len(parameter_labels) + 1])
     free_parameter_bounds = problem["bounds"]
     free_parameter_labels = problem["names"]
@@ -460,10 +464,15 @@ def optimize_single_initial_guess(row: tuple) -> Tuple[List[Any], List[Any]]:
     elif weight_by_error == "yes":
         weights_ = [1 / i for i in exp_error]
 
+    if optimization_method == "default":
+        method_ = "leastsq"
+    else:
+        method_ = optimization_method
+        
     results = model_lmfit.fit(
         exp_data,
         params_for_opt,
-        method="leastsq",
+        method=method_,
         x=x,
         weights=weights_,
     )
