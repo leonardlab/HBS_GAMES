@@ -144,14 +144,18 @@ def generate_parameter_sets(
     df_parameters_default = create_default_df(
         n_search, settings["parameter_labels"], all_parameters
     )
-    param_values_global_search = latin.sample(problem_global_search, n_search, seed=456767)
-    params_linear = convert_parameters_to_linear(param_values_global_search)
-    df_parameters = replace_parameter_values_for_sweep(
-        df_parameters_default,
-        problem_global_search["num_vars"],
-        problem_global_search["names"],
-        params_linear,
-    )
+
+    if n_search == 1:
+        df_parameters = df_parameters_default
+    else:
+        param_values_global_search = latin.sample(problem_global_search, n_search, seed=456767)
+        params_linear = convert_parameters_to_linear(param_values_global_search)
+        df_parameters = replace_parameter_values_for_sweep(
+            df_parameters_default,
+            problem_global_search["num_vars"],
+            problem_global_search["names"],
+            params_linear,
+        )
     df_parameters.to_csv("parameter sweep.csv")
 
     return df_parameters

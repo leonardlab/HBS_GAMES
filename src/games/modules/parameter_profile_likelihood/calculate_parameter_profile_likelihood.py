@@ -163,6 +163,12 @@ def calculate_chi_sq_ppl_single_datapoint(
         if i != fixed_index_in_free_parameter_list
     ]
 
+    # Set num_parameter_sets_global_search = 1 in settings and set 
+    # num_parameter_sets_optimization = 1 in settings to use provided 
+    # parameters as only set of initial guesses for optimization
+    settings["num_parameter_sets_global_search"] = 1
+    settings["num_parameter_sets_optimization"] = 1
+
     # Run PEM
     df_parameters = generate_parameter_sets(problem_ppl, settings, parameters)
     x, exp_data, exp_error = define_experimental_data(settings)
