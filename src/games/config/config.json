@@ -1,4 +1,4 @@
-{ "folder_name": "synTF example", 
+{ "folder_name": "synTF example_test_original_ppl", 
   "modelID" : "synTF",
   "dataID" : "synTF dose response",
   "mechanismID" : "A",
