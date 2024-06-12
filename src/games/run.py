@@ -79,13 +79,23 @@ def run(modules: str) -> None:
 
     if "3" in modules:
         print("Starting Module 3...")
-        run_parameter_profile_likelihood(
-            settings,
-            folder_path,
-            parameter_estimation_problem_definition,
-            calibrated_chi_sq,
-            calibrated_parameters,
-        )
+        if "2" in modules:
+            run_parameter_profile_likelihood(
+                settings,
+                folder_path,
+                parameter_estimation_problem_definition,
+                calibrated_chi_sq,
+                calibrated_parameters,
+            )
+        else:
+            _, chi_sq, _ = run_single_parameter_set(settings, folder_path)
+            run_parameter_profile_likelihood(
+                settings,
+                folder_path,
+                parameter_estimation_problem_definition,
+                chi_sq,
+                settings["parameters"],
+            )
         print("Module 3 completed")
         print("")
 
