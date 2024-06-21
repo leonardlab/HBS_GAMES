@@ -162,6 +162,10 @@ def optimize_all(
     """
 
     df_global_search_results["problem"] = [problem] * len(df_global_search_results.index)
+    
+    if "optimization_method" not in settings:
+        settings["optimization_method"] = "default"
+
     df_global_search_results["optimization_method"] = ([settings["optimization_method"]] * 
                                                        len(df_global_search_results.index)
     )
