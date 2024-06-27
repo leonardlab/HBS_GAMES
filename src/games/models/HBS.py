@@ -23,7 +23,6 @@ class HBS_model:
         self,
         parameters: list[float] = None,
         mechanismID: str = "default",
-        # dataID: str = "default"
     ) -> None:
 
         """Initializes HBS model.
@@ -32,11 +31,6 @@ class HBS_model:
         ----------
         parameters
             a list of floats defining the parameters
-
-        t_hypixia
-            a list of floats defining the time points to solve the
-            ODEs in hypoxia (set in solve_experiment and
-            solve_experiment_for_plot)
 
         mechanismID:
             a string defining the mechanism identity
@@ -93,7 +87,7 @@ class HBS_model:
         """Solves single HBS topology model for a single set of parameters
             and inputs, including 2 steps:
             1) time = 0 hours to time = 500 hours in normoxia (21% O2)
-            2) time = 0 hours to time = 120 hours in hypoxia (1% O2)
+            2) time = 0 hours to time = 96 hours in hypoxia (1% O2)
 
         Parameters
         ----------

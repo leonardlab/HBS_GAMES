@@ -31,16 +31,24 @@ def plot_training_data_2d(
         [HBS with H2a feedback]])
 
     y_exp
-        a list of floats defining the experimental relative DsRE2
+        a list of floats defining the experimental relative reporter
         expression for each HBS topology (in the format
         [simple HBS values, HBS with H1a feedback values,
         HBS with H2a feedback values])
 
     y_exp_error
         a list of floats defining the experimental error for the
-        relative DsRE2 expression for each HBS topology (in the
+        relative reporter expression for each HBS topology (in the
         format [simple HBS values, HBS with H1a feedback values,
         HBS with H2a feedback values])
+
+    t_experiment
+        a list of floats defining the time points for the experimental
+        data
+    
+    t_simulation
+        a list of floats defining the time points for the simulation
+        values
 
     filename
        string defining the filename used to save the plot
