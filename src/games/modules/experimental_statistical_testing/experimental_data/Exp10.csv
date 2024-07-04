@@ -14,9 +14,6 @@ simple_hbs,3,2,322676.5932
 simple_hbs,4,0,371329.6155
 simple_hbs,4,1,373490.999
 simple_hbs,4,2,365827.9121
-simple_hbs,5,0,444270.1411
-simple_hbs,5,1,495971.9863
-simple_hbs,5,2,446638.1645
 simple_hbs,normoxic,0,18655.66475
 simple_hbs,normoxic,1,17228.19141
 simple_hbs,normoxic,2,15969.68701
@@ -35,9 +32,6 @@ h1a_fb_hbs,3,5,417301.3698
 h1a_fb_hbs,4,3,471146.2355
 h1a_fb_hbs,4,4,392943.4506
 h1a_fb_hbs,4,5,452872.7204
-h1a_fb_hbs,5,3,359415.9676
-h1a_fb_hbs,5,4,508206.7742
-h1a_fb_hbs,5,5,408157.7835
 h1a_fb_hbs,normoxic,3,34121.21964
 h1a_fb_hbs,normoxic,4,31119.99265
 h1a_fb_hbs,normoxic,5,27132.28642
@@ -56,9 +50,6 @@ h2a_fb_hbs,3,8,549979.5513
 h2a_fb_hbs,4,6,459356.8709
 h2a_fb_hbs,4,7,528521.143
 h2a_fb_hbs,4,8,464662.085
-h2a_fb_hbs,5,6,438350.0825
-h2a_fb_hbs,5,7,398093.6839
-h2a_fb_hbs,5,8,561684.637
 h2a_fb_hbs,normoxic,6,15203.04745
 h2a_fb_hbs,normoxic,7,19048.99327
 h2a_fb_hbs,normoxic,8,15943.37564
