@@ -14,9 +14,6 @@ normoxia,3,2,17412.68066
 normoxia,4,0,63008.84467
 normoxia,4,1,62628.21091
 normoxia,4,2,59202.50702
-normoxia,5,0,99913.41494
-normoxia,5,1,112663.2127
-normoxia,5,2,107413.296
 normoxia_cobalt,0,3,16189.23037
 normoxia_cobalt,0,4,24803.19765
 normoxia_cobalt,0,5,19444.27791
@@ -32,9 +29,6 @@ normoxia_cobalt,3,5,379280.2768
 normoxia_cobalt,4,3,391876.4176
 normoxia_cobalt,4,4,408624.3033
 normoxia_cobalt,4,5,441358.807
-normoxia_cobalt,5,3,457282.7455
-normoxia_cobalt,5,4,430283.1739
-normoxia_cobalt,5,5,445657.93
 normoxia_dox,0,6,16189.23037
 normoxia_dox,0,7,24803.19765
 normoxia_dox,0,8,19444.27791
@@ -50,9 +44,6 @@ normoxia_dox,3,8,5528538.006
 normoxia_dox,4,6,6555859.607
 normoxia_dox,4,7,6626276.854
 normoxia_dox,4,8,6661295.16
-normoxia_dox,5,6,6628184.849
-normoxia_dox,5,7,6630059.819
-normoxia_dox,5,8,6551311.068
 hypoxia,0,9,16189.23037
 hypoxia,0,10,24803.19765
 hypoxia,0,11,19444.27791
@@ -68,6 +59,3 @@ hypoxia,3,11,1400725.519
 hypoxia,4,9,1755687.197
 hypoxia,4,10,1691740.725
 hypoxia,4,11,1579073.131
-hypoxia,5,9,2012758.069
-hypoxia,5,10,1811386.264
-hypoxia,5,11,1867260.377
