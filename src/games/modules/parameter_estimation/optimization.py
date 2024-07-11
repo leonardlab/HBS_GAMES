@@ -17,7 +17,6 @@ from games.modules.solve_single import solve_single_parameter_set
 from games.plots.plots_parameter_estimation import (
     plot_parameter_distributions_after_optimization,
     plot_chi_sq_trajectory,
-    plot_training_data_fits,
 )
 
 
