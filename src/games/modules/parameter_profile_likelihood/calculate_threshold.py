@@ -58,33 +58,37 @@ def define_noise_array(exp_error: List[float], num_data_sets: int, modelID: str)
     """
     # Define mean for error distribution
     mu = 0
-    if modelID == "synTF_chem":
-        # Define standard error for error distribution
-        sigma = 0.05 / sqrt(3)
+    # if modelID == "synTF_chem":
+    #     # Define standard error for error distribution
+    #     sigma = 0.05 / sqrt(3)
 
-        # Generate noise array
-        np.random.seed(6754)
-        noise_array = np.random.normal(mu, sigma, (num_data_sets, len(exp_error)))
+    #     # Generate noise array
+    #     np.random.seed(6754)
+    #     noise_array = np.random.normal(mu, sigma, (num_data_sets, len(exp_error)))
 
-    else:
-        # Calculate standard error values (assuming triplicate measurements)
-        sigma_values_standard_error = [i / sqrt(3) for i in exp_error]
+    # else:
+    # Calculate standard error values (assuming triplicate measurements)
+    # sigma_values_standard_error = [i / sqrt(3) for i in exp_error]
 
-        # Generate noise array for each datapoint (j)
-        starting_seed = 6754
-        for j, sigma_val in enumerate(sigma_values_standard_error):
-            # Use a different seed for each noise generation
-            np.random.seed(starting_seed + j)
+    # UPDATE from GAMES code- since exp_error = standard error, no need
+    # to calculate
+    sigma_values_standard_error = exp_error
 
-            # Generate a different noise value for each noise
-            # realization and add to array
-            noise_row = np.random.normal(mu, sigma_val, num_data_sets)
-            if j == 0:
-                noise_array = np.array([noise_row])
-            else:
-                noise_array = np.vstack([noise_array, noise_row])
+    # Generate noise array for each datapoint (j)
+    starting_seed = 6754
+    for j, sigma_val in enumerate(sigma_values_standard_error):
+        # Use a different seed for each noise generation
+        np.random.seed(starting_seed + j)
 
-        noise_array = np.transpose(noise_array)
+        # Generate a different noise value for each noise
+        # realization and add to array
+        noise_row = np.random.normal(mu, sigma_val, num_data_sets)
+        if j == 0:
+            noise_array = np.array([noise_row])
+        else:
+            noise_array = np.vstack([noise_array, noise_row])
+
+    noise_array = np.transpose(noise_array)
 
     return noise_array
 
