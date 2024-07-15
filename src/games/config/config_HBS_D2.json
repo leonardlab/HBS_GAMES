@@ -12,7 +12,7 @@
   "non_default_bounds": {"t_HAF" : [1.3802, 1.8573]},
   "num_parameter_sets_global_search" : 1000, 
   "num_parameter_sets_optimization" : 100,
-  "weight_by_error" : "yes",
+  "weight_by_error" : "no",
   "optimization_method" : "default",
   "num_pem_evaluation_datasets" : 3, 
   "parallelization" : "yes", 
