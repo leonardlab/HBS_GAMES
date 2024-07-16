@@ -8,6 +8,7 @@ Created on Wed Jun 15 16:03:09 2022
 from typing import Tuple, List, Union
 import datetime
 import pandas as pd
+from copy import deepcopy
 from games.modules.parameter_estimation.optimization import optimize_all
 from games.modules.parameter_estimation.global_search import (
     generate_parameter_sets,
@@ -390,7 +391,7 @@ def calculate_ppl(
 
                 print("new val: " + str(round(fixed_val, 4)))  # linear
 
-                parameters_single_datapoint = settings["parameters"]
+                parameters_single_datapoint = deepcopy(settings["parameters"])
                 for i, all_parameter_label in enumerate(
                     settings["parameter_labels"]
                 ):  # for each parameter in p_all

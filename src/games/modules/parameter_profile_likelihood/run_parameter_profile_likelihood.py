@@ -51,9 +51,12 @@ def run_parameter_profile_likelihood(
     path = create_folder(folder_path, sub_folder_name)
     os.chdir(path)
 
-    threshold_chi_sq = calculate_threshold_chi_sq(
-        settings, parameter_estimation_problem_definition, calibrated_parameters, calibrated_chi_sq
-    )
+    if settings["threshold_chi_sq"]:
+        threshold_chi_sq = settings["threshold_chi_sq"]
+    else:
+        threshold_chi_sq = calculate_threshold_chi_sq(
+            settings, parameter_estimation_problem_definition, calibrated_parameters, calibrated_chi_sq
+        )
 
     time_list = []
     for parameter_label in settings["parameter_labels_for_ppl"]:
