@@ -51,7 +51,7 @@ def run_parameter_profile_likelihood(
     path = create_folder(folder_path, sub_folder_name)
     os.chdir(path)
 
-    if settings["threshold_chi_sq"]:
+    if "threshold_chi_sq" in settings:
         threshold_chi_sq = settings["threshold_chi_sq"]
     else:
         threshold_chi_sq = calculate_threshold_chi_sq(

@@ -65,7 +65,7 @@ class HBS_model:
             ]
             self.topology_gradient = self.topology_gradient_C
 
-        elif self.mechanismID == "D" or self.mechanismID == "D2":
+        elif "D" in self.mechanismID:
             self.state_labels = [
                 'HAFR', 'HAFP', 'SUMOR', 'SUMOP', 'HAFS', 
                 'aHIF', 'HIF1R', 'HIF1P', 'HIF2R', 'HIF2P', 
