@@ -1,0 +1,11 @@
+﻿condition,topology,meptrs,std_err
+normoxic,no_feedback,6284.48,216.3955259
+hypoxic,no_feedback,386712,26477.62047
+normoxic,h1a_feedback,24140.8,2479.656261
+hypoxic,h1a_feedback,1095880.8,35346.06693
+normoxic,h2a_feedback,32078.4,6219.550977
+hypoxic,h2a_feedback,686864.8,12229.34478
+normoxic,h1ab_feedback,39983.2,9174.852885
+hypoxic,h1ab_feedback,741083.2,12176.07605
+normoxic,h2a_h1b_feedback,54808.8,2304.250463
+hypoxic,h2a_h1b_feedback,751054.4,19143.20759
