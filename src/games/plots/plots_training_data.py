@@ -9,7 +9,6 @@ import numpy as np
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 
-
 def plot_training_data_2d(
     y_sim: List[np.ndarray],
     y_exp: List[float],
@@ -66,146 +65,171 @@ def plot_training_data_2d(
     plt.style.use(context + "paper.mplstyle.py")
     plot_color1, plot_color2, marker_type = plot_settings
 
-    fig = plt.figure(figsize = (6.6,2.6))
+    fig, axs = plt.subplots(1, 3, figsize = (5.9,2.25), sharey=True)
     fig.subplots_adjust(wspace=0.1)
-    ax1 = plt.subplot(131)   
-    ax2 = plt.subplot(132)
-    ax3 = plt.subplot(133)
+    axs = axs.ravel()
 
-    ax1.errorbar(
+    (_, caps1, _) = axs[0].errorbar(
         t_experiment,
         y_exp[:5],
         marker=marker_type,
         yerr=y_exp_error[:5],
         color=plot_color1,
-        ecolor=plot_color1,
-        fillstyle="none",
+        markersize="2.5",
         linestyle="none",
-        capsize=2,
+        capsize=1.5,
+        ecolor="k",
+        elinewidth=0.5,
         label='1% O2 training data'
     )
-    ax1.errorbar(
+    (_, caps2, _) = axs[0].errorbar(
         t_experiment[0],
         y_exp[5],
         marker=marker_type,
         yerr=y_exp_error[5],
         color=plot_color2,
-        ecolor=plot_color2,
-        fillstyle="none",
+        markersize="2.5",
         linestyle="none",
-        capsize=2,
+        capsize=1.5,
+        ecolor="k",
+        elinewidth=0.5,
         label='21% O2 training data'
     )
 
-    ax2.errorbar(
+    (_, caps3, _) = axs[1].errorbar(
         t_experiment,
         y_exp[6:11],
         marker=marker_type,
         yerr=y_exp_error[6:11],
         color=plot_color1,
-        ecolor=plot_color1,
-        fillstyle="none",
+        markersize="2.5",
         linestyle="none",
-        capsize=2,
+        capsize=1.5,
+        ecolor="k",
+        elinewidth=0.5,
         label='1% O2 training data'
     )
-    ax2.errorbar(
+    (_, caps4, _) = axs[1].errorbar(
         t_experiment[0],
         y_exp[11],
         marker=marker_type,
         yerr=y_exp_error[11],
         color=plot_color2,
-        ecolor=plot_color2,
-        fillstyle="none",
+        markersize="2.5",
         linestyle="none",
-        capsize=2,
+        capsize=1.5,
+        ecolor="k",
+        elinewidth=0.5,
         label='21% O2 training data'
     )
 
-    ax3.errorbar(
+    (_, caps5, _) = axs[2].errorbar(
         t_experiment,
         y_exp[12:-1],
         marker=marker_type,
         yerr=y_exp_error[12:-1],
         color=plot_color1,
-        ecolor=plot_color1,
-        fillstyle="none",
+        markersize="2.5",
         linestyle="none",
-        capsize=2,
+        capsize=1.5,
+        ecolor="k",
+        elinewidth=0.5,
         label='1% O2 training data'
     )
-    ax3.errorbar(
+    (_, caps6, _) = axs[2].errorbar(
         t_experiment[0],
         y_exp[-1],
         marker=marker_type,
         yerr=y_exp_error[-1],
         color=plot_color2,
-        ecolor=plot_color2,
-        fillstyle="none",
+        markersize="2.5",
         linestyle="none",
-        capsize=2,
+        capsize=1.5,
+        ecolor="k",
+        elinewidth=0.5,
         label='21% O2 training data'
     )
 
-    ax1.plot(
+    axs[0].plot(
         t_simulation,
         y_sim[0][:-1],
-        linestyle="dotted",
+        linestyle="dashed",
+        linewidth=1.25,
         marker="None",
         color=plot_color1,
         label="1% O2 best fit"
     )
-    ax1.plot(
+    axs[0].plot(
         t_simulation[0],
         y_sim[0][-1],
-        linestyle="dotted",
+        linestyle="dashed",
+        linewidth=1.25,
         marker="None",
         color=plot_color2
     )
 
-    ax2.plot(
+    axs[1].plot(
         t_simulation,
         y_sim[1][:-1],
-        linestyle="dotted",
+        linestyle="dashed",
+        linewidth=1.25,
         marker="None",
         color=plot_color1,
         label="1% O2 best fit"
     )
-    ax2.plot(
+    axs[1].plot(
         t_simulation[0],
         y_sim[1][-1],
-        linestyle="dotted",
+        linestyle="dashed",
+        linewidth=1.25,
         marker="None",
         color=plot_color2
     )
 
-    ax3.plot(
+    axs[2].plot(
         t_simulation,
         y_sim[2][:-1],
-        linestyle="dotted",
+        linestyle="dashed",
+        linewidth=1.25,
         marker="None",
         color=plot_color1,
         label="1% O2 best fit"
     )
-    ax3.plot(
+    axs[2].plot(
         t_simulation[0],
         y_sim[2][-1],
-        linestyle="dotted",
+        linestyle="dashed",
+        linewidth=1.25,
         marker="None",
         color=plot_color2
     )
 
-    for ax in [ax1, ax2, ax3]:
+    for ax in [axs[0], axs[1], axs[2]]:
         ax.set_xlabel('Hours of treatment')
-        ax.set_ylabel('Relative reporter expression')
-        ax.set_xticks([0, 20, 40, 60, 80, 100])
+        # ax.set_ylabel('Relative reporter expression')
+        ax.set_xticks([0, 24, 48, 72, 96])
         ax.set_box_aspect(1)
 
-    ax1.set_ylim(ax2.get_ylim())
-    ax1.set_title('No feedback HBS')
-    ax1.legend()
-    ax2.set_title('HIF1a Feedback HBS')
-    ax3.set_ylim(ax2.get_ylim())
-    ax3.set_title('HIF2a Feedback HBS')
+    axs[0].set_ylabel('Relative reporter expression')
+    # axs[0].set_ylim(axs[1].get_ylim())
+    axs[0].set_yticks([0, 1, 2, 3])
+    axs[0].set_title('No feedback HBS')
+    axs[0].legend()
+    axs[1].set_title('HIF1a Feedback HBS')
+    # axs[2].set_ylim(axs[1].get_ylim())
+    axs[2].set_title('HIF2a Feedback HBS')
+
+    for cap in caps1:
+        cap.set_markeredgewidth(0.5)
+    for cap in caps2:
+        cap.set_markeredgewidth(0.5)
+    for cap in caps3:
+        cap.set_markeredgewidth(0.5)
+    for cap in caps4:
+        cap.set_markeredgewidth(0.5)
+    for cap in caps5:
+        cap.set_markeredgewidth(0.5)
+    for cap in caps6:
+        cap.set_markeredgewidth(0.5)
 
     plt.savefig("./" + filename + ".svg", dpi=600)

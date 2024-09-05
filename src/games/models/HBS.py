@@ -729,10 +729,12 @@ class HBS_model:
         -------
         None"""
 
+        normoxia_gray = [(i/255) for i in [132, 134, 136]]
+
         # define plot settings
         if run_type == "default":
-            plot_color1 = "black"
-            plot_color2 = "gray"
+            plot_color1 = "mediumpurple"
+            plot_color2 = normoxia_gray
             marker_type = "o"
 
         elif run_type == "PEM evaluation":
