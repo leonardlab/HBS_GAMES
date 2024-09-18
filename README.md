@@ -1,4 +1,4 @@
-Supporting code for the unpublished article: Dreyer, KS et al. Feedback employing the endogenous cellular hypoxia response enhances synthetic hypooxia biosensors. This code is an extension of the GAMES workflow and [code](https://github.com/leonardlab/GAMES)
+Supporting code for the unpublished article: Dreyer, KS et al. Engineered feedback employing natural hypoxia-responsive factors enhances synthetic hypooxia biosensors. This work utilizes the GAMES model development workflow and [code](https://github.com/leonardlab/GAMES)
 
 ## Summary of README contents
 
