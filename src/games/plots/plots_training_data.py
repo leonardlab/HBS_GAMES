@@ -65,7 +65,7 @@ def plot_training_data_2d(
     plt.style.use(context + "paper.mplstyle.py")
     plot_color1, plot_color2, marker_type = plot_settings
 
-    fig, axs = plt.subplots(1, 3, figsize = (5.9,2.25), sharey=True)
+    fig, axs = plt.subplots(1, 3, figsize = (5.,1.75 ), sharey=True)
     fig.subplots_adjust(wspace=0.1)
     axs = axs.ravel()
 
@@ -208,11 +208,13 @@ def plot_training_data_2d(
         ax.set_xlabel('Hours of treatment')
         # ax.set_ylabel('Relative reporter expression')
         ax.set_xticks([0, 24, 48, 72, 96])
+        ax.set_xlim(left=0)
         ax.set_box_aspect(1)
 
     axs[0].set_ylabel('Relative reporter expression')
     # axs[0].set_ylim(axs[1].get_ylim())
     axs[0].set_yticks([0, 1, 2, 3])
+    axs[0].set_ylim(bottom=0)
     axs[0].set_title('No feedback HBS')
     axs[0].legend()
     axs[1].set_title('HIF1a Feedback HBS')
