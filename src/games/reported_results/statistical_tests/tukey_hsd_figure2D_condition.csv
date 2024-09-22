@@ -1,0 +1,3 @@
+        Multiple Comparison of Means - Tukey HSD, FWER=0.05         
+group1,  group2 ,  meandiff  ,p-adj,   lower    ,   upper    ,reject
+cobalt,untreated,-316374.8182,0.0  ,-351511.5623,-281238.0741,True  

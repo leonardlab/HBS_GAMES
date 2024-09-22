@@ -1,0 +1,3 @@
+         Multiple Comparison of Means - Tukey HSD, FWER=0.05         
+ group1, group2 ,  meandiff  ,p-adj ,   lower    ,   upper    ,reject
+hypoxic,normoxic,-342546.6667,0.0001,-476287.8612,-208805.4721,True  
