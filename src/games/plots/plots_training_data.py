@@ -65,7 +65,7 @@ def plot_training_data_2d(
     plt.style.use(context + "paper.mplstyle.py")
     plot_color1, plot_color2, marker_type = plot_settings
 
-    fig, axs = plt.subplots(1, 3, figsize = (5.,1.75 ), sharey=True)
+    fig, axs = plt.subplots(1, 3, figsize = (5.9,2.25), sharey=True) #5, 1.75 for subopt fits
     fig.subplots_adjust(wspace=0.1)
     axs = axs.ravel()
 
