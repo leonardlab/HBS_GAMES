@@ -1,4 +1,4 @@
-Supporting code for the unpublished article: Dreyer, KS et al. Engineered feedback employing natural hypoxia-responsive factors enhances synthetic hypooxia biosensors. This work utilizes the GAMES model development workflow and [code](https://github.com/leonardlab/GAMES)
+Supporting code for the preprint: [Dreyer, KS et al. Engineered feedback employing natural hypoxia-responsive factors enhances synthetic hypooxia biosensors.](https://www.biorxiv.org/content/10.1101/2024.09.28.615614v1) This work utilizes the GAMES model development workflow and [code](https://github.com/leonardlab/GAMES)
 
 ## Summary of README contents
 
